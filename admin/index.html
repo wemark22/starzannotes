@@ -809,18 +809,123 @@ async function saveCurrentTestToCloud() {
   render();
 }
 
-function edit(i){let t=tid(i);if(!t)return go("tests");E=t;let b=[bas,qs,set,rev][ST]();
-lay("tests",esc(t.title)||"New test",`<div class="rowx" style="margin:-8px 0 14px"><a class="bkb" style="margin:0" href="#tests">${ic("back")}<span>Tests</span></a><button class="b s" style="margin-left:auto" onclick="saveCurrentTestToCloud()">${ic("check")} Save to Cloud</button><span>${idb(t.id)} <span class="st2 ${t.status}">${{draft:"Draft",pub:"Live",sched:"Scheduled",pending:"Awaiting approval"}[t.status]}</span></span></div><div class="stp">${STP.map((s,n)=>`<button class="${ST==n?"on":""}${n<ST?" dn":""}" onclick="stp(${n})"><span>${n<ST?ic("check"):n+1}</span>${s}</button>`).join("")}</div>${b}
-<div class="sbar"><span class="sp"><i></i><span id="svt">Draft saved ${hm()}</span></span>${ST>0?`<button class="b o" onclick="stp(ST-1)">Back</button>`:""}${ST<3?`<button class="b" onclick="stp(ST+1)">Next</button>`:`<button class="b" onclick="pubT()">${can("publish")?(t.sched?"Schedule":"Publish"):"Send for approval"}</button>`}</div>`)}
+function edit(i){
+  let t = tid(i);
+  if (!t) return go("tests");
+  E = t;
+  let b = [bas, qs, set, rev][ST]();
+  let isLive = t.status === "pub";
+  
+  lay("tests", esc(t.title) || "New test", `
+    <div class="rowx" style="margin:-8px 0 14px">
+      <a class="bkb" style="margin:0" href="#tests">${ic("back")}<span>Tests</span></a>
+      <span style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+        <button class="b ${isLive ? 's' : 'o s'}" onclick="saveCurrentTestToCloud()">${ic("check")} ${isLive ? "Save Changes" : "Save Draft"}</button>
+        ${idb(t.id)} <span class="st2 ${t.status}">${{draft:"Draft",pub:"Live",sched:"Scheduled",pending:"Awaiting approval"}[t.status]}</span>
+      </span>
+    </div>
+    <div class="stp">${STP.map((s,n)=>`<button class="${ST==n?"on":""}${n<ST?" dn":""}" onclick="stp(${n})"><span>${n<ST?ic("check"):n+1}</span>${s}</button>`).join("")}</div>
+    ${b}
+    <div class="sbar">
+      <span class="sp"><i></i><span id="svt">${isLive ? "Live test active" : "Draft saved"} ${hm()}</span></span>
+      ${ST > 0 ? `<button class="b o" onclick="stp(ST-1)">Back</button>` : ""}
+      ${ST < 3 ? `<button class="b" onclick="stp(ST+1)">Next ${ic("chev")}</button>` : `<button class="b" onclick="${isLive ? 'saveCurrentTestToCloud()' : 'pubT()'}">${isLive ? "Save Live Changes" : (can("publish") ? (t.sched ? "Schedule Test" : "🚀 Publish to Student App") : "Send for approval")}</button>`}
+    </div>`);
+}
 function stp(n){ST=n;QE=-1;QF=null;render();scrollTo(0,0)}
-function bas(){let t=E,ex=D.exams;return `<div class="c2"><h3>Exam and where it appears</h3><p class="mu">Choose the exam, then turn on only the levels you need.</p><div class="tabs" style="margin-top:12px">${ex.map(x=>`<button class="${t.exam==x?"on":""}" onclick="E.exam='${esc(x).replace(/'/g,"\\'")}';sv();render()">${esc(x)}</button>`).join("")}<button onclick="NX=!NX;render()">${ic("plus")}New exam</button></div>${NX?`<div class="cp"><input id="nx" class="in" placeholder="Exam name, e.g. SSC CGL" aria-label="New exam name"><button class="b" onclick="addEx()">Add</button></div>`:""}
-${sw(t.sub.on,"togL('sub')","Subject","Add a subject level")}${t.sub.on?`<input list="ds" class="in" aria-label="Subject name" placeholder="Subject name, e.g. Science" value="${esc(t.sub.v)}" oninput="E.sub.v=this.value;sv();pp()"><datalist id="ds">${sug("sub",x=>x.sub.on).map(x=>`<option value="${esc(x)}">`).join("")}</datalist>`:""}
-${sw(t.ch.on,"togL('ch')","Chapter","Needs a subject",!t.sub.on)}${t.ch.on?`<input list="dc" class="in" aria-label="Chapter name" placeholder="Chapter name" value="${esc(t.ch.v)}" oninput="E.ch.v=this.value;sv();pp()"><datalist id="dc">${sug("ch",x=>x.ch.on&&x.sub.v==t.sub.v).map(x=>`<option value="${esc(x)}">`).join("")}</datalist>`:""}
-${sw(t.tp.on,"togL('tp')","Topic","Needs a chapter",!t.ch.on)}${t.tp.on?`<input list="dt" class="in" aria-label="Topic name" placeholder="Topic name" value="${esc(t.tp.v)}" oninput="E.tp.v=this.value;sv();pp()"><datalist id="dt">${sug("tp",x=>x.tp.on&&x.ch.v==t.ch.v).map(x=>`<option value="${esc(x)}">`).join("")}</datalist>`:""}
-<div class="hint" style="margin-top:12px;background:var(--sf);padding:10px 14px;border-radius:10px;border:1px solid var(--br);line-height:1.5;">💡 <b>Multi-Subject Series:</b> You can create tests across different Subjects, Chapters, and Topics under this same Exam. The Student App automatically organizes them into clean interactive folders!</div>
-<div class="pth"><small>Students will find it here</small><span id="pp">${esc(pth(t)||"Choose an exam")} › ${esc(t.title||"This test")}</span></div></div>
-<div class="c2"><h3>Title and banner</h3><label class="l2" for="ti">Test title</label><input id="ti" class="in" value="${esc(t.title)}" placeholder="e.g. Photosynthesis Test 1" oninput="E.title=this.value;sv();pp()"><label class="l2" for="de">Short description</label><textarea id="de" class="in" maxlength="140" placeholder="One line shown on the card" oninput="E.desc=this.value;sv()">${esc(t.desc)}</textarea><label class="l2">Card label</label>${chips([["","None"],["New","New"],["Popular","Popular"],["Bestseller","Bestseller"],["Free","Free"]],t.label,"setLb")}
-<label class="l2">Banner image</label><div class="pvw" id="pvw" style="${t.banner?`background-image:url('${t.banner}')`:""}">${t.banner?"":"16:10 preview"}</div><label class="up2">${ic("upload")}<div><b>Upload banner</b></div><small>1600 × 1000 px (16:10) · JPG or WebP · under 400 KB · no text baked into the image · keep key content 20 px from the edges</small><input type="file" accept="image/*" onchange="upImg(this,'${"E"}')"></label><div class="hint" id="bm">${esc(BM)}</div></div>`}
+function bas(){
+  let t = E, ex = D.exams;
+  let subSuggestions = sug("sub", x => x.sub.on);
+  let chSuggestions = sug("ch", x => x.ch.on && x.sub.v == t.sub.v);
+  let tpSuggestions = sug("tp", x => x.tp.on && x.ch.v == t.ch.v);
+
+  return `<div class="c2">
+    <h3>Exam and where it appears</h3>
+    <p class="mu">Choose the exam, then turn on only the levels you need.</p>
+    
+    <div class="tabs" style="margin-top:12px">
+      ${ex.map(x => `<button class="${t.exam==x?"on":""}" onclick="E.exam='${esc(x).replace(/'/g,"\\'")}' ;sv();render()">${esc(x)}</button>`).join("")}
+      <button onclick="NX=!NX;render()">${ic("plus")}New exam</button>
+    </div>
+    ${NX ? `<div class="cp"><input id="nx" class="in" placeholder="Exam name, e.g. SSC CGL" aria-label="New exam name"><button class="b" onclick="addEx()">Add</button></div>` : ""}
+    
+    ${sw(t.sub.on, "togL('sub')", "Subject", "Add a subject level")}
+    ${t.sub.on ? `
+      <div style="margin: 8px 0 14px;">
+        ${subSuggestions.length ? `
+          <small class="mu" style="display:block;margin-bottom:4px;">Existing subjects in this exam (tap to select):</small>
+          <div class="tabs wrap" style="margin-bottom:8px;">
+            ${subSuggestions.map(s => `<button class="${t.sub.v==s?"on":""}" type="button" onclick="E.sub.v='${esc(s).replace(/'/g,"\\'")}' ;sv();updateTestInDb(E);render()">${esc(s)}</button>`).join("")}
+          </div>
+        ` : ''}
+        <div style="display:flex; gap:8px;">
+          <input id="sub_in" class="in" aria-label="Subject name" placeholder="Subject name, e.g. Physics" value="${esc(t.sub.v)}" oninput="E.sub.v=this.value;sv();pp()">
+          <button class="b s" type="button" style="white-space:nowrap;" onclick="addLevel('sub')">+ Add Subject</button>
+        </div>
+      </div>
+    ` : ""}
+    
+    ${sw(t.ch.on, "togL('ch')", "Chapter", "Needs a subject", !t.sub.on)}
+    ${t.ch.on ? `
+      <div style="margin: 8px 0 14px;">
+        ${chSuggestions.length ? `
+          <small class="mu" style="display:block;margin-bottom:4px;">Existing chapters in ${esc(t.sub.v || 'this subject')}:</small>
+          <div class="tabs wrap" style="margin-bottom:8px;">
+            ${chSuggestions.map(c => `<button class="${t.ch.v==c?"on":""}" type="button" onclick="E.ch.v='${esc(c).replace(/'/g,"\\'")}' ;sv();updateTestInDb(E);render()">${esc(c)}</button>`).join("")}
+          </div>
+        ` : ''}
+        <div style="display:flex; gap:8px;">
+          <input id="ch_in" class="in" aria-label="Chapter name" placeholder="Chapter name, e.g. Mechanics" value="${esc(t.ch.v)}" oninput="E.ch.v=this.value;sv();pp()">
+          <button class="b s" type="button" style="white-space:nowrap;" onclick="addLevel('ch')">+ Add Chapter</button>
+        </div>
+      </div>
+    ` : ""}
+    
+    ${sw(t.tp.on, "togL('tp')", "Topic", "Needs a chapter", !t.ch.on)}
+    ${t.tp.on ? `
+      <div style="margin: 8px 0 14px;">
+        ${tpSuggestions.length ? `
+          <small class="mu" style="display:block;margin-bottom:4px;">Existing topics in ${esc(t.ch.v || 'this chapter')}:</small>
+          <div class="tabs wrap" style="margin-bottom:8px;">
+            ${tpSuggestions.map(tp => `<button class="${t.tp.v==tp?"on":""}" type="button" onclick="E.tp.v='${esc(tp).replace(/'/g,"\\'")}' ;sv();updateTestInDb(E);render()">${esc(tp)}</button>`).join("")}
+          </div>
+        ` : ''}
+        <div style="display:flex; gap:8px;">
+          <input id="tp_in" class="in" aria-label="Topic name" placeholder="Topic name, e.g. Kinematics" value="${esc(t.tp.v)}" oninput="E.tp.v=this.value;sv();pp()">
+          <button class="b s" type="button" style="white-space:nowrap;" onclick="addLevel('tp')">+ Add Topic</button>
+        </div>
+      </div>
+    ` : ""}
+    
+    <div class="pth"><small>Students will find it here</small><span id="pp">${esc(pth(t)||"Choose an exam")} › ${esc(t.title||"This test")}</span></div>
+  </div>
+  
+  <div class="c2">
+    <h3>Title and banner</h3>
+    <label class="l2" for="ti">Test title</label>
+    <input id="ti" class="in" value="${esc(t.title)}" placeholder="e.g. Unit Test 1" oninput="E.title=this.value;sv();pp()">
+    <label class="l2" for="de">Short description</label>
+    <textarea id="de" class="in" maxlength="140" placeholder="One line shown on the card" oninput="E.desc=this.value;sv()">${esc(t.desc)}</textarea>
+    <label class="l2">Card label</label>
+    ${chips([["","None"],["New","New"],["Popular","Popular"],["Bestseller","Bestseller"],["Free","Free"]],t.label,"setLb")}
+    <label class="l2">Banner image</label>
+    <div class="pvw" id="pvw" style="${t.banner?`background-image:url('${t.banner}')`:""}">${t.banner?"":"16:10 preview"}</div>
+    <label class="up2">${ic("upload")}<div><b>Upload banner</b></div><small>1600 × 1000 px (16:10) · JPG or WebP · under 400 KB</small><input type="file" accept="image/*" onchange="upImg(this,'${"E"}')"></label>
+    <div class="hint" id="bm">${esc(BM)}</div>
+  </div>`;
+}
+
+function addLevel(k) {
+  let inp = $("#" + k + "_in");
+  let val = (inp ? inp.value : E[k].v || "").trim();
+  if (!val) { toast("Please type a name first"); return; }
+  E[k].v = val;
+  sv();
+  updateTestInDb(E);
+  toast("Added " + (k=="sub"?"Subject":k=="ch"?"Chapter":"Topic") + ": " + val);
+  render();
+}
+
 function pp(){let e=$("#pp");if(e)e.textContent=(pth(E)||"Choose an exam")+" › "+(E.title||"This test")}
 function togL(k){
   E[k].on = !E[k].on;
@@ -1006,7 +1111,17 @@ function setScope(v){CP.scope=v;render()}
 function setRz(v){D.cfg.rzm=v;sv();render()}
 function setAct(v){RS[RX].act=v;render()}
 function setAns(v){RS[RX].ans=+v;render()}
-function fq(id){for(const t of D.tests){let i=t.q.findIndex(q=>q.id==id);if(i>=0)return{t,q:t.q[i],i}}return null}
+function fq(id) {
+  for (const t of D.tests) {
+    let i = t.q.findIndex(q => q.id == id);
+    if (i >= 0) return { t, q: t.q[i], i };
+    if (String(id).startsWith('q_' + t.id + '_')) {
+      let idx = parseInt(id.replace('q_' + t.id + '_', ''), 10);
+      if (t.q && t.q[idx]) return { t, q: t.q[idx], i: idx };
+    }
+  }
+  return null;
+}
 function openQ(ti,i){ST=1;QM="manual";QX="all";KP=1;go("edit-"+ti);QE=i;QF=JSON.parse(JSON.stringify(tid(ti).q[i]))}
 function rpan(k,f){let s=RS[k];return `<div class="c2" style="background:var(--hi);box-shadow:none;margin:12px 0 0"><h3>What do you want to do?</h3>${rr([["dismiss","The answer key is correct","No change. The reports are closed."],["fix","I will edit the question","Fix the wording or options. Reports close when you save."],["rescore","The answer key was wrong","Change the correct answer. Every student’s score is re-calculated."],["credit","Give full marks to everyone","Use this when the question was flawed."],["drop","Remove it from scoring","Totals are calculated without this question."]],s.act,"setAct")}${s.act=="rescore"?`<label class="l2">New correct answer</label>${chips(f.q.o.map((o,i)=>[i,LT[i]+". "+(o.length>16?o.slice(0,16)+"…":o)]),s.ans,"setAns")}`:""}${s.act!="fix"?sw(s.notify,"RS[RX].notify=!RS[RX].notify;render()","Thank the students who reported","They get a short message"):""}<div class="rowx" style="margin-top:12px"><button class="b o" onclick="RX='';render()">Cancel</button>${s.act=="fix"?`<button class="b" onclick="openQ('${f.t.id}',${f.i})">Open the question</button>`:`<button class="b" onclick="applyR()">Apply</button>`}</div></div>`}
 function applyR(){let k=RX,s=RS[k],f=fq(k);if(!f)return;let q=f.q,txt="Answer key confirmed";if(s.act=="rescore"){q.a=s.ans;delete q.drop;delete q.credit;txt="Answer changed to "+LT[s.ans]+". "+f.t.at+" attempts re-scored"}else if(s.act=="credit"){q.credit=true;txt="Full marks given to everyone"}else if(s.act=="drop"){q.drop=true;txt="Removed from scoring"}D.reports.forEach(r=>{if(r.qid==k&&r.st=="open"){r.st=s.act=="dismiss"?"dismissed":"resolved";r.res=txt}});resolveReportInDb(k, s.act, txt);RX="";sv();toast(txt);render()}

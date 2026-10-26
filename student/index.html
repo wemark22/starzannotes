@@ -79,6 +79,19 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 
 .idc { font-family: monospace; background: var(--sf); border: 1px solid var(--br); padding: 3px 8px; border-radius: 6px; font-size: .85rem; display: inline-flex; align-items: center; gap: 4px; color: var(--mu); }
 .ms { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+
+.idc { font-family: monospace; background: var(--sf); border: 1px solid var(--br); padding: 3px 8px; border-radius: 6px; font-size: .85rem; display: inline-flex; align-items: center; gap: 4px; color: var(--mu); }
+.ms { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.mu2 { color: var(--mu); font-weight: 500; }
+@media (max-width: 680px) {
+  .dn-mobile { display: none !important; }
+}
+@media (min-width: 681px) {
+  .bt { display: none !important; }
+  .tp nav { display: flex; align-items: center; gap: 20px; margin-left: auto; margin-right: 16px; }
+  .tp nav a { color: var(--mu); font-weight: 600; text-decoration: none; font-size: 0.95rem; }
+  .tp nav a.on { color: var(--ac); }
+}
 </style></head><body><div id="app"></div><div id="m"></div><div id="t" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -185,9 +198,9 @@ function shareLink(hash, title) {
   } else {
     try {
       navigator.clipboard.writeText(url).then(() => {
-        toast('Link copied! Share it with your friends.');
-      }).catch(() => { prompt('Copy this link:', url); });
-    } catch(e) { prompt('Copy this link:', url); }
+        toast('Link copied! Share it with friends.');
+      }).catch(() => { prompt('Copy link:', url); });
+    } catch(e) { prompt('Copy link:', url); }
   }
 }
 
@@ -408,20 +421,20 @@ async function saveAttemptToDb(att) {
   } catch(e) { console.warn(e); }
 }
 
-async function sendQuestionReport(testId, questionIndex, reason, note) {
+async function sendQuestionReport(testId, questionId, reason, note) {
   if (!sb) return;
   try {
     await sb.from('reports').insert({
       user_id: isUuid(S.user?.id) ? S.user.id : null,
       user_name: S.user?.n || 'Student',
       test_id: testId,
-      question_id: 'q_' + testId + '_' + questionIndex,
-      reason: reason || 'Answer looks wrong',
+      question_id: questionId,
+      reason: reason || 'Wrong answer key',
       note: note || '',
       status: 'open',
       created_at: new Date().toISOString()
     });
-    toast('Thanks! Question report sent to admin.');
+    toast('✅ Thanks! Report sent to the administrator.');
   } catch(e) { console.warn(e); }
 }
 
@@ -451,12 +464,42 @@ async function syncUserWithDb(user) {
   } catch(e) { console.warn('syncUserWithDb error:', e); }
 }
 
-// Shell & Navigation UI
+// Shell & Navigation UI (Restored Clean Native Design with DP Avatar & Fixed Bottom Nav)
 function shell(a, b, c, k) {
-  A.innerHTML = `<header class="tp"><div class="w">${k ? `<a class="bkb" href="#${k[0]}" aria-label="Back to ${k[1]}">${ic("back")}<span>${esc(k[1])}</span></a>` : `<a class="lg" href="#home"><span class="mk">${esc(CFG.name[0] || 'S')}</span><span>${esc(CFG.name)}</span></a>`}${k ? "" : `<div class="ri"><a class="ib" href="#explore" aria-label="Explore tests">${ic("search")}</a><a class="ib" href="#learn" aria-label="My learning">${ic("book")}</a></div>`}</div></header>
+  A.innerHTML = `<header class="tp">
+    <div class="w">
+      ${k ? `
+        <a class="bkb" href="#${k[0]}" aria-label="Back to ${k[1]}">
+          ${ic("back")}<span>${esc(k[1])}</span>
+        </a>
+      ` : `
+        <a class="lg" href="#home">
+          <span class="mk">${esc(CFG.name[0] || 'S')}</span>
+          <span>${esc(CFG.name).replace("Notes", '<span class="mu2">Notes</span>')}</span>
+        </a>
+      `}
+      <nav class="dn-mobile">
+        ${NV.map(n => `<a href="#${n[0]}" class="${a == n[0] ? "on" : ""}">${n[1]}</a>`).join("")}
+      </nav>
+      ${S.user ? `
+        <a class="av" href="#learn" aria-label="My learning" title="${esc(S.user.n)}">${esc(S.user.n[0] || 'S').toUpperCase()}</a>
+      ` : `
+        <button class="b s" onclick="signin()">Sign in</button>
+      `}
+    </div>
+  </header>
   ${b}
-  ${c ? `<div class="ct"><div class="w">${c}</div></div>` : ""}
-  ${k ? "" : `<nav class="nv" aria-label="Main">${NV.map(n => `<a class="${a == n[0] ? "on" : ""}" href="#${n[0]}" aria-label="${n[1]}">${ic(n[2])}${n[1]}</a>`).join("")}</nav>`}`;
+  <footer>
+    <div class="fl">
+      ${Object.entries(PG).map(x => `<a href="#page-${x[0]}">${x[1].replace(" policy", "").replace(" and conditions", "")}</a>`).join("")}
+    </div>
+    <small>© ${esc(CFG.name)} · Practice smarter, score higher</small>
+  </footer>
+  ${c ? `<div class="ct"><div class="w">${c}</div></div>` : `
+    <nav class="bt">
+      ${NV.map(n => `<a href="#${n[0]}" class="${a == n[0] ? "on" : ""}">${ic(n[2])}<span>${n[1]}</span></a>`).join("")}
+    </nav>
+  `}`;
 }
 
 const card = s => `<a class="cd" href="#${s.ln}">
@@ -533,11 +576,11 @@ function home() {
   shell("home", `<main class="w">
     <div class="hm">
       <section class="top">
-        <span class="eb">${esc(CFG.name)}</span>
+        <span class="eb">${esc(CFG.name)} Test Series</span>
         <h1>${esc(CFG.tag)}</h1>
         <form class="sf" onsubmit="F.q=this.q.value;F.x='All';go('explore');return false">
           ${ic("search")}
-          <input name="q" aria-label="Search" placeholder="Search test series or exam">
+          <input name="q" aria-label="Search" placeholder="Search test series, exams, or topics...">
           <button class="b">Search</button>
         </form>
       </section>
@@ -545,7 +588,7 @@ function home() {
     </div>
     ${rs}
     
-    <div class="sec"><h2>Test Series</h2><a href="#explore" onclick="F.x='All';F.q=''">View all</a></div>
+    <div class="sec"><h2>Featured Test Series</h2><a href="#explore" onclick="F.x='All';F.q=''">View all</a></div>
     <div class="gr">
       ${SER.length ? SER.map(card).join("") : '<div class="em">Test series will appear here once published from the Admin Panel.</div>'}
     </div>
@@ -584,7 +627,7 @@ function home() {
 function explore() {
   shell("explore", `<main class="w">
     <h1 style="margin-top:26px">Explore Test Series</h1>
-    <input class="in" type="search" aria-label="Search series" placeholder="Search by exam, subject or Test ID..." value="${esc(F.q)}" oninput="F.q=this.value;lst()">
+    <input class="in" type="search" aria-label="Search series" placeholder="Search by exam, subject, or Test ID (e.g. DC27A)..." value="${esc(F.q)}" oninput="F.q=this.value;lst()">
     <div class="tabs">${["All", "Free", "Paid"].map(x => `<button class="${F.x == x ? "on" : ""}" onclick="F.x='${x}';explore()">${x}</button>`).join("")}</div>
     <div id="ls" class="gr"></div>
   </main>`);
@@ -760,7 +803,7 @@ function test(testId) {
       <ul class="cl2 mu">
         <li>${ic("check")}Unanswered questions score zero.</li>
         <li>${ic("check")}The timer keeps running if you switch apps or refresh.</li>
-        <li>${ic("check")}Mark questions for review and return to them anytime.</li>
+        <li>${ic("check")}Bookmark questions for review and return to them anytime.</li>
         <li>${ic("check")}Test submits automatically when duration ends.</li>
       </ul>
       ${t.disclaimer ? `<div class="exp" style="margin:14px 0;"><b>Instructions:</b> ${esc(t.disclaimer)}</div>` : ''}
@@ -830,7 +873,8 @@ async function startTest(testId) {
           Array.isArray(q.options) ? q.options : JSON.parse(q.options || '[]'),
           q.correct_answer,
           q.explanation || 'Refer to reference notes.',
-          q.topic || t.topic || t.subject || 'General'
+          q.topic || t.topic || t.subject || 'General',
+          q.id
         ]);
       }
     } catch(err) { console.warn(err); }
@@ -863,7 +907,7 @@ async function startTest(testId) {
   go("take-test-" + t.id);
 }
 
-// TEST TAKING INTERFACE
+// TEST TAKING INTERFACE (With Clear "Bookmark for review" naming)
 function take() {
   if (!T) return go("home");
   A.innerHTML = `<header class="xh">
@@ -918,7 +962,7 @@ function draw() {
         <span class="qn">Question ${T.q + 1} of ${Q.length}</span>
         ${q[4] ? `<span class="eb" style="margin-left:8px">${esc(q[4])}</span>` : ""}
       </div>
-      <button class="rf${rv ? " on" : ""}" onclick="togR()">${ic("flag")} ${rv ? "Marked for review" : "Mark for review"}</button>
+      <button class="rf${rv ? " on" : ""}" title="Bookmark this question for yourself to check before submitting" onclick="togR()">${ic("flag")} ${rv ? "Bookmarked (Review later)" : "Bookmark for later"}</button>
     </div>
     <div class="qt">${esc(q[0])}</div>
     <div class="op" role="radiogroup">${q[1].map((o, i) => `<button class="rw${a == i ? " on" : ""}" role="radio" aria-checked="${a == i}" onclick="ans(${i})"><i></i><span><b>${"ABCD"[i]}.</b> ${esc(o)}</span></button>`).join("")}</div>`;
@@ -944,7 +988,7 @@ function palBody() {
   if (!T) return "";
   let an = T.a.filter(x => x >= 0).length, rv = T.r.filter(x => x).length;
   return `<div class="ph2">
-    <div><b>Question palette</b><small class="mu">${an} answered · ${rv} marked</small></div>
+    <div><b>Question palette</b><small class="mu">${an} answered · ${rv} bookmarked</small></div>
     <button class="ib" aria-label="Close palette" onclick="pal(0)">${ic("x")}</button>
   </div>
   <div class="plg">${Q.map((_, i) => {
@@ -1004,7 +1048,7 @@ function subD() {
     <ul class="cl2 mu" style="margin:14px 0 20px;">
       <li>${ic("check")}${a} answered</li>
       <li>${ic("check")}${u} unanswered</li>
-      <li>${ic("flag")}${r} marked for review</li>
+      <li>${ic("flag")}${r} bookmarked for review</li>
     </ul>
     <p class="mu" style="font-size:0.9rem;">Once submitted, your final score and detailed solutions will be shown.</p>
     <button class="b f" onclick="fin()">Submit now</button>
@@ -1136,7 +1180,7 @@ function rev(i) {
         <b>${k + 1}. ${esc(q[0])}</b>
         <div class="an2">${q[1].map((o, j) => `<div class="${j==q[2]?"oc":j==a?"ow":""}">${"ABCD"[j]}. ${esc(o)}${j==q[2]?" ✓":j==a?" ✗":""}</div>`).join("")}</div>
         <div class="exp"><b>Explanation:</b> ${esc(q[3] || 'Refer to study notes.')}</div>
-        <button class="b o s" style="margin-top:10px; font-size:0.8rem;" onclick="promptReport('${r.testId || r.nid}', ${k})">${ic("flag")} Report an issue with this question</button>
+        <button class="b o s" style="margin-top:10px; font-size:0.82rem;" onclick="promptReport('${r.testId || r.nid}', ${k})">⚠️ Report a mistake in this question to Admin</button>
       </div>`;
     }).join(""));
 }
@@ -1147,11 +1191,32 @@ function rfs(f, i) {
   if (el) el.innerHTML = rev(i);
 }
 
+// Clear Interactive Report Modal for Students -> Delivered directly to Supabase Reports Table
 function promptReport(testId, qIdx) {
-  let reason = prompt("What is the issue with question " + (qIdx + 1) + "? (e.g. wrong answer, typo)", "Wrong answer or options");
-  if (reason) {
-    sendQuestionReport(testId, qIdx, reason, '');
-  }
+  M(`<h3>Report Question #${qIdx + 1}</h3>
+    <p class="mu">Notice a mistake? Send details to the teacher/admin so it can be verified and updated.</p>
+    <label class="l2" for="rep_reason">What is the problem?</label>
+    <select id="rep_reason" class="in" style="margin-bottom:12px;">
+      <option value="Wrong answer key">Wrong answer key</option>
+      <option value="Question text has typos or errors">Question text has typos or errors</option>
+      <option value="Options are ambiguous or missing">Options are ambiguous or missing</option>
+      <option value="Explanation is incorrect or unclear">Explanation is incorrect or unclear</option>
+      <option value="Other issue">Other issue</option>
+    </select>
+    <label class="l2" for="rep_note">Additional note (optional)</label>
+    <textarea id="rep_note" class="in" rows="3" placeholder="Describe the mistake clearly..."></textarea>
+    <button class="b f" style="margin-top:14px;" onclick="sendStudentReport('${testId}', ${qIdx})">Send Report to Admin</button>
+    <button class="b o f" style="margin-top:8px;" onclick="X()">Cancel</button>`);
+}
+
+async function sendStudentReport(testId, qIdx) {
+  let reason = $("#rep_reason")?.value || 'Wrong answer key';
+  let note = ($("#rep_note")?.value || '').trim();
+  X();
+  toast("Delivering report to Admin Panel...");
+  let qItem = Q[qIdx] || [];
+  let qId = qItem[5] || ('q_' + testId + '_' + qIdx);
+  await sendQuestionReport(testId, qId, reason, note);
 }
 
 // MY LEARNING PAGE
@@ -1174,9 +1239,12 @@ function learn() {
 
   shell("learn", `<main class="w">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:28px;">
-      <div>
-        <h1 style="margin:0;">Hi, ${esc(S.user.n)}</h1>
-        <small class="mu">${esc(S.user.e)}</small>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <span class="av" style="width:48px; height:48px; border-radius:14px; font-size:1.3rem;">${esc(S.user.n[0] || 'S').toUpperCase()}</span>
+        <div>
+          <h1 style="margin:0; font-size:1.5rem;">Hi, ${esc(S.user.n)}</h1>
+          <small class="mu">${esc(S.user.e)}</small>
+        </div>
       </div>
       <button class="b o s" onclick="appSignOut()">Sign out</button>
     </div>
