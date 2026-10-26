@@ -401,8 +401,11 @@ function lbd(testId) {
   return L.sort((a, b) => b.s - a.s || a.t - b.t);
 }
 
-async function fetchLeaderboardFromDb(testId) {
+const LEADERBOARD_FETCHED = {};
+async function fetchLeaderboardFromDb(testId, force = false) {
   if (!sb || !testId) return;
+  if (!force && LEADERBOARD_FETCHED[testId]) return;
+  LEADERBOARD_FETCHED[testId] = true;
   try {
     const { data: atts } = await sb.from('attempts')
       .select('score, time_taken, users(name), user_id')
@@ -416,7 +419,9 @@ async function fetchLeaderboardFromDb(testId) {
         s: Number(a.score) || 0,
         t: Number(a.time_taken) || 0
       }));
-      R();
+      if (location.hash === '#test-' + testId) {
+        R();
+      }
     }
   } catch(e) { console.warn(e); }
 }
@@ -439,7 +444,7 @@ async function saveAttemptToDb(att) {
       completed_at: new Date().toISOString()
     };
     await sb.from('attempts').insert(payload);
-    fetchLeaderboardFromDb(payload.test_id);
+    fetchLeaderboardFromDb(payload.test_id, true);
   } catch(e) { console.warn(e); }
 }
 

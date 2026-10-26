@@ -1052,11 +1052,15 @@ let Q_TARGET = { sub: '', ch: '', tp: '' };
 
 function initHierarchyTree(t) {
   if (!t.hierarchy_tree) t.hierarchy_tree = [];
+  if (t.sub && t.sub.on && t.sub.v && !t.hierarchy_tree.some(s => s.name === t.sub.v)) {
+    t.hierarchy_tree.push({ name: t.sub.v, ch_on: !!(t.ch && t.ch.on), chapters: [] });
+  }
   (t.q || []).forEach(q => {
     let s = (q.subject || '').trim();
     let c = (q.chapter || '').trim();
     let p = (q.topic || '').trim();
     if (s) {
+      t.sub.on = true;
       let sObj = t.hierarchy_tree.find(x => x.name === s);
       if (!sObj) {
         sObj = { name: s, ch_on: false, chapters: [] };
@@ -1090,7 +1094,7 @@ function syncTestHierarchyFields(t) {
       if (firstTp) { t.tp.on = true; t.tp.v = typeof firstTp === 'string' ? firstTp : firstTp.name; }
       else { t.tp.on = false; t.tp.v = ''; }
     } else { t.ch.on = false; t.ch.v = ''; t.tp.on = false; t.tp.v = ''; }
-  } else {
+  } else if (!t.sub.on) {
     t.sub.on = false; t.sub.v = '';
     t.ch.on = false; t.ch.v = '';
     t.tp.on = false; t.tp.v = '';
@@ -1261,8 +1265,7 @@ function wizStep2() {
   let t = E;
   initHierarchyTree(t);
 
-  let hasSubjects = !!(t.hierarchy_tree && t.hierarchy_tree.length);
-  let subOn = hasSubjects; // subjects ON if at least one exists
+  let subOn = !!(t.sub && t.sub.on);
 
   return `
     <div class="c2 wiz-open">
@@ -1289,16 +1292,22 @@ function wizStep2() {
 
 function toggleSubjectMode() {
   initHierarchyTree(E);
-  if (E.hierarchy_tree && E.hierarchy_tree.length > 0) {
-    // Turn off – clear hierarchy
-    if (!confirm("Remove all subjects? Questions will stay but lose their subject/chapter/topic tags.")) return;
+  if (!E.sub) E.sub = { on: false, v: '' };
+
+  if (E.sub.on) {
+    if (E.hierarchy_tree && E.hierarchy_tree.length > 0) {
+      if (!confirm("Disable subjects? Existing subjects and chapters will be removed.")) {
+        return;
+      }
+    }
+    E.sub.on = false;
+    E.sub.v = '';
     E.hierarchy_tree = [];
     E.q.forEach(q => { q.subject = ''; q.chapter = ''; q.topic = ''; });
     syncTestHierarchyFields(E);
   } else {
-    // Turn on – just show the add-subject input
-    E.hierarchy_tree = [];
     E.sub.on = true;
+    if (!E.hierarchy_tree) E.hierarchy_tree = [];
   }
   sv();
   updateTestInDb(E);
@@ -1343,20 +1352,28 @@ function renderDirectQuestionsSection() {
 function renderHierarchicalQuestionsSection() {
   let t = E;
 
-  // Show "Add Subject" input if no subjects yet, or always at top
   let addSubHtml = `
-    <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
-      <input id="new_sub_in" class="in" placeholder="Subject name e.g. Physics" style="flex:1;">
-      <button class="b s" type="button" onclick="addHierSubject()">+ Add Subject</button>
+    <div style="margin-top:14px; background:var(--hi); border:1.5px solid var(--ac); padding:16px; border-radius:14px;">
+      <b style="display:block; color:var(--ac); font-size:1.05rem; margin-bottom:4px;">Add a Subject</b>
+      <small class="mu" style="display:block; margin-bottom:10px;">Enter a subject name to group chapters and questions under it.</small>
+      <div style="display:flex; gap:8px;">
+        <input id="new_sub_in" class="in" placeholder="Subject name e.g. Physics, Chemistry, Mathematics" style="flex:1;" onkeydown="if(event.key==='Enter')addHierSubject()">
+        <button class="b" type="button" onclick="addHierSubject()">+ Add Subject</button>
+      </div>
+      <div class="tabs wrap" style="margin:12px 0 0;">
+        <small class="mu" style="width:100%; display:block; margin-bottom:4px;">Suggested subjects:</small>
+        ${["Physics", "Chemistry", "Biology", "Mathematics", "Science", "Social Science", "English", "General Knowledge"].map(s => `
+          <button type="button" onclick="$('#new_sub_in').value='${s}';addHierSubject()">+ ${s}</button>
+        `).join("")}
+      </div>
     </div>
   `;
 
-  // Question form (shared) at the top when open
   let qFormHtml = (QM == 'bulk' ? bulk() : '') + (QE == -2 || QE >= 0 ? qf() : '');
 
   let subjectsHtml = (t.hierarchy_tree && t.hierarchy_tree.length)
     ? t.hierarchy_tree.map((sub, sIdx) => renderSubjectCard(sub, sIdx)).join("")
-    : '<div class="em" style="margin-top:12px;">No subjects yet. Type a subject name above and tap "+ Add Subject".</div>';
+    : '<div class="em" style="margin-top:14px; padding:20px; border:1px dashed var(--br); border-radius:12px;">No subjects added yet. Type a subject name above or tap a suggested subject to create your first subject.</div>';
 
   return `
     <div style="margin-top:12px;">
@@ -1373,6 +1390,7 @@ function addHierSubject() {
   initHierarchyTree(E);
   if (!E.hierarchy_tree.some(s => s.name.toLowerCase() === val.toLowerCase())) {
     E.hierarchy_tree.push({ name: val, ch_on: false, chapters: [] });
+    E.sub.on = true;
     syncTestHierarchyFields(E);
     sv();
     updateTestInDb(E);
