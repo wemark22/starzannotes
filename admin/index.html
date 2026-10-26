@@ -792,6 +792,13 @@ async function saveQuestionToDb(q, testId) {
   } catch(e) { console.warn("saveQuestionToDb error:", e); }
 }
 
+async function deleteQuestionFromDb(id, testId) {
+  if (!sb || !id) return;
+  try {
+    await sb.from('questions').delete().eq('id', id);
+  } catch(e) { console.warn("deleteQuestionFromDb error:", e); }
+}
+
 async function saveConfigToDb() {
   if (!sb) return;
   try {
@@ -1043,12 +1050,22 @@ function delT(i){
 }
 
 // ==========================================
-// SIMPLIFIED TEST CREATION WIZARD
-// Steps: 1=Info (Exam+Title+Banner), 2=Questions, 3=Settings, 4=Review
-// Auto-saves as draft. No redundant buttons.
+// HIERARCHY-DRIVEN TEST CREATION SYSTEM (MATCHING FLOWCHART & 5-SCREEN MOCKUP)
+// Screen 1: Create Test - Basic Details
+// Screen 2: Subject Added (+ Add Chapter OR Upload Questions)
+// Screen 3: Chapter Added (in Subject) (+ Add Topic OR Upload Questions)
+// Screen 4: Topic Added (in Chapter) (Upload Questions)
+// Screen 5: Question Creation / Upload (Manual / Bulk, Save & Add Another)
+// Screen 6: Settings & Review (Single Publish / Make Private)
 // ==========================================
-let WIZ_STEP = 1; // 1: Info, 2: Questions, 3: Settings, 4: Review & Publish
-let Q_TARGET = { sub: '', ch: '', tp: '' };
+
+let HIER_VIEW = {
+  screen: 'details', // 'details' | 'subjects' | 'chapters' | 'topics' | 'questions' | 'settings' | 'review'
+  subIdx: -1,
+  chIdx: -1,
+  tpIdx: -1,
+  qTab: 'manual'     // 'manual' | 'bulk'
+};
 
 function initHierarchyTree(t) {
   if (!t.hierarchy_tree) t.hierarchy_tree = [];
@@ -1061,19 +1078,19 @@ function initHierarchyTree(t) {
     let p = (q.topic || '').trim();
     if (s) {
       t.sub.on = true;
-      let sObj = t.hierarchy_tree.find(x => x.name === s);
+      let sObj = t.hierarchy_tree.find(x => x.name.toLowerCase() === s.toLowerCase());
       if (!sObj) {
-        sObj = { name: s, ch_on: false, chapters: [] };
+        sObj = { name: s, ch_on: !!c, chapters: [] };
         t.hierarchy_tree.push(sObj);
       }
       if (c) {
         sObj.ch_on = true;
-        let cObj = sObj.chapters.find(x => x.name === c);
+        let cObj = sObj.chapters.find(x => x.name.toLowerCase() === c.toLowerCase());
         if (!cObj) {
-          cObj = { name: c, tp_on: false, topics: [] };
+          cObj = { name: c, tp_on: !!p, topics: [] };
           sObj.chapters.push(cObj);
         }
-        if (p && !cObj.topics.includes(p)) {
+        if (p && !cObj.topics.some(tp => (typeof tp === 'string' ? tp : tp.name).toLowerCase() === p.toLowerCase())) {
           cObj.tp_on = true;
           cObj.topics.push(p);
         }
@@ -1094,22 +1111,11 @@ function syncTestHierarchyFields(t) {
       if (firstTp) { t.tp.on = true; t.tp.v = typeof firstTp === 'string' ? firstTp : firstTp.name; }
       else { t.tp.on = false; t.tp.v = ''; }
     } else { t.ch.on = false; t.ch.v = ''; t.tp.on = false; t.tp.v = ''; }
-  } else if (!t.sub.on) {
+  } else if (!t.sub?.on) {
     t.sub.on = false; t.sub.v = '';
     t.ch.on = false; t.ch.v = '';
     t.tp.on = false; t.tp.v = '';
   }
-}
-
-function setWizStep(n) {
-  WIZ_STEP = n;
-  QE = -1;
-  QF = null;
-  QM = "manual";
-  sv();
-  updateTestInDb(E);
-  render();
-  scrollTo(0, 0);
 }
 
 function edit(i) {
@@ -1117,174 +1123,178 @@ function edit(i) {
   if (!t) return go("tests");
   E = t;
   initHierarchyTree(t);
-  // Restore WIZ_STEP for existing tests
-  if (t.title && t.exam && t.q && t.q.length > 0 && WIZ_STEP === 1 && !t._fresh) {
-    WIZ_STEP = 4;
+
+  // If newly created or fresh, start on details
+  if (t._fresh) {
+    HIER_VIEW.screen = 'details';
+    HIER_VIEW.subIdx = -1;
+    HIER_VIEW.chIdx = -1;
+    HIER_VIEW.tpIdx = -1;
+    delete t._fresh;
   }
-  delete t._fresh;
 
   let isLive = t.status === "pub";
 
-  // Build step tabs (only 4 steps now)
-  const STEPS = [
-    [1, "Info"],
-    [2, "Questions"],
-    [3, "Settings"],
-    [4, "Review"]
-  ];
+  // Top Stepper Tabs
+  let isHierarchyActive = ['subjects', 'chapters', 'topics', 'questions'].includes(HIER_VIEW.screen);
+  let hierTabLabel = E.sub?.on ? "2. Subjects & Hierarchy" : "2. Questions";
 
-  lay("tests", esc(t.title) || "New Test", `
+  lay("tests", esc(t.title) || "Test Editor", `
+    <!-- Top Action Bar -->
     <div class="rowx" style="margin:-8px 0 14px">
-      <a class="bkb" style="margin:0" href="#tests">${ic("back")}<span>Tests</span></a>
-      <span style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <a class="bkb" style="margin:0" href="#tests">${ic("back")}<span>Tests</span></a>
         <span class="idc-tag">#${esc(t.id)}</span>
-        <span class="st2 ${t.status}">${isLive ? "Live" : "Draft"}</span>
-      </span>
+        <span class="st2 ${t.status}">${isLive ? "Live" : "Private Draft"}</span>
+      </div>
+      <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+        <button class="b o s" type="button" onclick="saveCurrentTestToCloud()">${ic("check")} Save Draft</button>
+        ${isLive ? `
+          <button class="b dg s" type="button" onclick="makeTestPrivate()">🔒 Make Private</button>
+        ` : `
+          <button class="b s" type="button" onclick="publishTestToStudents()">🚀 Publish Live</button>
+        `}
+      </div>
     </div>
 
-    <!-- 4-step tabs -->
-    <div class="stp" style="margin-bottom:16px;">
-      ${STEPS.map(([n, title]) => `
-        <button class="${WIZ_STEP == n ? "on" : ""}${n < WIZ_STEP ? " dn" : ""}"
-          ${n <= WIZ_STEP ? `onclick="setWizStep(${n})"` : 'disabled style="opacity:0.4;cursor:not-allowed;"'}>
-          <span>${n < WIZ_STEP ? ic("check") : n}</span>${title}
-        </button>
-      `).join("")}
+    <!-- Stepper Navigation -->
+    <div class="stp" style="margin-bottom:18px;">
+      <button class="${HIER_VIEW.screen === 'details' ? 'on' : 'dn'}" onclick="HIER_VIEW.screen='details';render();">
+        <span>1</span> Basic Details
+      </button>
+      <button class="${isHierarchyActive ? 'on' : ''}" onclick="goToQuestionsOrHierarchy();">
+        <span>2</span> ${hierTabLabel}
+      </button>
+      <button class="${HIER_VIEW.screen === 'settings' ? 'on' : ''}" onclick="HIER_VIEW.screen='settings';render();">
+        <span>3</span> Settings
+      </button>
+      <button class="${HIER_VIEW.screen === 'review' ? 'on' : ''}" onclick="HIER_VIEW.screen='review';render();">
+        <span>4</span> Review & Publish
+      </button>
     </div>
 
-    <!-- Collapsed previous steps shown as summary cards -->
-    ${WIZ_STEP > 1 ? `
-      <div class="wiz-collapsed" onclick="setWizStep(1)" style="cursor:pointer;">
-        <div class="wiz-col-left">
-          <span class="wiz-step-pill">${ic("check")}</span>
-          <div class="wiz-col-texts">
-            <span class="wiz-step-label">Info · ${esc(t.exam || "No exam")} · ${esc(t.title || "Untitled")}</span>
-            <span class="wiz-col-summary">${t.label && t.label !== "None" ? "[" + esc(t.label) + "] · " : ""}${t.banner ? "Banner uploaded" : "No banner"}${t.desc ? " · " + esc(t.desc.slice(0, 40)) + (t.desc.length > 40 ? "…" : "") : ""}</span>
-          </div>
-        </div>
-        <button class="b o s wiz-edit-btn" onclick="setWizStep(1);event.stopPropagation()">✏️ Edit</button>
-      </div>
-    ` : ""}
-    ${WIZ_STEP > 2 ? `
-      <div class="wiz-collapsed" onclick="setWizStep(2)" style="cursor:pointer;">
-        <div class="wiz-col-left">
-          <span class="wiz-step-pill">${ic("check")}</span>
-          <div class="wiz-col-texts">
-            <span class="wiz-step-label">Questions · ${t.q.length} added</span>
-            <span class="wiz-col-summary">${t.sub.on ? "Subjects enabled" : "Direct questions"}${t.hierarchy_tree && t.hierarchy_tree.length ? " · " + t.hierarchy_tree.map(s => s.name).join(", ") : ""}</span>
-          </div>
-        </div>
-        <button class="b o s wiz-edit-btn" onclick="setWizStep(2);event.stopPropagation()">✏️ Edit</button>
-      </div>
-    ` : ""}
-    ${WIZ_STEP > 3 ? `
-      <div class="wiz-collapsed" onclick="setWizStep(3)" style="cursor:pointer;">
-        <div class="wiz-col-left">
-          <span class="wiz-step-pill">${ic("check")}</span>
-          <div class="wiz-col-texts">
-            <span class="wiz-step-label">Settings · ${t.paid ? inr(t.sale || t.price) + " paid" : "Free"} · ${t.timer.on ? t.timer.min + "min" : "No timer"}</span>
-            <span class="wiz-col-summary">Marks: +${t.mk} / -${t.neg.on ? t.neg.v : 0} · Leaderboard: ${t.lb ? "On" : "Off"}</span>
-          </div>
-        </div>
-        <button class="b o s wiz-edit-btn" onclick="setWizStep(3);event.stopPropagation()">✏️ Edit</button>
-      </div>
-    ` : ""}
-
-    <!-- Active step content -->
+    <!-- Active Screen View -->
     <div class="wiz-container">
-      ${WIZ_STEP === 1 ? wizStep1() : ""}
-      ${WIZ_STEP === 2 ? wizStep2() : ""}
-      ${WIZ_STEP === 3 ? wizStep3() : ""}
-      ${WIZ_STEP === 4 ? wizStep4() : ""}
+      ${renderActiveScreen()}
     </div>
   `);
 }
 
-// ─────────────────────────────────────────
-// STEP 1: Info — Exam + Title + Description + Label + Banner
-// ─────────────────────────────────────────
-function wizStep1() {
+function goToQuestionsOrHierarchy() {
+  if (E.sub?.on) {
+    HIER_VIEW.screen = 'subjects';
+    HIER_VIEW.subIdx = -1;
+    HIER_VIEW.chIdx = -1;
+    HIER_VIEW.tpIdx = -1;
+  } else {
+    HIER_VIEW.screen = 'questions';
+    HIER_VIEW.subIdx = -1;
+    HIER_VIEW.chIdx = -1;
+    HIER_VIEW.tpIdx = -1;
+  }
+  render();
+}
+
+function renderActiveScreen() {
+  if (HIER_VIEW.screen === 'details') return renderScreen1_Details();
+  if (HIER_VIEW.screen === 'subjects') return renderScreen2_Subjects();
+  if (HIER_VIEW.screen === 'chapters') return renderScreen3_Chapters();
+  if (HIER_VIEW.screen === 'topics') return renderScreen4_Topics();
+  if (HIER_VIEW.screen === 'questions') return renderScreen5_Questions();
+  if (HIER_VIEW.screen === 'settings') return renderScreen6_Settings();
+  if (HIER_VIEW.screen === 'review') return renderScreen7_Review();
+  return renderScreen1_Details();
+}
+
+// ==========================================
+// SCREEN 1: CREATE TEST – BASIC DETAILS
+// ==========================================
+function renderScreen1_Details() {
   let t = E;
+  let isSubjectOn = !!(t.sub && t.sub.on);
+
   return `
-    <div class="c2 wiz-open">
+    <div class="c2">
       <div class="wiz-step-header">
         <span class="wiz-active-pill">1</span>
         <div>
-          <h3>Test Info</h3>
-          <small class="mu">Set up the exam category, title, badge, and banner image.</small>
+          <h3 style="margin:0;">Create Test – Basic Details</h3>
+          <small class="mu">Configure test name, type, timing, marks, and hierarchy level.</small>
         </div>
       </div>
 
-      <label class="l2">Exam Category</label>
-      <div class="tabs wrap" style="margin:6px 0 4px">
-        ${(D.exams || []).map(x => `<button class="${t.exam==x?"on":""}" onclick="E.exam='${esc(x).replace(/'/g,"\\'")}';sv();render()">${esc(x)}</button>`).join("")}
-        <button onclick="NX=!NX;render()">${ic("plus")} Add Exam</button>
+      <div style="margin-top:14px;">
+        <label class="l2" for="ti" style="margin-top:0;">Test Name *</label>
+        <input id="ti" class="in" value="${esc(t.title)}" placeholder="e.g. BPSC GS Mock 01" oninput="E.title=this.value;sv()">
       </div>
-      ${NX ? `<div class="cp" style="margin-top:6px;"><input id="nx" class="in" placeholder="Exam name e.g. UPSC, BSEB Class 10"><button class="b" onclick="addEx()">Add</button></div>` : ""}
-      ${!t.exam ? `<p class="hint" style="margin:6px 0 10px;">No exam selected — test will appear as a standalone practice test.</p>` : ""}
 
-      <label class="l2" for="ti" style="margin-top:14px;">Title *</label>
-      <input id="ti" class="in" value="${esc(t.title)}" placeholder="e.g. Photosynthesis Test 1" oninput="E.title=this.value;sv()">
-
-      <label class="l2" for="de">Short Description</label>
-      <textarea id="de" class="in" maxlength="140" rows="2" placeholder="One line shown on test cards" oninput="E.desc=this.value;sv()">${esc(t.desc)}</textarea>
-
-      <label class="l2">Badge / Card Label</label>
-      ${chips([["","None"],["New","New"],["Popular","Popular"],["Bestseller","Bestseller"],["Free","Free"]], t.label, "setLb")}
-
-      <label class="l2" style="margin-top:14px;">Banner Image (16:10 · optional)</label>
-      <div class="pvw" id="pvw" style="${t.banner ? `background-image:url('${t.banner}')` : ""}">${t.banner ? "" : "16:10 preview"}</div>
-      <label class="up2">
-        ${ic("upload")}<div><b>Upload Banner</b></div>
-        <small>1600×1000 px · JPG or WebP · under 400 KB</small>
-        <input type="file" accept="image/*" onchange="upImg(this,'E')">
-      </label>
-      <div class="hint" id="bm">${esc(BM)}</div>
-      ${t.banner ? `<button class="b o s" style="margin-top:6px;font-size:0.82rem;" onclick="E.banner='';sv();render()">Remove banner</button>` : ""}
-
-      <div class="wiz-actions">
-        <button class="b" onclick="saveWiz1()">Next: Questions →</button>
-      </div>
-    </div>
-  `;
-}
-
-function saveWiz1() {
-  if (!E.title.trim()) { toast("Please enter a test title"); return; }
-  sv();
-  updateTestInDb(E);
-  WIZ_STEP = 2;
-  render();
-  scrollTo(0, 0);
-}
-
-// ─────────────────────────────────────────
-// STEP 2: Questions & Hierarchy
-// ─────────────────────────────────────────
-function wizStep2() {
-  let t = E;
-  initHierarchyTree(t);
-
-  let subOn = !!(t.sub && t.sub.on);
-
-  return `
-    <div class="c2 wiz-open">
-      <div class="wiz-step-header">
-        <span class="wiz-active-pill">2</span>
+      <div class="g2" style="margin-top:12px;">
         <div>
-          <h3>Questions</h3>
-          <small class="mu">Add questions directly or organise by Subjects › Chapters › Topics.</small>
+          <label class="l2" style="margin-top:0;">Test Type *</label>
+          <select class="in" onchange="E.type=this.value;sv()">
+            <option value="mock" ${E.type==='mock'?'selected':''}>Mock Test (Full exam pattern)</option>
+            <option value="practice" ${E.type==='practice'?'selected':''}>Practice Test (Topic/Chapter set)</option>
+          </select>
+        </div>
+        <div>
+          <label class="l2" style="margin-top:0;">Exam Category</label>
+          <input list="exam_list" class="in" value="${esc(t.exam||'')}" placeholder="e.g. BPSC AEDO, BSEB Class 10" oninput="E.exam=this.value;sv()">
+          <datalist id="exam_list">
+            ${(D.exams||[]).map(x=>`<option value="${esc(x)}">`).join("")}
+          </datalist>
         </div>
       </div>
 
-      <!-- Subject toggle -->
-      ${sw(subOn, "toggleSubjectMode()", "Group by Subjects?", "Enable to create Subject › Chapter › Topic hierarchy")}
+      <div style="margin-top:12px;">
+        <label class="l2" for="de" style="margin-top:0;">Description</label>
+        <textarea id="de" class="in" rows="2" placeholder="Full length mock test based on latest pattern..." oninput="E.desc=this.value;sv()">${esc(t.desc)}</textarea>
+      </div>
 
-      ${!subOn ? renderDirectQuestionsSection() : renderHierarchicalQuestionsSection()}
+      <div class="g3" style="margin-top:12px;">
+        <div>
+          <label class="l2" style="margin-top:0;">Time (minutes)</label>
+          <input class="in" type="number" min="1" max="300" value="${t.timer?.min||120}" oninput="E.timer.min=+this.value;E.timer.on=true;sv()">
+        </div>
+        <div>
+          <label class="l2" style="margin-top:0;">Total / Per Mark (+)</label>
+          <input class="in" type="number" min="0.25" step="0.25" value="${t.mk||1}" oninput="E.mk=+this.value;sv()">
+        </div>
+        <div>
+          <label class="l2" style="margin-top:0;">Negative Marking (-)</label>
+          <input class="in" type="number" min="0" step="0.01" value="${t.neg?.v||0.33}" oninput="E.neg.v=+this.value;E.neg.on=+this.value>0;sv()">
+        </div>
+      </div>
 
-      <div class="wiz-actions" style="margin-top:20px;">
-        <button class="b o" onclick="setWizStep(1)">← Back</button>
-        <button class="b" onclick="saveWiz2()">Next: Settings →</button>
+      <div class="g2" style="margin-top:12px;">
+        <div>
+          <label class="l2" style="margin-top:0;">Card Badge / Tag</label>
+          ${chips([["","None"],["New","New"],["Popular","Popular"],["Bestseller","Bestseller"],["Free","Free"]], t.label, "setLb")}
+        </div>
+        <div>
+          <label class="l2" style="margin-top:0;">Access</label>
+          <div class="seg ${t.paid ? 'r' : ''}">
+            <button class="${!t.paid?'on':''}" type="button" onclick="E.paid=false;sv();render();">Free</button>
+            <button class="${t.paid?'on':''}" type="button" onclick="E.paid=true;sv();render();">${ic("lock")} Paid</button>
+          </div>
+          ${t.paid ? `
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <input class="in" type="number" placeholder="Price (₹)" value="${t.price||''}" oninput="E.price=+this.value;sv()">
+              <input class="in" type="number" placeholder="Sale (₹)" value="${t.sale||''}" oninput="E.sale=+this.value;sv()">
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- Enable Subject Toggle Box -->
+      <div style="margin-top:18px; padding:16px; background:var(--hi); border:1.5px solid var(--br); border-radius:14px;">
+        ${sw(isSubjectOn, "toggleSubjectMode()", "Enable Subject?", "Turn ON if your test has subjects (e.g. History, Geography, Science). Turn OFF for a single direct test.")}
+      </div>
+
+      <div class="rowx" style="margin-top:22px;">
+        <span class="mu" style="font-size:0.85rem;">Draft saved automatically</span>
+        <button class="b" type="button" onclick="saveDetailsAndNext()">
+          ${isSubjectOn ? "Next: Add Subjects →" : "Next: Add Questions →"}
+        </button>
       </div>
     </div>
   `;
@@ -1296,7 +1306,7 @@ function toggleSubjectMode() {
 
   if (E.sub.on) {
     if (E.hierarchy_tree && E.hierarchy_tree.length > 0) {
-      if (!confirm("Disable subjects? Existing subjects and chapters will be removed.")) {
+      if (!confirm("Disable subjects? Existing subjects and chapters will be cleared from this test.")) {
         return;
       }
     }
@@ -1314,78 +1324,116 @@ function toggleSubjectMode() {
   render();
 }
 
-function saveWiz2() {
-  syncTestHierarchyFields(E);
+function saveDetailsAndNext() {
+  if (!E.title.trim()) { toast("Please enter a test title"); return; }
   sv();
   updateTestInDb(E);
-  WIZ_STEP = 3;
+  if (E.sub?.on) {
+    HIER_VIEW.screen = 'subjects';
+    HIER_VIEW.subIdx = -1;
+    HIER_VIEW.chIdx = -1;
+    HIER_VIEW.tpIdx = -1;
+  } else {
+    HIER_VIEW.screen = 'questions';
+    HIER_VIEW.subIdx = -1;
+    HIER_VIEW.chIdx = -1;
+    HIER_VIEW.tpIdx = -1;
+  }
   render();
   scrollTo(0, 0);
 }
 
-// ─────────────────────────────────────────
-// Direct questions (no subjects)
-// ─────────────────────────────────────────
-function renderDirectQuestionsSection() {
+// ==========================================
+// SCREEN 2: SUBJECT ADDED (List of Subjects)
+// ==========================================
+function renderScreen2_Subjects() {
   let t = E;
+  initHierarchyTree(t);
+  let subjects = t.hierarchy_tree || [];
+
   return `
-    <div style="margin-top:14px;">
-      <div class="rowx" style="margin-bottom:10px;">
-        <b>Questions (${t.q.length})</b>
-        <div style="display:flex;gap:8px;">
-          <button class="b s" type="button" onclick="openNewQDirect()">${ic("plus")} Add Question</button>
-          <button class="b o s" type="button" onclick="openBulkDirect()">${ic("upload")} Bulk</button>
+    <div class="c2">
+      <!-- Header -->
+      <div class="rowx" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--br);">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <a class="bkb" style="margin:0;" href="javascript:void(0)" onclick="HIER_VIEW.screen='details';render();">${ic("back")} <span>Details</span></a>
+          <b style="font-size:1.18rem;">Subjects (${subjects.length})</b>
+        </div>
+        <button class="b s" type="button" onclick="focusAddSubjectInput()">+ Add Subject</button>
+      </div>
+
+      <!-- Add Subject Input Card -->
+      <div style="background:var(--hi); border:1.5px solid var(--ac); border-radius:14px; padding:16px; margin-bottom:18px;">
+        <b style="display:block; color:var(--ac); font-size:1rem; margin-bottom:4px;">Add Subject</b>
+        <small class="mu" style="display:block; margin-bottom:10px;">Create a subject like History, Geography, Physics, Chemistry.</small>
+        <div style="display:flex; gap:8px;">
+          <input id="sub_name_in" class="in" placeholder="Enter Subject Name (e.g. History)" style="flex:1;" onkeydown="if(event.key==='Enter')confirmAddSubject()">
+          <button class="b" type="button" onclick="confirmAddSubject()">+ Add Subject</button>
+        </div>
+        <div class="tabs wrap" style="margin-top:12px;">
+          <small class="mu" style="width:100%; display:block; margin-bottom:4px;">Quick suggestions:</small>
+          ${["History", "Geography", "Polity", "Economics", "Physics", "Chemistry", "Biology", "Mathematics", "General Science"].map(s => `
+            <button type="button" onclick="$('#sub_name_in').value='${s}';confirmAddSubject()">+ ${s}</button>
+          `).join("")}
         </div>
       </div>
-      ${QM == 'bulk' ? bulk() : ''}
-      ${QE == -2 || QE >= 0 ? qf() : ''}
-      <div style="margin-top:10px;">
-        ${t.q.length ? t.q.map((q, i) => QE == i ? '' : qrow(q, i)).join("") : '<div class="em">No questions yet. Tap "Add Question" above.</div>'}
+
+      <!-- Subjects List -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        ${subjects.map((sub, sIdx) => {
+          let subQs = t.q.filter(q => (q.subject||'').trim() === sub.name);
+          let chCount = (sub.chapters||[]).length;
+          return `
+            <div class="c2" style="background:var(--sf); border:1.5px solid var(--br); border-radius:16px; padding:18px; box-shadow:var(--sh);">
+              <div class="rowx" style="margin-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <span style="width:38px; height:38px; border-radius:10px; background:var(--hi); color:var(--ac); display:grid; place-items:center; font-size:1.3rem;">📘</span>
+                  <div>
+                    <b style="font-size:1.15rem;">${esc(sub.name)}</b>
+                    <small class="mu" style="display:block; margin-top:2px;">${chCount} Chapter${chCount===1?'':'s'} · ${subQs.length} Question${subQs.length===1?'':'s'}</small>
+                  </div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button class="ib2" type="button" title="Rename Subject" onclick="renameSubject(${sIdx})">${ic("edit")}</button>
+                  <button class="ib2 dg" type="button" title="Delete Subject" onclick="deleteSubject(${sIdx})">${ic("trash")}</button>
+                </div>
+              </div>
+
+              <!-- Action Buttons matching diagram: [+ Add Chapter] OR [Upload Questions] -->
+              <div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--br);">
+                <button class="b s" type="button" style="background:#10b981; border-color:#10b981; color:#fff;" onclick="openSubjectChapters(${sIdx})">
+                  + Add Chapter ${chCount ? '(${chCount})' : ''}
+                </button>
+                <button class="b o s" type="button" style="border-color:#8b5cf6; color:#8b5cf6;" onclick="openQuestionsForContext(${sIdx}, -1, -1)">
+                  ${ic("upload")} Upload Questions (in ${esc(sub.name)})
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("") || `
+          <div class="em" style="padding:24px; border:1px dashed var(--br); border-radius:14px;">
+            No subjects added yet. Enter a subject name above to start organizing your test!
+          </div>
+        `}
+      </div>
+
+      <!-- Navigation -->
+      <div class="rowx" style="margin-top:24px;">
+        <button class="b o" type="button" onclick="HIER_VIEW.screen='details';render();">← Back: Basic Details</button>
+        <button class="b" type="button" onclick="HIER_VIEW.screen='settings';render();">Next: Settings →</button>
       </div>
     </div>
   `;
 }
 
-// ─────────────────────────────────────────
-// Hierarchical questions (with subjects)
-// ─────────────────────────────────────────
-function renderHierarchicalQuestionsSection() {
-  let t = E;
-
-  let addSubHtml = `
-    <div style="margin-top:14px; background:var(--hi); border:1.5px solid var(--ac); padding:16px; border-radius:14px;">
-      <b style="display:block; color:var(--ac); font-size:1.05rem; margin-bottom:4px;">Add a Subject</b>
-      <small class="mu" style="display:block; margin-bottom:10px;">Enter a subject name to group chapters and questions under it.</small>
-      <div style="display:flex; gap:8px;">
-        <input id="new_sub_in" class="in" placeholder="Subject name e.g. Physics, Chemistry, Mathematics" style="flex:1;" onkeydown="if(event.key==='Enter')addHierSubject()">
-        <button class="b" type="button" onclick="addHierSubject()">+ Add Subject</button>
-      </div>
-      <div class="tabs wrap" style="margin:12px 0 0;">
-        <small class="mu" style="width:100%; display:block; margin-bottom:4px;">Suggested subjects:</small>
-        ${["Physics", "Chemistry", "Biology", "Mathematics", "Science", "Social Science", "English", "General Knowledge"].map(s => `
-          <button type="button" onclick="$('#new_sub_in').value='${s}';addHierSubject()">+ ${s}</button>
-        `).join("")}
-      </div>
-    </div>
-  `;
-
-  let qFormHtml = (QM == 'bulk' ? bulk() : '') + (QE == -2 || QE >= 0 ? qf() : '');
-
-  let subjectsHtml = (t.hierarchy_tree && t.hierarchy_tree.length)
-    ? t.hierarchy_tree.map((sub, sIdx) => renderSubjectCard(sub, sIdx)).join("")
-    : '<div class="em" style="margin-top:14px; padding:20px; border:1px dashed var(--br); border-radius:12px;">No subjects added yet. Type a subject name above or tap a suggested subject to create your first subject.</div>';
-
-  return `
-    <div style="margin-top:12px;">
-      ${addSubHtml}
-      ${qFormHtml}
-      ${subjectsHtml}
-    </div>
-  `;
+function focusAddSubjectInput() {
+  let el = $("#sub_name_in");
+  if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 }
 
-function addHierSubject() {
-  let val = ($("#new_sub_in") ? $("#new_sub_in").value : "").trim();
+function confirmAddSubject() {
+  let inp = $("#sub_name_in");
+  let val = inp ? inp.value.trim() : "";
   if (!val) { toast("Please type a subject name"); return; }
   initHierarchyTree(E);
   if (!E.hierarchy_tree.some(s => s.name.toLowerCase() === val.toLowerCase())) {
@@ -1401,76 +1449,137 @@ function addHierSubject() {
   }
 }
 
-function removeHierSubject(sIdx) {
-  let name = E.hierarchy_tree[sIdx].name;
+function renameSubject(sIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  let newName = prompt("Rename subject:", sub.name);
+  if (newName && newName.trim() && newName.trim() !== sub.name) {
+    let oldName = sub.name;
+    sub.name = newName.trim();
+    // Update all questions that had oldName
+    E.q.forEach(q => { if (q.subject === oldName) q.subject = sub.name; });
+    syncTestHierarchyFields(E);
+    sv();
+    updateTestInDb(E);
+    render();
+  }
+}
+
+function deleteSubject(sIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  if (!confirm("Delete subject '" + sub.name + "'? Questions under this subject will be removed.")) return;
+  E.q = E.q.filter(q => q.subject !== sub.name);
   E.hierarchy_tree.splice(sIdx, 1);
   syncTestHierarchyFields(E);
   sv();
   updateTestInDb(E);
-  toast("Subject removed: " + name);
+  toast("Subject removed");
   render();
 }
 
-function renderSubjectCard(sub, sIdx) {
-  let subQuestions = E.q.filter(q => (q.subject || '').trim() === sub.name);
+function openSubjectChapters(sIdx) {
+  HIER_VIEW.screen = 'chapters';
+  HIER_VIEW.subIdx = sIdx;
+  HIER_VIEW.chIdx = -1;
+  HIER_VIEW.tpIdx = -1;
+  render();
+  scrollTo(0, 0);
+}
+
+// ==========================================
+// SCREEN 3: CHAPTER ADDED (in History)
+// ==========================================
+function renderScreen3_Chapters() {
+  let t = E;
+  let sIdx = HIER_VIEW.subIdx;
+  let sub = t.hierarchy_tree[sIdx];
+  if (!sub) { HIER_VIEW.screen = 'subjects'; return renderScreen2_Subjects(); }
+
+  let chapters = sub.chapters || [];
+
   return `
-    <div class="hier-sub-card">
-      <div class="rowx" style="padding-bottom:10px;border-bottom:1px solid var(--br);">
-        <div>
-          <b>📘 ${esc(sub.name)}</b>
-          <small class="mu" style="display:block;">${subQuestions.length} question${subQuestions.length !== 1 ? "s" : ""}</small>
+    <div class="c2">
+      <!-- Breadcrumb Header matching mockup: < History  + Add Chapter -->
+      <div class="rowx" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--br);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <a class="bkb" style="margin:0;" href="javascript:void(0)" onclick="HIER_VIEW.screen='subjects';render();">${ic("back")} <span>${esc(sub.name)}</span></a>
+          <span style="color:var(--mu);">›</span>
+          <b style="font-size:1.15rem;">Chapters (${chapters.length})</b>
         </div>
-        <button class="ib2 dg" type="button" onclick="removeHierSubject(${sIdx})">${ic("trash")}</button>
+        <button class="b s" type="button" onclick="focusAddChapterInput()">+ Add Chapter</button>
       </div>
 
-      <!-- Chapter toggle for this subject -->
-      <div style="margin-top:10px;">
-        ${sw(sub.ch_on, `toggleChapterSwitch(${sIdx})`, "Enable Chapters for " + esc(sub.name) + "?", "Split into chapters")}
+      <!-- Add Chapter Input Card -->
+      <div style="background:var(--hi); border:1.5px solid var(--ac); border-radius:14px; padding:16px; margin-bottom:18px;">
+        <b style="display:block; color:var(--ac); font-size:1rem; margin-bottom:4px;">Add Chapter in ${esc(sub.name)}</b>
+        <small class="mu" style="display:block; margin-bottom:10px;">e.g. Ancient India, Medieval India, Modern India</small>
+        <div style="display:flex; gap:8px;">
+          <input id="ch_name_in" class="in" placeholder="Chapter Name (e.g. Ancient India)" style="flex:1;" onkeydown="if(event.key==='Enter')confirmAddChapter()">
+          <button class="b" type="button" onclick="confirmAddChapter()">+ Add Chapter</button>
+        </div>
       </div>
 
-      ${!sub.ch_on ? `
-        <!-- No chapters: show Add Question + question list -->
-        <div style="margin-top:10px; display:flex; gap:8px;">
-          <button class="b s" type="button" onclick="openNewQSub(${sIdx})">${ic("plus")} Add Question to ${esc(sub.name)}</button>
-          <button class="b o s" type="button" onclick="openBulkSub(${sIdx})">${ic("upload")} Bulk</button>
-        </div>
-        <div style="margin-top:8px;">
-          ${subQuestions.map(q => { let idx = E.q.indexOf(q); return QE == idx ? '' : qrow(q, idx); }).join("") || '<small class="mu">No questions yet for this subject.</small>'}
-        </div>
-      ` : `
-        <!-- Chapters mode -->
-        <div style="margin-top:10px;">
-          <div style="display:flex; gap:8px; margin-bottom:8px;">
-            <input id="new_ch_in_${sIdx}" class="in" placeholder="Chapter name e.g. Mechanics" style="flex:1;">
-            <button class="b s" type="button" onclick="addHierChapter(${sIdx})">+ Add Chapter</button>
+      <!-- Chapters List -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        ${chapters.map((ch, cIdx) => {
+          let chQs = t.q.filter(q => (q.subject||'').trim() === sub.name && (q.chapter||'').trim() === ch.name);
+          let tpCount = (ch.topics||[]).length;
+          return `
+            <div class="c2" style="background:var(--sf); border:1.5px solid var(--br); border-radius:16px; padding:18px; box-shadow:var(--sh);">
+              <div class="rowx" style="margin-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <span style="width:38px; height:38px; border-radius:10px; background:var(--hi); color:var(--ac); display:grid; place-items:center; font-size:1.2rem;">📑</span>
+                  <div>
+                    <b style="font-size:1.1rem;">${cIdx + 1}. ${esc(ch.name)}</b>
+                    <small class="mu" style="display:block; margin-top:2px;">${tpCount} Topic${tpCount===1?'':'s'} · ${chQs.length} Question${chQs.length===1?'':'s'}</small>
+                  </div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button class="ib2" type="button" title="Rename Chapter" onclick="renameChapter(${sIdx}, ${cIdx})">${ic("edit")}</button>
+                  <button class="ib2 dg" type="button" title="Delete Chapter" onclick="deleteChapter(${sIdx}, ${cIdx})">${ic("trash")}</button>
+                </div>
+              </div>
+
+              <!-- Action buttons matching diagram: [+ Add Topic] OR [Upload Questions] -->
+              <div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--br);">
+                <button class="b s" type="button" style="background:#10b981; border-color:#10b981; color:#fff;" onclick="openChapterTopics(${sIdx}, ${cIdx})">
+                  + Add Topic ${tpCount ? '(${tpCount})' : ''}
+                </button>
+                <button class="b o s" type="button" style="border-color:#8b5cf6; color:#8b5cf6;" onclick="openQuestionsForContext(${sIdx}, ${cIdx}, -1)">
+                  ${ic("upload")} Upload Questions (in ${esc(ch.name)})
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("") || `
+          <div class="em" style="padding:24px; border:1px dashed var(--br); border-radius:14px;">
+            No chapters added yet in ${esc(sub.name)}. Type a chapter name above and tap + Add Chapter!
           </div>
-          ${sub.chapters && sub.chapters.length
-            ? sub.chapters.map((ch, cIdx) => renderChapterCard(sub, sIdx, ch, cIdx)).join("")
-            : '<small class="mu">No chapters yet. Type a chapter name above and tap "+ Add Chapter".</small>'
-          }
-        </div>
-      `}
+        `}
+      </div>
+
+      <!-- Navigation -->
+      <div class="rowx" style="margin-top:24px;">
+        <button class="b o" type="button" onclick="HIER_VIEW.screen='subjects';render();">← Back to Subjects</button>
+        <button class="b" type="button" onclick="HIER_VIEW.screen='settings';render();">Next: Settings →</button>
+      </div>
     </div>
   `;
 }
 
-function toggleChapterSwitch(sIdx) {
-  let sub = E.hierarchy_tree[sIdx];
-  sub.ch_on = !sub.ch_on;
-  if (!sub.ch_on) { sub.chapters = []; }
-  syncTestHierarchyFields(E);
-  sv();
-  updateTestInDb(E);
-  render();
+function focusAddChapterInput() {
+  let el = $("#ch_name_in");
+  if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 }
 
-function addHierChapter(sIdx) {
-  let inp = $("#new_ch_in_" + sIdx);
+function confirmAddChapter() {
+  let inp = $("#ch_name_in");
   let val = inp ? inp.value.trim() : "";
   if (!val) { toast("Please type a chapter name"); return; }
-  let sub = E.hierarchy_tree[sIdx];
+  let sub = E.hierarchy_tree[HIER_VIEW.subIdx];
+  if (!sub.chapters) sub.chapters = [];
   if (!sub.chapters.some(c => c.name.toLowerCase() === val.toLowerCase())) {
     sub.chapters.push({ name: val, tp_on: false, topics: [] });
+    sub.ch_on = true;
     syncTestHierarchyFields(E);
     sv();
     updateTestInDb(E);
@@ -1481,74 +1590,140 @@ function addHierChapter(sIdx) {
   }
 }
 
-function removeHierChapter(sIdx, cIdx) {
-  E.hierarchy_tree[sIdx].chapters.splice(cIdx, 1);
+function renameChapter(sIdx, cIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  let ch = sub.chapters[cIdx];
+  let newName = prompt("Rename chapter:", ch.name);
+  if (newName && newName.trim() && newName.trim() !== ch.name) {
+    let oldName = ch.name;
+    ch.name = newName.trim();
+    E.q.forEach(q => {
+      if (q.subject === sub.name && q.chapter === oldName) q.chapter = ch.name;
+    });
+    syncTestHierarchyFields(E);
+    sv();
+    updateTestInDb(E);
+    render();
+  }
+}
+
+function deleteChapter(sIdx, cIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  let ch = sub.chapters[cIdx];
+  if (!confirm("Delete chapter '" + ch.name + "'? Questions under this chapter will be removed.")) return;
+  E.q = E.q.filter(q => !(q.subject === sub.name && q.chapter === ch.name));
+  sub.chapters.splice(cIdx, 1);
   syncTestHierarchyFields(E);
   sv();
   updateTestInDb(E);
+  toast("Chapter removed");
   render();
 }
 
-function renderChapterCard(sub, sIdx, ch, cIdx) {
-  let chQuestions = E.q.filter(q => (q.subject || '').trim() === sub.name && (q.chapter || '').trim() === ch.name);
+function openChapterTopics(sIdx, cIdx) {
+  HIER_VIEW.screen = 'topics';
+  HIER_VIEW.subIdx = sIdx;
+  HIER_VIEW.chIdx = cIdx;
+  HIER_VIEW.tpIdx = -1;
+  render();
+  scrollTo(0, 0);
+}
+
+// ==========================================
+// SCREEN 4: TOPIC ADDED (in Ancient India)
+// ==========================================
+function renderScreen4_Topics() {
+  let t = E;
+  let sIdx = HIER_VIEW.subIdx;
+  let cIdx = HIER_VIEW.chIdx;
+  let sub = t.hierarchy_tree[sIdx];
+  let ch = sub?.chapters?.[cIdx];
+  if (!sub || !ch) { HIER_VIEW.screen = 'chapters'; return renderScreen3_Chapters(); }
+
+  let topics = ch.topics || [];
+
   return `
-    <div class="hier-ch-card">
-      <div class="rowx" style="padding-bottom:8px;border-bottom:1px solid var(--br);">
-        <div>
-          <b>📑 ${esc(ch.name)}</b>
-          <small class="mu" style="display:block;">${chQuestions.length} question${chQuestions.length !== 1 ? "s" : ""}</small>
+    <div class="c2">
+      <!-- Breadcrumb Header matching mockup: < History > Ancient India   + Add Topic -->
+      <div class="rowx" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--br);">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <a class="bkb" style="margin:0;" href="javascript:void(0)" onclick="openSubjectChapters(${sIdx})">${ic("back")} <span>${esc(sub.name)}</span></a>
+          <span style="color:var(--mu);">›</span>
+          <b style="font-size:1.12rem;">${esc(ch.name)}: Topics (${topics.length})</b>
         </div>
-        <button class="ib2 dg" type="button" onclick="removeHierChapter(${sIdx},${cIdx})">${ic("trash")}</button>
+        <button class="b s" type="button" onclick="focusAddTopicInput()">+ Add Topic</button>
       </div>
 
-      <!-- Topic toggle for this chapter -->
-      <div style="margin-top:8px;">
-        ${sw(ch.tp_on, `toggleTopicSwitch(${sIdx},${cIdx})`, "Enable Topics for " + esc(ch.name) + "?", "Split into topics")}
+      <!-- Add Topic Input Card -->
+      <div style="background:var(--hi); border:1.5px solid var(--ac); border-radius:14px; padding:16px; margin-bottom:18px;">
+        <b style="display:block; color:var(--ac); font-size:1rem; margin-bottom:4px;">Add Topic in ${esc(ch.name)}</b>
+        <small class="mu" style="display:block; margin-bottom:10px;">e.g. Indus Valley Civilization, Vedic Period, Mauryan Empire</small>
+        <div style="display:flex; gap:8px;">
+          <input id="tp_name_in" class="in" placeholder="Topic Name (e.g. Indus Valley Civilization)" style="flex:1;" onkeydown="if(event.key==='Enter')confirmAddTopic()">
+          <button class="b" type="button" onclick="confirmAddTopic()">+ Add Topic</button>
+        </div>
       </div>
 
-      ${!ch.tp_on ? `
-        <!-- No topics: show Add Question + question list -->
-        <div style="margin-top:8px; display:flex; gap:8px;">
-          <button class="b s" type="button" onclick="openNewQCh(${sIdx}, ${cIdx})">${ic("plus")} Add Question to ${esc(ch.name)}</button>
-          <button class="b o s" type="button" onclick="openBulkCh(${sIdx}, ${cIdx})">${ic("upload")} Bulk</button>
-        </div>
-        <div style="margin-top:6px;">
-          ${chQuestions.map(q => { let idx = E.q.indexOf(q); return QE == idx ? '' : qrow(q, idx); }).join("") || '<small class="mu">No questions yet for this chapter.</small>'}
-        </div>
-      ` : `
-        <!-- Topics mode -->
-        <div style="margin-top:8px;">
-          <div style="display:flex; gap:8px; margin-bottom:6px;">
-            <input id="new_tp_in_${sIdx}_${cIdx}" class="in" placeholder="Topic name e.g. Kinematics" style="flex:1;">
-            <button class="b s" type="button" onclick="addHierTopic(${sIdx},${cIdx})">+ Add Topic</button>
+      <!-- Topics List -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        ${topics.map((tp, pIdx) => {
+          let tpName = typeof tp === 'string' ? tp : tp.name;
+          let tpQs = t.q.filter(q => (q.subject||'').trim() === sub.name && (q.chapter||'').trim() === ch.name && (q.topic||'').trim() === tpName);
+          return `
+            <div class="c2" style="background:var(--sf); border:1.5px solid var(--br); border-radius:16px; padding:18px; box-shadow:var(--sh);">
+              <div class="rowx" style="margin-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <span style="width:38px; height:38px; border-radius:10px; background:var(--hi); color:var(--ac); display:grid; place-items:center; font-size:1.2rem;">🎯</span>
+                  <div>
+                    <b style="font-size:1.1rem;">${pIdx + 1}. ${esc(tpName)}</b>
+                    <small class="mu" style="display:block; margin-top:2px;">${tpQs.length} Question${tpQs.length===1?'':'s'}</small>
+                  </div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button class="ib2" type="button" title="Rename Topic" onclick="renameTopic(${sIdx}, ${cIdx}, ${pIdx})">${ic("edit")}</button>
+                  <button class="ib2 dg" type="button" title="Delete Topic" onclick="deleteTopic(${sIdx}, ${cIdx}, ${pIdx})">${ic("trash")}</button>
+                </div>
+              </div>
+
+              <!-- Action button matching diagram: [Upload Questions] -->
+              <div style="display:flex; gap:10px; padding-top:12px; border-top:1px solid var(--br);">
+                <button class="b o s" type="button" style="border-color:#8b5cf6; color:#8b5cf6;" onclick="openQuestionsForContext(${sIdx}, ${cIdx}, ${pIdx})">
+                  ${ic("upload")} Upload Questions (in ${esc(tpName)})
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("") || `
+          <div class="em" style="padding:24px; border:1px dashed var(--br); border-radius:14px;">
+            No topics added yet in ${esc(ch.name)}. Enter a topic name above!
           </div>
-          ${ch.topics && ch.topics.length
-            ? ch.topics.map((tp, pIdx) => renderTopicCard(sub, sIdx, ch, cIdx, tp, pIdx)).join("")
-            : '<small class="mu">No topics yet. Type a topic name above and tap "+ Add Topic".</small>'
-          }
-        </div>
-      `}
+        `}
+      </div>
+
+      <!-- Navigation -->
+      <div class="rowx" style="margin-top:24px;">
+        <button class="b o" type="button" onclick="openSubjectChapters(${sIdx})">← Back to Chapters</button>
+        <button class="b" type="button" onclick="HIER_VIEW.screen='settings';render();">Next: Settings →</button>
+      </div>
     </div>
   `;
 }
 
-function toggleTopicSwitch(sIdx, cIdx) {
-  let ch = E.hierarchy_tree[sIdx].chapters[cIdx];
-  ch.tp_on = !ch.tp_on;
-  if (!ch.tp_on) { ch.topics = []; }
-  syncTestHierarchyFields(E);
-  sv();
-  updateTestInDb(E);
-  render();
+function focusAddTopicInput() {
+  let el = $("#tp_name_in");
+  if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 }
 
-function addHierTopic(sIdx, cIdx) {
-  let inp = $("#new_tp_in_" + sIdx + "_" + cIdx);
+function confirmAddTopic() {
+  let inp = $("#tp_name_in");
   let val = inp ? inp.value.trim() : "";
   if (!val) { toast("Please type a topic name"); return; }
-  let ch = E.hierarchy_tree[sIdx].chapters[cIdx];
-  if (!ch.topics.includes(val)) {
+  let sub = E.hierarchy_tree[HIER_VIEW.subIdx];
+  let ch = sub.chapters[HIER_VIEW.chIdx];
+  if (!ch.topics) ch.topics = [];
+  if (!ch.topics.some(tp => (typeof tp === 'string' ? tp : tp.name).toLowerCase() === val.toLowerCase())) {
     ch.topics.push(val);
+    ch.tp_on = true;
     syncTestHierarchyFields(E);
     sv();
     updateTestInDb(E);
@@ -1559,255 +1734,526 @@ function addHierTopic(sIdx, cIdx) {
   }
 }
 
-function removeHierTopic(sIdx, cIdx, pIdx) {
-  let ch = E.hierarchy_tree[sIdx].chapters[cIdx];
+function renameTopic(sIdx, cIdx, pIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  let ch = sub.chapters[cIdx];
+  let tpName = typeof ch.topics[pIdx] === 'string' ? ch.topics[pIdx] : ch.topics[pIdx].name;
+  let newName = prompt("Rename topic:", tpName);
+  if (newName && newName.trim() && newName.trim() !== tpName) {
+    let oldName = tpName;
+    ch.topics[pIdx] = newName.trim();
+    E.q.forEach(q => {
+      if (q.subject === sub.name && q.chapter === ch.name && q.topic === oldName) q.topic = ch.topics[pIdx];
+    });
+    syncTestHierarchyFields(E);
+    sv();
+    updateTestInDb(E);
+    render();
+  }
+}
+
+function deleteTopic(sIdx, cIdx, pIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  let ch = sub.chapters[cIdx];
+  let tpName = typeof ch.topics[pIdx] === 'string' ? ch.topics[pIdx] : ch.topics[pIdx].name;
+  if (!confirm("Delete topic '" + tpName + "'? Questions under this topic will be removed.")) return;
+  E.q = E.q.filter(q => !(q.subject === sub.name && q.chapter === ch.name && q.topic === tpName));
   ch.topics.splice(pIdx, 1);
   syncTestHierarchyFields(E);
   sv();
   updateTestInDb(E);
+  toast("Topic removed");
   render();
 }
 
-function renderTopicCard(sub, sIdx, ch, cIdx, tp, pIdx) {
-  let tpName = typeof tp === 'string' ? tp : tp.name;
-  let tpQs = E.q.filter(q => (q.subject||'').trim()===sub.name && (q.chapter||'').trim()===ch.name && (q.topic||'').trim()===tpName);
+// ==========================================
+// SCREEN 5: QUESTION CREATION / UPLOAD
+// ==========================================
+function openQuestionsForContext(sIdx, cIdx, pIdx) {
+  HIER_VIEW.screen = 'questions';
+  HIER_VIEW.subIdx = sIdx;
+  HIER_VIEW.chIdx = cIdx;
+  HIER_VIEW.tpIdx = pIdx;
+
+  let subName = sIdx >= 0 ? E.hierarchy_tree[sIdx]?.name : '';
+  let chName = (sIdx >= 0 && cIdx >= 0) ? E.hierarchy_tree[sIdx]?.chapters?.[cIdx]?.name : '';
+  let tpName = '';
+  if (sIdx >= 0 && cIdx >= 0 && pIdx >= 0) {
+    let raw = E.hierarchy_tree[sIdx]?.chapters?.[cIdx]?.topics?.[pIdx];
+    tpName = typeof raw === 'string' ? raw : (raw?.name || '');
+  }
+
+  // Set target for new questions
+  Q_TARGET = { sub: subName || '', ch: chName || '', tp: tpName || '' };
+  QE = -2; // fresh manual question ready
+  QF = { id: "q" + rid(), t: "", o: ["", "", "", ""], a: 0, e: "", subject: subName, chapter: chName, topic: tpName };
+
+  render();
+  scrollTo(0, 0);
+}
+
+function goBackFromQuestions() {
+  if (HIER_VIEW.tpIdx >= 0) {
+    HIER_VIEW.screen = 'topics';
+  } else if (HIER_VIEW.chIdx >= 0) {
+    HIER_VIEW.screen = 'chapters';
+  } else if (HIER_VIEW.subIdx >= 0) {
+    HIER_VIEW.screen = 'subjects';
+  } else if (E.sub?.on) {
+    HIER_VIEW.screen = 'subjects';
+  } else {
+    HIER_VIEW.screen = 'details';
+  }
+  render();
+  scrollTo(0, 0);
+}
+
+function renderScreen5_Questions() {
+  let t = E;
+  let sub = HIER_VIEW.subIdx >= 0 ? t.hierarchy_tree[HIER_VIEW.subIdx] : null;
+  let ch = (sub && HIER_VIEW.chIdx >= 0) ? sub.chapters[HIER_VIEW.chIdx] : null;
+  let tpName = '';
+  if (ch && HIER_VIEW.tpIdx >= 0) {
+    let raw = ch.topics[HIER_VIEW.tpIdx];
+    tpName = typeof raw === 'string' ? raw : (raw?.name || '');
+  }
+
+  let breadcrumbs = [];
+  if (sub) breadcrumbs.push(sub.name);
+  if (ch) breadcrumbs.push(ch.name);
+  if (tpName) breadcrumbs.push(tpName);
+  let contextLabel = breadcrumbs.length ? breadcrumbs.join(' › ') : 'Direct Test Questions';
+
+  // Filter questions that belong to this exact context
+  let contextQuestions = t.q.filter(q => {
+    let qSub = (q.subject || '').trim();
+    let qCh = (q.chapter || '').trim();
+    let qTp = (q.topic || '').trim();
+
+    if (!breadcrumbs.length) {
+      return !qSub && !qCh && !qTp;
+    }
+    if (tpName) {
+      return qSub === sub.name && qCh === ch.name && qTp === tpName;
+    }
+    if (ch) {
+      return qSub === sub.name && qCh === ch.name && !qTp;
+    }
+    if (sub) {
+      return qSub === sub.name && !qCh && !qTp;
+    }
+    return true;
+  });
+
   return `
-    <div class="hier-tp-card">
-      <div class="rowx">
-        <b>🎯 ${esc(tpName)}</b>
-        <div style="display:flex;gap:6px;">
-          <button class="b s" type="button" style="font-size:0.78rem;padding:4px 10px;" onclick="openNewQTp(${sIdx},${cIdx},${pIdx})">+ Question</button>
-          <button class="b o s" type="button" style="font-size:0.78rem;padding:4px 10px;" onclick="openBulkTp(${sIdx},${cIdx},${pIdx})">Bulk</button>
-          <button class="ib2 dg" type="button" style="width:28px;height:28px;" onclick="removeHierTopic(${sIdx},${cIdx},${pIdx})">${ic("trash")}</button>
+    <div class="c2">
+      <!-- Breadcrumb Header -->
+      <div class="rowx" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--br);">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <a class="bkb" style="margin:0;" href="javascript:void(0)" onclick="goBackFromQuestions()">${ic("back")} <span>Back</span></a>
+          <span style="color:var(--mu);">›</span>
+          <b style="font-size:1.1rem;">Questions in:</b>
+          <span class="chip g" style="font-weight:700;">${esc(contextLabel)}</span>
+        </div>
+        <span class="chip">${contextQuestions.length} Questions</span>
+      </div>
+
+      <!-- Tabs: Create Manually | Upload (Excel/Text) -->
+      <div class="tabs" style="margin-bottom:16px;">
+        <button class="${HIER_VIEW.qTab==='manual'?'on':''}" type="button" onclick="HIER_VIEW.qTab='manual';render();">Create Manually</button>
+        <button class="${HIER_VIEW.qTab==='bulk'?'on':''}" type="button" onclick="HIER_VIEW.qTab='bulk';render();">Upload (Excel / Text)</button>
+      </div>
+
+      ${HIER_VIEW.qTab === 'bulk' ? bulk() : renderManualQuestionCard(contextLabel)}
+
+      <!-- Existing Questions List for this Context -->
+      <div style="margin-top:24px; padding-top:16px; border-top:1.5px solid var(--br);">
+        <div class="rowx" style="margin-bottom:12px;">
+          <b style="font-size:1.05rem;">Questions in ${esc(contextLabel)} (${contextQuestions.length})</b>
+          <small class="mu">Total in Test: ${t.q.length}</small>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          ${contextQuestions.map((q, i) => {
+            let globalIdx = t.q.indexOf(q);
+            return QE === globalIdx ? '' : qrow(q, globalIdx);
+          }).join("") || `
+            <div class="em" style="padding:20px; border:1px dashed var(--br); border-radius:12px;">
+              No questions added in this level yet. Use the form above to add your first question!
+            </div>
+          `}
         </div>
       </div>
-      <small class="mu" style="display:block;margin-top:2px;">${tpQs.length} question${tpQs.length!==1?"s":""}</small>
-      <div style="margin-top:6px;">
-        ${tpQs.map(q => { let idx=E.q.indexOf(q); return QE==idx?'':qrow(q,idx); }).join("") || '<small class="mu">No questions yet for this topic.</small>'}
+
+      <!-- Navigation -->
+      <div class="rowx" style="margin-top:26px;">
+        <button class="b o" type="button" onclick="goBackFromQuestions()">← Back</button>
+        <button class="b" type="button" onclick="HIER_VIEW.screen='review';render();">Review & Publish →</button>
       </div>
     </div>
   `;
 }
 
-// Question helpers
-function openNewQDirect() { openNewQuestion('', '', ''); }
-function openNewQSub(sIdx) { let s=E.hierarchy_tree[sIdx]; openNewQuestion(s.name,'',''); }
-function openNewQCh(sIdx, cIdx) { let s=E.hierarchy_tree[sIdx],c=s.chapters[cIdx]; openNewQuestion(s.name,c.name,''); }
-function openNewQTp(sIdx, cIdx, pIdx) { let s=E.hierarchy_tree[sIdx],c=s.chapters[cIdx],tp=c.topics[pIdx]; openNewQuestion(s.name,c.name,typeof tp==='string'?tp:tp.name); }
+function renderManualQuestionCard(contextLabel) {
+  let q = QF || { id: "q" + rid(), t: "", o: ["", "", "", ""], a: 0, e: "" };
 
-function openBulkDirect() { QM='bulk'; Q_TARGET={sub:'',ch:'',tp:''}; render(); }
-function openBulkSub(sIdx) { let s=E.hierarchy_tree[sIdx]; QM='bulk'; Q_TARGET={sub:s.name,ch:'',tp:''}; render(); }
-function openBulkCh(sIdx,cIdx) { let s=E.hierarchy_tree[sIdx],c=s.chapters[cIdx]; QM='bulk'; Q_TARGET={sub:s.name,ch:c.name,tp:''}; render(); }
-function openBulkTp(sIdx,cIdx,pIdx) { let s=E.hierarchy_tree[sIdx],c=s.chapters[cIdx],tp=c.topics[pIdx]; QM='bulk'; Q_TARGET={sub:s.name,ch:c.name,tp:typeof tp==='string'?tp:tp.name}; render(); }
+  return `
+    <div class="c2" style="background:var(--hi); border:1.5px solid var(--ac); border-radius:16px; padding:18px; margin-bottom:16px;">
+      <div class="rowx" style="margin-bottom:12px;">
+        <b style="color:var(--ac); font-size:1.05rem;">${QE === -2 ? "Add Question" : "Edit Question"}</b>
+        <span class="chip g">${esc(contextLabel)}</span>
+      </div>
 
-function openNewQuestion(sub, ch, tp) {
+      <div class="g2" style="margin-bottom:10px;">
+        <div>
+          <label class="l2" style="margin-top:0;">Question Type</label>
+          <select class="in" disabled style="opacity:0.8;">
+            <option>MCQ (Single Correct Option)</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="l2" for="qt" style="margin-top:0;">Question Text *</label>
+      <textarea id="qt" class="in" rows="4" placeholder="Type or paste question text here..." oninput="QF.t=this.value">${esc(q.t)}</textarea>
+
+      <label class="l2" style="margin-top:14px;">Options (Tap radio button to mark correct answer) *</label>
+      ${q.o.map((o, j) => `
+        <div class="of" style="margin-bottom:8px;">
+          <button class="rd${q.a == j ? " on" : ""}" type="button" aria-label="Option ${LT[j]} is correct" onclick="QF.a=${j};render()">${q.a == j ? ic("check") : ""}</button>
+          <span class="lt">${LT[j]}</span>
+          <input class="in" aria-label="Option ${LT[j]}" placeholder="Option ${LT[j]} text..." value="${esc(o)}" oninput="QF.o[${j}]=this.value">
+          ${q.o.length > 2 ? `<button class="ib2" type="button" aria-label="Remove option" onclick="rmO(${j})">${ic("x")}</button>` : ""}
+        </div>
+      `).join("")}
+
+      ${q.o.length < 6 ? `
+        <button class="b o s" type="button" style="margin-top:4px;" onclick="QF.o.push('');render();">${ic("plus")} Add Option</button>
+      ` : ""}
+
+      <div style="margin-top:14px;">
+        <label class="l2" for="qe" style="margin-top:0;">Explanation (optional - shown after test)</label>
+        <textarea id="qe" class="in" rows="2" placeholder="Explain why the answer is correct..." oninput="QF.e=this.value">${esc(q.e)}</textarea>
+      </div>
+
+      <div class="rowx" style="margin-top:16px;">
+        <span class="hint bad" id="qer"></span>
+        <div style="display:flex; gap:10px;">
+          ${QE >= 0 ? `
+            <button class="b o" type="button" onclick="cancelEditQ()">Cancel</button>
+            <button class="b" type="button" onclick="saveQuestionItem(false)">Update Question</button>
+          ` : `
+            <button class="b o" type="button" onclick="saveQuestionItem(false)">Save Question</button>
+            <button class="b" type="button" onclick="saveQuestionItem(true)">Save & Add Another</button>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function cancelEditQ() {
   QE = -2;
-  QF = { id:"q"+rid(), t:"", o:["","","",""], a:0, e:"", subject:sub||"", chapter:ch||"", topic:tp||"" };
+  let subName = HIER_VIEW.subIdx >= 0 ? E.hierarchy_tree[HIER_VIEW.subIdx]?.name : '';
+  let chName = (HIER_VIEW.subIdx >= 0 && HIER_VIEW.chIdx >= 0) ? E.hierarchy_tree[HIER_VIEW.subIdx]?.chapters?.[HIER_VIEW.chIdx]?.name : '';
+  let tpName = '';
+  if (HIER_VIEW.subIdx >= 0 && HIER_VIEW.chIdx >= 0 && HIER_VIEW.tpIdx >= 0) {
+    let raw = E.hierarchy_tree[HIER_VIEW.subIdx]?.chapters?.[HIER_VIEW.chIdx]?.topics?.[HIER_VIEW.tpIdx];
+    tpName = typeof raw === 'string' ? raw : (raw?.name || '');
+  }
+  QF = { id: "q" + rid(), t: "", o: ["", "", "", ""], a: 0, e: "", subject: subName, chapter: chName, topic: tpName };
   render();
-  setTimeout(() => { let el=$("#qt"); if(el) el.focus(); }, 50);
 }
 
-function editQuestionAt(idx) {
-  QE = idx;
-  QF = JSON.parse(JSON.stringify(E.q[idx]));
-  render();
+function saveQuestionItem(addAnother) {
+  let q = QF;
+  let er = !q.t.trim() ? "Write the question text." : q.o.filter(x => x.trim()).length < 2 ? "Add at least two options." : !q.o[q.a]?.trim() ? "The marked correct option is empty." : "";
+  if (er) {
+    let errEl = $("#qer");
+    if (errEl) errEl.textContent = er;
+    toast(er);
+    return;
+  }
+
+  q.o = q.o.map(x => x.trim());
+  q.t = q.t.trim();
+  q.e = (q.e || "").trim();
+
+  // Attach target context
+  if (Q_TARGET) {
+    if (Q_TARGET.sub) q.subject = Q_TARGET.sub;
+    if (Q_TARGET.ch) q.chapter = Q_TARGET.ch;
+    if (Q_TARGET.tp) q.topic = Q_TARGET.tp;
+  }
+
+  if (QE === -2) {
+    q.id = "q" + rid();
+    E.q.push(q);
+    toast("Question saved!");
+  } else if (QE >= 0) {
+    E.q[QE] = q;
+    toast("Question updated!");
+  }
+
+  saveQuestionToDb(q, E?.id);
+  sv();
+  updateTestInDb(E);
+
+  if (addAnother) {
+    QE = -2;
+    QF = {
+      id: "q" + rid(),
+      t: "",
+      o: ["", "", "", ""],
+      a: 0,
+      e: "",
+      subject: Q_TARGET.sub || "",
+      chapter: Q_TARGET.ch || "",
+      topic: Q_TARGET.tp || ""
+    };
+    render();
+    setTimeout(() => {
+      let el = $("#qt");
+      if (el) el.focus();
+    }, 50);
+  } else {
+    QE = -2;
+    QF = {
+      id: "q" + rid(),
+      t: "",
+      o: ["", "", "", ""],
+      a: 0,
+      e: "",
+      subject: Q_TARGET.sub || "",
+      chapter: Q_TARGET.ch || "",
+      topic: Q_TARGET.tp || ""
+    };
+    render();
+  }
 }
 
-// ─────────────────────────────────────────
-// STEP 3: Settings (Paid/Free + Timer + Marking + Leaderboard + Rules — all in one page)
-// ─────────────────────────────────────────
-function wizStep3() {
-  let t = E;
-  let ng = t.neg;
+function editQuestionItem(globalIdx) {
+  if (!E || !E.q || !E.q[globalIdx]) return;
+  QE = globalIdx;
+  QF = JSON.parse(JSON.stringify(E.q[globalIdx]));
+  render();
+  setTimeout(() => {
+    let el = $("#qt");
+    if (el) el.focus();
+  }, 50);
+}
+
+function deleteQuestionItem(globalIdx) {
+  if (!E || !E.q || !E.q[globalIdx]) return;
+  if (!confirm("Are you sure you want to delete this question?")) return;
+  let removed = E.q.splice(globalIdx, 1);
+  if (removed && removed[0] && removed[0].id) {
+    deleteQuestionFromDb(removed[0].id, E.id);
+  }
+  sv();
+  updateTestInDb(E);
+  if (QE === globalIdx) {
+    cancelEditQ();
+  } else {
+    render();
+  }
+  toast("Question deleted");
+}
+
+function qrow(q, globalIdx) {
+  let displayNum = (globalIdx >= 0 ? globalIdx + 1 : 1);
+  return `
+    <div class="c2" style="background:var(--bg); border:1px solid var(--br); border-radius:12px; padding:14px; margin-bottom:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
+            <span class="tg" style="font-weight:700; background:var(--hi);">Q${displayNum}</span>
+            ${q.subject ? `<span class="tg" style="background:rgba(59,130,246,0.1); color:#2563eb; font-weight:600;">${esc(q.subject)}</span>` : ''}
+            ${q.chapter ? `<span class="tg" style="background:rgba(16,185,129,0.1); color:#059669;">${esc(q.chapter)}</span>` : ''}
+            ${q.topic ? `<span class="tg" style="background:rgba(139,92,246,0.1); color:#7c3aed;">${esc(q.topic)}</span>` : ''}
+          </div>
+          <div style="font-weight:600; font-size:0.95rem; margin-bottom:8px; line-height:1.4;">${esc(q.t)}</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.85rem;">
+            ${(q.o || []).map((opt, oIdx) => `
+              <div style="padding:4px 8px; border-radius:6px; background:${oIdx === q.a ? 'rgba(34,197,94,0.12)' : 'var(--hi)'}; border:1px solid ${oIdx === q.a ? '#22c55e' : 'var(--br)'}; color:${oIdx === q.a ? '#15803d' : 'inherit'}; font-weight:${oIdx === q.a ? '600' : 'normal'};">
+                <b>${String.fromCharCode(65 + oIdx)}.</b> ${esc(opt)} ${oIdx === q.a ? '✓' : ''}
+              </div>
+            `).join('')}
+          </div>
+          ${q.e ? `<div class="mu" style="margin-top:6px; font-size:0.8rem;"><b>Explanation:</b> ${esc(q.e)}</div>` : ''}
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="b o s" type="button" onclick="editQuestionItem(${globalIdx})" title="Edit">${ic("edit") || "Edit"}</button>
+          <button class="b o s" type="button" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" onclick="deleteQuestionItem(${globalIdx})" title="Delete">${ic("trash") || "Delete"}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ==========================================
+// SCREEN 6: SETTINGS (Timer, Marking, Rules)
+// ==========================================
+function renderScreen6_Settings() {
+  let t = E, ng = t.neg;
   let cu = ng.cu || ![.25, .33, .5, 1].includes(ng.v);
 
   return `
-    <div class="c2 wiz-open">
+    <div class="c2">
       <div class="wiz-step-header">
         <span class="wiz-active-pill">3</span>
         <div>
-          <h3>Settings</h3>
-          <small class="mu">Configure access, timer, marking, leaderboard and rules.</small>
+          <h3 style="margin:0;">Test Settings & Rules</h3>
+          <small class="mu">Configure timer behavior, negative deduction, leaderboard, and display rules.</small>
         </div>
       </div>
-
-      <!-- Access & Pricing -->
-      <b style="display:block;margin-bottom:8px;">Access</b>
-      <div class="seg ${t.paid ? "r" : ""}" style="margin-bottom:12px;">
-        <button class="${!t.paid?"on":""}" type="button" onclick="E.paid=false;sv();render()">Free</button>
-        <button class="${t.paid?"on":""}" type="button" onclick="E.paid=true;sv();render()">${ic("lock")} Paid</button>
-      </div>
-      ${t.paid ? `
-        <div style="background:var(--hi);border:1px solid var(--br);padding:14px;border-radius:14px;margin-bottom:16px;">
-          <div class="g3">
-            <div>
-              <label class="l2" style="margin-top:0;">Price (₹) *</label>
-              <input class="in" type="number" min="0" value="${t.price||""}" placeholder="e.g. 299" oninput="E.price=+this.value;sv()">
-            </div>
-            <div>
-              <label class="l2" style="margin-top:0;">Sale Price (₹)</label>
-              <input class="in" type="number" min="0" value="${t.sale||""}" placeholder="e.g. 199" oninput="E.sale=+this.value;sv()">
-            </div>
-            <div>
-              <label class="l2" style="margin-top:0;">Sale Ends</label>
-              <input class="in" type="date" value="${t.saleEnd||""}" oninput="E.saleEnd=this.value;sv()">
-            </div>
-          </div>
-          ${t.sale && t.price && t.sale >= t.price ? '<p class="hint bad">Sale price must be lower than regular price.</p>' : ''}
-        </div>
-      ` : ""}
 
       <!-- Timer -->
-      ${sw(t.timer.on, "E.timer.on=!E.timer.on;sv();render()", "Enable Timer", "Auto-submits when time ends")}
-      ${t.timer.on ? `
-        <div style="margin:8px 0 16px;">
-          <label class="l2" style="margin-top:0;">Duration (minutes)</label>
-          <input class="in" type="number" min="1" max="300" value="${t.timer.min||60}" oninput="E.timer.min=+this.value;sv()">
-        </div>
-      ` : ''}
+      <div style="margin-top:14px;">
+        ${sw(t.timer.on, "E.timer.on=!E.timer.on;sv();render()", "Enable Timer", "Auto-submits test when time ends")}
+        ${t.timer.on ? `
+          <div style="margin:8px 0 16px;">
+            <label class="l2" style="margin-top:0;">Duration (minutes)</label>
+            <input class="in" type="number" min="1" max="300" value="${t.timer.min||120}" oninput="E.timer.min=+this.value;sv()">
+          </div>
+        ` : ''}
+      </div>
 
       <!-- Negative Marking -->
-      ${sw(ng.on, "E.neg.on=!E.neg.on;sv();render()", "Negative Marking", "Deduct marks for wrong answers")}
-      ${ng.on ? `
-        <div style="margin:8px 0 14px;">
-          <label class="l2" style="margin-top:0;">Deduct per wrong answer</label>
-          ${chips([[.25,"¼"],[.33,"⅓"],[.5,"½"],[1,"1"],["c","Custom"]], cu?"c":ng.v, "setNg")}
-          ${cu ? `<input class="in" type="number" min="0" step="0.01" value="${ng.v}" oninput="E.neg.v=+this.value;E.neg.cu=true;sv()" style="margin-top:8px;">` : ""}
-        </div>
-      ` : ""}
-
-      <!-- Correct mark -->
-      <div style="margin-bottom:16px;">
-        <label class="l2">Marks per correct answer</label>
-        <input class="in" type="number" min="0.25" step="0.25" value="${t.mk||4}" oninput="E.mk=+this.value;sv()">
+      <div style="margin-top:10px;">
+        ${sw(ng.on, "E.neg.on=!E.neg.on;sv();render()", "Negative Marking", "Deduct marks for incorrect answers")}
+        ${ng.on ? `
+          <div style="margin:8px 0 14px;">
+            <label class="l2" style="margin-top:0;">Deduct per wrong answer</label>
+            ${chips([[.25,"¼"],[.33,"⅓"],[.5,"½"],[1,"1"],["c","Custom"]], cu?"c":ng.v, "setNg")}
+            ${cu ? `<input class="in" type="number" min="0" step="0.01" value="${ng.v}" oninput="E.neg.v=+this.value;E.neg.cu=true;sv()" style="margin-top:8px;">` : ""}
+          </div>
+        ` : ""}
       </div>
 
       <!-- Leaderboard -->
-      ${sw(t.lb && !D.cfg.hide, "E.lb=!E.lb;sv();render()", "Show Leaderboard", "Students see rank and percentile")}
+      <div style="margin-top:10px;">
+        ${sw(t.lb && !D.cfg.hide, "E.lb=!E.lb;sv();render()", "Show Leaderboard", "Students see their rank and percentile against peers")}
+      </div>
 
       <!-- Show Answers -->
       <div style="margin:14px 0;">
         <label class="l2">Show Answers & Explanations</label>
         ${rr([
-          ["submit","After test is submitted (CBT mode)"],
-          ["inst","Immediately after each question (Practice mode)"],
+          ["submit","After test is submitted (Standard CBT)"],
+          ["inst","Immediately after picking each question (Practice mode)"],
           ["never","Never show answers"]
         ], t.res||'submit', "setRes")}
       </div>
 
-      <!-- Shuffle -->
-      ${sw(t.shufQ, "E.shufQ=!E.shufQ;sv();render()", "Shuffle Questions")}
-      ${sw(t.shufO, "E.shufO=!E.shufO;sv();render()", "Shuffle Options")}
-      ${sw(t.back!==false, "E.back=!E.back;sv();render()", "Allow Going Back", "Students can revisit questions")}
+      <!-- Shuffling & Nav -->
+      ${sw(t.shufQ, "E.shufQ=!E.shufQ;sv();render()", "Shuffle Questions", "Randomize question order")}
+      ${sw(t.shufO, "E.shufO=!E.shufO;sv();render()", "Shuffle Options", "Randomize options A/B/C/D order")}
+      ${sw(t.back!==false, "E.back=!E.back;sv();render()", "Allow Going Back", "Students can revisit earlier questions")}
 
       <!-- Disclaimer -->
-      ${sw(t.dis.on, "E.dis.on=!E.dis.on;sv();render()", "Show Instructions / Disclaimer", "Students read & accept before starting")}
-      ${t.dis.on ? `
-        <div style="margin:8px 0 14px;">
-          <textarea class="in" rows="4" placeholder="Instructions or disclaimer..." oninput="E.dis.txt=this.value;sv()">${esc(t.dis.txt)}</textarea>
-          <button class="b o s" type="button" style="margin-top:6px;" onclick="E.dis.txt=D.cfg.dis;sv();render()">Use Default</button>
-        </div>
-      ` : ""}
+      <div style="margin-top:14px;">
+        ${sw(t.dis.on, "E.dis.on=!E.dis.on;sv();render()", "Show Instructions / Disclaimer", "Shown to students before starting")}
+        ${t.dis.on ? `
+          <div style="margin:8px 0 14px;">
+            <textarea class="in" rows="4" placeholder="Instructions or disclaimer..." oninput="E.dis.txt=this.value;sv()">${esc(t.dis.txt)}</textarea>
+            <button class="b o s" type="button" style="margin-top:6px;" onclick="E.dis.txt=D.cfg.dis;sv();render()">Use Default Template</button>
+          </div>
+        ` : ""}
+      </div>
 
-      <div class="wiz-actions">
-        <button class="b o" onclick="setWizStep(2)">← Back</button>
-        <button class="b" onclick="saveWiz3()">Next: Review →</button>
+      <div class="rowx" style="margin-top:24px;">
+        <button class="b o" type="button" onclick="goToQuestionsOrHierarchy()">← Back: Hierarchy</button>
+        <button class="b" type="button" onclick="HIER_VIEW.screen='review';render();">Next: Review & Publish →</button>
       </div>
     </div>
   `;
 }
 
-function saveWiz3() {
-  if (E.paid && (!E.price || E.price <= 0)) { toast("Please enter a price for this paid test"); return; }
-  sv();
-  updateTestInDb(E);
-  WIZ_STEP = 4;
-  render();
-  scrollTo(0, 0);
-}
-
-// ─────────────────────────────────────────
-// STEP 4: Review & Publish
-// Single Publish button for drafts. Single "Make Private" button for live tests.
-// ─────────────────────────────────────────
-function wizStep4() {
+// ==========================================
+// SCREEN 7: REVIEW & PUBLISH (Clean Single Action)
+// ==========================================
+function renderScreen7_Review() {
   let t = E;
   let isLive = t.status === "pub";
 
   let ck = [
-    [!!t.title.trim(), "Title: " + esc(t.title || "Missing"), 1],
-    [!!(t.exam || !t.hasExam), t.exam ? "Exam: " + esc(t.exam) : "Standalone test", 1],
-    [t.q.length > 0, t.q.length + " question" + (t.q.length !== 1 ? "s" : "") + " ready", 2],
-    [!t.paid || (t.price && t.price > 0), t.paid ? "Price: " + inr(t.sale || t.price) : "Free test", 3],
-    [true, "Timer: " + (t.timer.on ? t.timer.min + " min" : "No timer") + " · Marks: +" + t.mk + " / -" + (t.neg.on ? t.neg.v : 0), 3]
+    [!!t.title.trim(), "Title: " + esc(t.title || "Missing title"), 'details'],
+    [t.q.length > 0, t.q.length + " question" + (t.q.length !== 1 ? "s" : "") + " created", 'questions'],
+    [!t.paid || (t.price && t.price > 0), t.paid ? "Paid test: " + inr(t.sale || t.price) : "Free practice test", 'details'],
+    [true, "Timer: " + (t.timer.on ? t.timer.min + " min" : "Untimed") + " · Marks: +" + t.mk + " / -" + (t.neg.on ? t.neg.v : 0), 'settings']
   ];
 
   return `
-    <div class="c2 wiz-open">
+    <div class="c2">
       <div class="wiz-step-header">
         <span class="wiz-active-pill">4</span>
         <div>
-          <h3>Review & Publish</h3>
-          <small class="mu">Check everything, then publish to students or keep private.</small>
+          <h3 style="margin:0;">Review & Publish</h3>
+          <small class="mu">Check test summary and readiness before making it live to students.</small>
         </div>
       </div>
 
-      <!-- Status Banner -->
+      <!-- Current Status Alert -->
       ${isLive ? `
-        <div style="background:rgba(34,197,94,0.12);border:1.5px solid #16a34a;color:#16a34a;padding:14px 18px;border-radius:14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
-          <span style="font-size:1.4rem;">🟢</span>
+        <div style="background:rgba(34,197,94,0.12); border:1.5px solid #16a34a; color:#16a34a; padding:16px 18px; border-radius:14px; margin-bottom:16px; display:flex; align-items:center; gap:12px;">
+          <span style="font-size:1.6rem;">🟢</span>
           <div style="flex:1;">
-            <b>LIVE — Students can see and attempt this test</b>
-            <p style="margin:2px 0 0;font-size:0.85rem;color:#166534;">Any changes you save here update the live test immediately.</p>
+            <b style="font-size:1.05rem;">THIS TEST IS LIVE ON THE STUDENT APP</b>
+            <p style="margin:2px 0 0; font-size:0.86rem; color:#166534;">Students can search, attempt, and view results for this test.</p>
           </div>
+          <button class="b dg s" type="button" onclick="makeTestPrivate()">🔒 Make Private</button>
         </div>
       ` : `
-        <div style="background:rgba(203,113,0,0.1);border:1.5px solid #ca8a04;color:#ca8a04;padding:14px 18px;border-radius:14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
-          <span style="font-size:1.4rem;">🔒</span>
+        <div style="background:rgba(234,179,8,0.12); border:1.5px solid #ca8a04; color:#ca8a04; padding:16px 18px; border-radius:14px; margin-bottom:16px; display:flex; align-items:center; gap:12px;">
+          <span style="font-size:1.6rem;">🔒</span>
           <div style="flex:1;">
-            <b>DRAFT — Hidden from all students</b>
-            <p style="margin:2px 0 0;font-size:0.85rem;color:#854d0e;">Publish when you are ready to make it visible.</p>
+            <b style="font-size:1.05rem;">THIS TEST IS PRIVATE (DRAFT)</b>
+            <p style="margin:2px 0 0; font-size:0.86rem; color:#854d0e;">This test is hidden from students until you publish it.</p>
           </div>
+          <button class="b s" type="button" onclick="publishTestToStudents()">🚀 Publish to Students</button>
         </div>
       `}
 
-      <!-- Summary card -->
-      <div style="background:var(--hi);border:1px solid var(--br);border-radius:14px;padding:14px;margin-bottom:16px;">
-        ${t.banner ? `<div style="height:80px;border-radius:10px;background:url('${t.banner}') center/cover no-repeat;margin-bottom:10px;"></div>` : ""}
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <!-- Summary Card -->
+      <div style="background:var(--hi); border:1px solid var(--br); border-radius:14px; padding:16px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <h3 style="margin:0;">${esc(t.title || "Untitled Test")}</h3>
           ${t.label ? `<span class="chip">${esc(t.label)}</span>` : ""}
+          <span class="chip ${t.paid ? '' : 'g'}">${t.paid ? inr(t.sale || t.price) : "Free"}</span>
         </div>
-        ${t.exam ? `<div class="eb" style="margin:4px 0;">${esc(t.exam)}</div>` : ""}
-        ${t.desc ? `<p class="mu" style="font-size:0.88rem;margin:4px 0;">${esc(t.desc)}</p>` : ""}
-        <div class="g3" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--br);">
-          <div><small class="mu">Questions</small><b style="display:block;">${t.q.length}</b></div>
-          <div><small class="mu">Duration</small><b style="display:block;">${t.timer.on ? t.timer.min+"min" : "Untimed"}</b></div>
-          <div><small class="mu">Marking</small><b style="display:block;">+${t.mk} / -${t.neg.on?t.neg.v:0}</b></div>
-          <div><small class="mu">Access</small><b style="display:block;">${t.paid ? inr(t.sale||t.price) : "Free"}</b></div>
-          <div><small class="mu">Leaderboard</small><b style="display:block;">${t.lb?"On":"Off"}</b></div>
+        ${t.exam ? `<div class="eb" style="margin:6px 0 2px;">${esc(t.exam)}</div>` : ""}
+        ${t.desc ? `<p class="mu" style="font-size:0.9rem; margin:4px 0;">${esc(t.desc)}</p>` : ""}
+
+        <div class="g3" style="margin-top:14px; padding-top:12px; border-top:1px solid var(--br);">
+          <div><small class="mu">Total Questions</small><b style="display:block;">${t.q.length} Questions</b></div>
+          <div><small class="mu">Subjects</small><b style="display:block;">${(t.hierarchy_tree||[]).length} Subject(s)</b></div>
+          <div><small class="mu">Duration</small><b style="display:block;">${t.timer.on ? t.timer.min+" mins" : "Untimed"}</b></div>
+          <div><small class="mu">Marking</small><b style="display:block;">+${t.mk} / -${t.neg.on ? t.neg.v : 0}</b></div>
+          <div><small class="mu">Leaderboard</small><b style="display:block;">${t.lb ? "Enabled" : "Disabled"}</b></div>
+          <div><small class="mu">Status</small><b style="display:block;">${isLive ? "Live" : "Draft"}</b></div>
         </div>
       </div>
 
       <!-- Checklist -->
-      <div style="margin-bottom:16px;">
-        ${ck.map(c => `
-          <div class="ck" style="padding:6px 0;">
-            <span class="ic ${c[0]?"y":"n"}">${ic(c[0]?"check":"flag")}</span>
-            <span style="flex:1;">${c[1]}</span>
-            ${!c[0] ? `<button class="b o s" type="button" onclick="setWizStep(${c[2]})">Fix</button>` : ""}
-          </div>
-        `).join("")}
+      <div style="margin-bottom:18px;">
+        <b style="font-size:0.95rem;">Readiness Checklist</b>
+        <div style="margin-top:8px;">
+          ${ck.map(c => `
+            <div class="ck" style="padding:6px 0;">
+              <span class="ic ${c[0] ? "y" : "n"}">${ic(c[0] ? "check" : "flag")}</span>
+              <span style="flex:1;">${c[1]}</span>
+              ${!c[0] ? `<button class="b o s" type="button" onclick="HIER_VIEW.screen='${c[2]}';render();">Fix</button>` : ""}
+            </div>
+          `).join("")}
+        </div>
       </div>
 
-      <!-- Action Buttons — clean, single purpose each -->
-      <div class="wiz-actions" style="gap:10px;">
-        <button class="b o" onclick="setWizStep(3)">← Back</button>
+      <!-- Single Action Buttons -->
+      <div class="rowx" style="margin-top:24px;">
+        <button class="b o" type="button" onclick="HIER_VIEW.screen='settings';render();">← Back: Settings</button>
         ${isLive ? `
-          <button class="b dg" type="button" onclick="makeTestPrivate()">🔒 Make Private</button>
-          <button class="b" type="button" onclick="saveLiveChanges()">✅ Save Changes</button>
+          <button class="b" type="button" onclick="saveLiveChanges()">✅ Save Live Changes</button>
         ` : `
-          <button class="b" type="button" onclick="publishTestToStudents()">🚀 Publish to Students</button>
+          <button class="b" type="button" onclick="publishTestToStudents()">🚀 Publish to Students Now</button>
         `}
       </div>
     </div>
@@ -1816,14 +2262,15 @@ function wizStep4() {
 
 async function publishTestToStudents() {
   let t = E;
-  if (!t.title.trim()) { toast("Please set a title"); setWizStep(1); return; }
-  if (!t.q.length) { toast("Please add at least 1 question"); setWizStep(2); return; }
-  if (t.paid && (!t.price || t.price <= 0)) { toast("Please set a price"); setWizStep(3); return; }
+  if (!t.title.trim()) { toast("Please set a test title"); HIER_VIEW.screen='details'; render(); return; }
+  if (!t.q.length) { toast("Please add at least 1 question"); goToQuestionsOrHierarchy(); return; }
+  if (t.paid && (!t.price || t.price <= 0)) { toast("Please set a price for paid test"); HIER_VIEW.screen='details'; render(); return; }
+
   t.status = "pub";
   sv();
-  toast("Publishing...");
+  toast("Publishing to Student App...");
   await updateTestInDb(t);
-  toast("🚀 Test is now LIVE!");
+  toast("🚀 Test is now LIVE and visible to students!");
   render();
   setTimeout(() => go("tests"), 1200);
 }
@@ -1831,17 +2278,17 @@ async function publishTestToStudents() {
 async function makeTestPrivate() {
   E.status = "draft";
   sv();
-  toast("Making private...");
+  toast("Making test private...");
   await updateTestInDb(E);
-  toast("🔒 Test is now private (hidden from students)");
+  toast("🔒 Test is now PRIVATE (Hidden from all students)!");
   render();
 }
 
 async function saveLiveChanges() {
   sv();
-  toast("Saving...");
+  toast("Saving live test changes...");
   await updateTestInDb(E);
-  toast("✅ Live test updated!");
+  toast("✅ Live test updated successfully!");
   render();
 }
 
