@@ -248,7 +248,7 @@ body{padding-bottom:0}main{animation:none}
 </style></head><body><div id="app"></div><div id="t" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const I={home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',book:'<path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',list:'<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',check:'<path d="m5 12 5 5L20 7"/>',lock:'<rect x="5" y="11" width="14" height="10"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',chev:'<path d="m9 6 6 6-6 6"/>',back:'<path d="m15 6-6 6 6 6"/>',trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 21h8M10 17h4"/>',flag:'<path d="M5 21V4h11l-1.5 4L16 12H5"/>',bolt:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',grid:'<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/>'};
+const I={more:'<circle cx="12" cy="5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="19" r="1.75"/>',home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',book:'<path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',list:'<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',check:'<path d="m5 12 5 5L20 7"/>',lock:'<rect x="5" y="11" width="14" height="10"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',chev:'<path d="m9 6 6 6-6 6"/>',back:'<path d="m15 6-6 6 6 6"/>',trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 21h8M10 17h4"/>',flag:'<path d="M5 21V4h11l-1.5 4L16 12H5"/>',bolt:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',grid:'<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/>'};
 const ic=n=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
 
 Object.assign(I,{bar:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',tag:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1"/>',users:'<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 4a4 4 0 0 1 0 8M22 21a6 6 0 0 0-4-5.6"/>',image:'<rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',shield:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',plus:'<path d="M12 5v14M5 12h14"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',copy:'<rect x="8" y="8" width="12" height="12"/><path d="M16 8V4H4v12h4"/>',upload:'<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>',menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',up:'<path d="m6 15 6-6 6 6"/>',down:'<path d="m6 9 6 6 6-6"/>'});
@@ -983,6 +983,31 @@ function refund(i){
   render();
 }
 
+let ACTIVE_TEST_MENU = null;
+
+function togglePublishTest(id) {
+  let t = tid(id);
+  if (!t) return;
+  if (t.status === 'pub') {
+    t.status = 'draft';
+    t.is_published = false;
+    updateTestInDb(t);
+    sv();
+    toast("Test is now private (draft)");
+  } else {
+    if (!t.q || !t.q.length) {
+      toast("Please add at least 1 question before publishing.");
+      return;
+    }
+    t.status = 'pub';
+    t.is_published = true;
+    updateTestInDb(t);
+    sv();
+    toast("🚀 Test published to students!");
+  }
+  render();
+}
+
 function tlist(){
   let q=(TQ||"").toLowerCase();
   let l=(D.tests||[]).filter(t=>{
@@ -991,7 +1016,7 @@ function tlist(){
     return stOk && match;
   });
   return l.map(t=>`
-    <div class="tw">
+    <div class="tw" style="position:relative;">
       ${idb(t.id)}
       <div class="bd2">
         <a href="#edit-${t.id}">
@@ -1004,7 +1029,27 @@ function tlist(){
         <span class="st2 ${t.status}">${t.status=="pub" ? "Live" : "Draft"}</span>
         <small>${t.paid ? (t.price ? inr(t.sale||t.price) : "Price not set") : "Free"}</small>
       </div>
-      <button class="ib2 dg" aria-label="Delete" onclick="CF='dt${t.id}';render()">${ic("trash")}</button>
+
+      <!-- 3-Dot Action Menu -->
+      <div style="position:relative; display:inline-flex; align-items:center;">
+        <button class="ib2" type="button" aria-label="Test actions" onclick="event.stopPropagation(); ACTIVE_TEST_MENU = (ACTIVE_TEST_MENU === '${t.id}' ? null : '${t.id}'); render();">
+          ${ic("more")}
+        </button>
+
+        ${ACTIVE_TEST_MENU === t.id ? `
+          <div class="c2" style="position:absolute; right:0; top:calc(100% + 4px); z-index:100; min-width:180px; background:var(--sf); border:1.5px solid var(--br); border-radius:12px; box-shadow:0 10px 28px rgba(0,0,0,0.22); padding:6px; display:flex; flex-direction:column; gap:4px;" onclick="event.stopPropagation()">
+            <button class="b o s" type="button" style="width:100%; justify-content:flex-start; text-align:left; border:none; padding:8px 12px; font-size:0.88rem; gap:8px;" onclick="ACTIVE_TEST_MENU=null; go('edit-${t.id}')">
+              ${ic("edit")} Edit Test
+            </button>
+            <button class="b o s" type="button" style="width:100%; justify-content:flex-start; text-align:left; border:none; padding:8px 12px; font-size:0.88rem; gap:8px; color:${t.status === 'pub' ? '#f59e0b' : '#10b981'};" onclick="ACTIVE_TEST_MENU=null; togglePublishTest('${t.id}')">
+              ${t.status === 'pub' ? ic("lock") + " Make Private" : ic("upload") + " Publish"}
+            </button>
+            <button class="b o s" type="button" style="width:100%; justify-content:flex-start; text-align:left; border:none; padding:8px 12px; font-size:0.88rem; gap:8px; color:#ef4444;" onclick="ACTIVE_TEST_MENU=null; CF='dt${t.id}'; render();">
+              ${ic("trash")} Delete
+            </button>
+          </div>
+        ` : ''}
+      </div>
     </div>
   `).join("") || '<div class="em">No tests found. Click "+ New test" above to create one.</div>';
 }
@@ -1060,62 +1105,29 @@ function delT(i){
 // ==========================================
 
 let HIER_VIEW = {
-  screen: 'details', // 'details' | 'subjects' | 'chapters' | 'topics' | 'questions' | 'settings' | 'review'
-  subIdx: -1,
-  chIdx: -1,
-  tpIdx: -1,
+  screen: 'details', // 'details' | 'subjects' | 'questions' | 'settings' | 'review'
+  subName: '',       // active subject name (or empty for direct test)
   qTab: 'manual'     // 'manual' | 'bulk'
 };
 
-function initHierarchyTree(t) {
-  if (!t.hierarchy_tree) t.hierarchy_tree = [];
-  if (t.sub && t.sub.on && t.sub.v && !t.hierarchy_tree.some(s => s.name === t.sub.v)) {
-    t.hierarchy_tree.push({ name: t.sub.v, ch_on: !!(t.ch && t.ch.on), chapters: [] });
+function getTestSubjects(t) {
+  if (!t) return [];
+  if (Array.isArray(t.subjects) && t.subjects.length > 0) return t.subjects;
+  if (Array.isArray(t.hierarchy_tree) && t.hierarchy_tree.length > 0) {
+    t.subjects = t.hierarchy_tree.map(s => typeof s === 'string' ? s : s.name).filter(Boolean);
+    return t.subjects;
   }
-  (t.q || []).forEach(q => {
-    let s = (q.subject || '').trim();
-    let c = (q.chapter || '').trim();
-    let p = (q.topic || '').trim();
-    if (s) {
-      t.sub.on = true;
-      let sObj = t.hierarchy_tree.find(x => x.name.toLowerCase() === s.toLowerCase());
-      if (!sObj) {
-        sObj = { name: s, ch_on: !!c, chapters: [] };
-        t.hierarchy_tree.push(sObj);
-      }
-      if (c) {
-        sObj.ch_on = true;
-        let cObj = sObj.chapters.find(x => x.name.toLowerCase() === c.toLowerCase());
-        if (!cObj) {
-          cObj = { name: c, tp_on: !!p, topics: [] };
-          sObj.chapters.push(cObj);
-        }
-        if (p && !cObj.topics.some(tp => (typeof tp === 'string' ? tp : tp.name).toLowerCase() === p.toLowerCase())) {
-          cObj.tp_on = true;
-          cObj.topics.push(p);
-        }
-      }
-    }
-  });
+  let fromQ = Array.from(new Set((t.q || []).map(q => (q.subject || '').trim()).filter(Boolean)));
+  t.subjects = fromQ;
+  return t.subjects;
 }
 
-function syncTestHierarchyFields(t) {
-  if (t.hierarchy_tree && t.hierarchy_tree.length > 0) {
-    t.sub.on = true;
-    t.sub.v = t.hierarchy_tree[0].name;
-    let firstCh = t.hierarchy_tree[0].chapters && t.hierarchy_tree[0].chapters[0];
-    if (firstCh) {
-      t.ch.on = true;
-      t.ch.v = firstCh.name;
-      let firstTp = firstCh.topics && firstCh.topics[0];
-      if (firstTp) { t.tp.on = true; t.tp.v = typeof firstTp === 'string' ? firstTp : firstTp.name; }
-      else { t.tp.on = false; t.tp.v = ''; }
-    } else { t.ch.on = false; t.ch.v = ''; t.tp.on = false; t.tp.v = ''; }
-  } else if (!t.sub?.on) {
-    t.sub.on = false; t.sub.v = '';
-    t.ch.on = false; t.ch.v = '';
-    t.tp.on = false; t.tp.v = '';
-  }
+function initHierarchyTree(t) {
+  if (!t) return;
+  if (!t.sub) t.sub = { on: false, v: '' };
+  if (!Array.isArray(t.subjects)) t.subjects = getTestSubjects(t);
+  if (t.subjects.length > 0) t.sub.on = true;
+  t.hierarchy_tree = t.subjects.map(s => ({ name: s, chapters: [] }));
 }
 
 function edit(i) {
@@ -1124,82 +1136,72 @@ function edit(i) {
   E = t;
   initHierarchyTree(t);
 
-  // If newly created or fresh, start on details
   if (t._fresh) {
     HIER_VIEW.screen = 'details';
-    HIER_VIEW.subIdx = -1;
-    HIER_VIEW.chIdx = -1;
-    HIER_VIEW.tpIdx = -1;
+    HIER_VIEW.subName = '';
     delete t._fresh;
   }
 
   let isLive = t.status === "pub";
-
-  // Top Stepper Tabs
-  let isHierarchyActive = ['subjects', 'chapters', 'topics', 'questions'].includes(HIER_VIEW.screen);
-  let hierTabLabel = E.sub?.on ? "2. Subjects & Hierarchy" : "2. Questions";
+  let isSubOn = !!(t.sub && t.sub.on);
 
   lay("tests", esc(t.title) || "Test Editor", `
     <!-- Top Action Bar -->
     <div class="rowx" style="margin:-8px 0 14px">
       <div style="display:flex; align-items:center; gap:10px;">
-        <a class="bkb" style="margin:0" href="#tests">${ic("back")}<span>Tests</span></a>
-        <span class="idc-tag">#${esc(t.id)}</span>
-        <span class="st2 ${t.status}">${isLive ? "Live" : "Private Draft"}</span>
-      </div>
-      <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-        <button class="b o s" type="button" onclick="saveCurrentTestToCloud()">${ic("check")} Save Draft</button>
+        <a class="bkb" style="margin:0" href="#tests">${ic("back")}<span>All Tests</span></a>
+        <span class="tg" style="font-weight:700;">#${t.id}</span>
         ${isLive ? `
-          <button class="b dg s" type="button" onclick="makeTestPrivate()">🔒 Make Private</button>
+          <span class="chip g" style="font-weight:700;">LIVE ON APP</span>
         ` : `
-          <button class="b s" type="button" onclick="publishTestToStudents()">🚀 Publish Live</button>
+          <span class="chip" style="background:#eab30820; color:#ca8a04; font-weight:700;">DRAFT</span>
+        `}
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        ${isLive ? `
+          <button class="b o s" type="button" onclick="makeTestPrivate()">🔒 Make Private</button>
+        ` : `
+          <button class="b s" type="button" onclick="publishTestToStudents()">🚀 Publish to Students</button>
         `}
       </div>
     </div>
 
-    <!-- Stepper Navigation -->
-    <div class="stp" style="margin-bottom:18px;">
-      <button class="${HIER_VIEW.screen === 'details' ? 'on' : 'dn'}" onclick="HIER_VIEW.screen='details';render();">
-        <span>1</span> Basic Details
+    <!-- Stepper Navigation Bar -->
+    <div class="tabs" style="margin-bottom:18px;">
+      <button class="${HIER_VIEW.screen === 'details' ? 'on' : ''}" type="button" onclick="HIER_VIEW.screen='details';render();">
+        1. Basic Details
       </button>
-      <button class="${isHierarchyActive ? 'on' : ''}" onclick="goToQuestionsOrHierarchy();">
-        <span>2</span> ${hierTabLabel}
+
+      ${isSubOn ? `
+        <button class="${HIER_VIEW.screen === 'subjects' || (HIER_VIEW.screen === 'questions' && HIER_VIEW.subName) ? 'on' : ''}" type="button" onclick="HIER_VIEW.screen='subjects';render();">
+          2. Subjects & Questions (${getTestSubjects(t).length})
+        </button>
+      ` : `
+        <button class="${HIER_VIEW.screen === 'questions' ? 'on' : ''}" type="button" onclick="HIER_VIEW.screen='questions';HIER_VIEW.subName='';render();">
+          2. Questions (${(t.q || []).length})
+        </button>
+      `}
+
+      <button class="${HIER_VIEW.screen === 'settings' ? 'on' : ''}" type="button" onclick="HIER_VIEW.screen='settings';render();">
+        3. Settings & Rules
       </button>
-      <button class="${HIER_VIEW.screen === 'settings' ? 'on' : ''}" onclick="HIER_VIEW.screen='settings';render();">
-        <span>3</span> Settings
-      </button>
-      <button class="${HIER_VIEW.screen === 'review' ? 'on' : ''}" onclick="HIER_VIEW.screen='review';render();">
-        <span>4</span> Review & Publish
+
+      <button class="${HIER_VIEW.screen === 'review' ? 'on' : ''}" type="button" onclick="HIER_VIEW.screen='review';render();">
+        4. Review & Publish
       </button>
     </div>
 
-    <!-- Active Screen View -->
-    <div class="wiz-container">
+    <!-- Screen Container -->
+    <div id="hier-screen-container">
       ${renderActiveScreen()}
     </div>
   `);
 }
 
-function goToQuestionsOrHierarchy() {
-  if (E.sub?.on) {
-    HIER_VIEW.screen = 'subjects';
-    HIER_VIEW.subIdx = -1;
-    HIER_VIEW.chIdx = -1;
-    HIER_VIEW.tpIdx = -1;
-  } else {
-    HIER_VIEW.screen = 'questions';
-    HIER_VIEW.subIdx = -1;
-    HIER_VIEW.chIdx = -1;
-    HIER_VIEW.tpIdx = -1;
-  }
-  render();
-}
-
 function renderActiveScreen() {
   if (HIER_VIEW.screen === 'details') return renderScreen1_Details();
   if (HIER_VIEW.screen === 'subjects') return renderScreen2_Subjects();
-  if (HIER_VIEW.screen === 'chapters') return renderScreen3_Chapters();
-  if (HIER_VIEW.screen === 'topics') return renderScreen4_Topics();
   if (HIER_VIEW.screen === 'questions') return renderScreen5_Questions();
   if (HIER_VIEW.screen === 'settings') return renderScreen6_Settings();
   if (HIER_VIEW.screen === 'review') return renderScreen7_Review();
@@ -1218,82 +1220,74 @@ function renderScreen1_Details() {
       <div class="wiz-step-header">
         <span class="wiz-active-pill">1</span>
         <div>
-          <h3 style="margin:0;">Create Test – Basic Details</h3>
-          <small class="mu">Configure test name, type, timing, marks, and hierarchy level.</small>
+          <h3 style="margin:0;">Basic Test Details</h3>
+          <small class="mu">Title, target exam, duration, marks, and subject settings.</small>
         </div>
       </div>
 
-      <div style="margin-top:14px;">
-        <label class="l2" for="ti" style="margin-top:0;">Test Name *</label>
-        <input id="ti" class="in" value="${esc(t.title)}" placeholder="e.g. BPSC GS Mock 01" oninput="E.title=this.value;sv()">
+      <!-- Test Title -->
+      <label class="l2" for="ttitle">Test Title <span style="color:#ef4444;">*</span></label>
+      <input class="in" id="ttitle" placeholder="e.g. Modern Indian History Mock 01" value="${esc(t.title||"")}" oninput="E.title=this.value;sv();updateTestInDb(E)">
+
+      <!-- Exam Selection -->
+      <label class="l2" for="texam">Target Exam</label>
+      <div style="display:flex; gap:8px;">
+        <select class="in" id="texam" onchange="if(this.value==='__new__'){let n=prompt('Enter new exam name:');if(n&&n.trim()){n=n.trim();if(!D.exams.includes(n))D.exams.push(n);E.exam=n;sv();render();}else{this.value=E.exam||'';}}else{E.exam=this.value;sv();updateTestInDb(E);}">
+          ${(D.exams||[]).map(x => `<option value="${esc(x)}" ${x===t.exam ? "selected" : ""}>${esc(x)}</option>`).join("")}
+          <option value="__new__">+ Add new exam...</option>
+        </select>
       </div>
 
-      <div class="g2" style="margin-top:12px;">
-        <div>
-          <label class="l2" style="margin-top:0;">Test Type *</label>
-          <select class="in" onchange="E.type=this.value;sv()">
-            <option value="mock" ${E.type==='mock'?'selected':''}>Mock Test (Full exam pattern)</option>
-            <option value="practice" ${E.type==='practice'?'selected':''}>Practice Test (Topic/Chapter set)</option>
-          </select>
-        </div>
-        <div>
-          <label class="l2" style="margin-top:0;">Exam Category</label>
-          <input list="exam_list" class="in" value="${esc(t.exam||'')}" placeholder="e.g. BPSC AEDO, BSEB Class 10" oninput="E.exam=this.value;sv()">
-          <datalist id="exam_list">
-            ${(D.exams||[]).map(x=>`<option value="${esc(x)}">`).join("")}
-          </datalist>
-        </div>
-      </div>
-
-      <div style="margin-top:12px;">
-        <label class="l2" for="de" style="margin-top:0;">Description</label>
-        <textarea id="de" class="in" rows="2" placeholder="Full length mock test based on latest pattern..." oninput="E.desc=this.value;sv()">${esc(t.desc)}</textarea>
-      </div>
-
-      <div class="g3" style="margin-top:12px;">
-        <div>
-          <label class="l2" style="margin-top:0;">Time (minutes)</label>
-          <input class="in" type="number" min="1" max="300" value="${t.timer?.min||120}" oninput="E.timer.min=+this.value;E.timer.on=true;sv()">
-        </div>
-        <div>
-          <label class="l2" style="margin-top:0;">Total / Per Mark (+)</label>
-          <input class="in" type="number" min="0.25" step="0.25" value="${t.mk||1}" oninput="E.mk=+this.value;sv()">
-        </div>
-        <div>
-          <label class="l2" style="margin-top:0;">Negative Marking (-)</label>
-          <input class="in" type="number" min="0" step="0.01" value="${t.neg?.v||0.33}" oninput="E.neg.v=+this.value;E.neg.on=+this.value>0;sv()">
+      <!-- Test Type -->
+      <div class="rowx" style="margin-top:14px;">
+        <span class="l2" style="margin:0;">Test Type</span>
+        <div class="seg">
+          <button class="${t.type !== 'practice' ? 'on' : ''}" type="button" onclick="E.type='mock';sv();updateTestInDb(E);render()">Mock Test</button>
+          <button class="${t.type === 'practice' ? 'on' : ''}" type="button" onclick="E.type='practice';sv();updateTestInDb(E);render()">Practice Test</button>
         </div>
       </div>
 
-      <div class="g2" style="margin-top:12px;">
+      <!-- Description -->
+      <label class="l2" for="tdesc" style="margin-top:14px;">Description</label>
+      <textarea class="in" id="tdesc" rows="2" placeholder="Brief description of the test..." oninput="E.desc=this.value;sv();updateTestInDb(E)">${esc(t.desc||"")}</textarea>
+
+      <!-- Timer & Marks -->
+      <div class="g3" style="margin-top:14px;">
         <div>
-          <label class="l2" style="margin-top:0;">Card Badge / Tag</label>
-          ${chips([["","None"],["New","New"],["Popular","Popular"],["Bestseller","Bestseller"],["Free","Free"]], t.label, "setLb")}
+          <label class="l2" style="margin-top:0;">Time (min)</label>
+          <input class="in" type="number" min="1" max="300" value="${t.timer?.min || 10}" oninput="E.timer.min=+this.value;sv();updateTestInDb(E)">
         </div>
         <div>
-          <label class="l2" style="margin-top:0;">Access</label>
-          <div class="seg ${t.paid ? 'r' : ''}">
-            <button class="${!t.paid?'on':''}" type="button" onclick="E.paid=false;sv();render();">Free</button>
-            <button class="${t.paid?'on':''}" type="button" onclick="E.paid=true;sv();render();">${ic("lock")} Paid</button>
+          <label class="l2" style="margin-top:0;">Marks / Correct</label>
+          <input class="in" type="number" min="0.5" step="0.5" value="${t.mk || 1}" oninput="E.mk=+this.value;sv();updateTestInDb(E)">
+        </div>
+        <div>
+          <label class="l2" style="margin-top:0;">Negative Marks</label>
+          <input class="in" type="number" min="0" step="0.25" value="${t.neg?.v || 0.33}" oninput="E.neg.v=+this.value;sv();updateTestInDb(E)">
+        </div>
+      </div>
+
+      <!-- Master Subject Toggle -->
+      <div style="margin-top:20px; padding:16px; background:var(--hi); border:1.5px solid ${isSubjectOn ? 'var(--ac)' : 'var(--br)'}; border-radius:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <b style="font-size:1.02rem; display:flex; align-items:center; gap:8px;">
+              <span>${ic("book")}</span> Enable Subjects?
+            </b>
+            <p class="mu" style="margin:4px 0 0; font-size:0.86rem;">
+              Turn ON to group questions by subject (e.g. Physics, Chemistry). Turn OFF to add questions directly to this test.
+            </p>
           </div>
-          ${t.paid ? `
-            <div style="display:flex; gap:8px; margin-top:8px;">
-              <input class="in" type="number" placeholder="Price (₹)" value="${t.price||''}" oninput="E.price=+this.value;sv()">
-              <input class="in" type="number" placeholder="Sale (₹)" value="${t.sale||''}" oninput="E.sale=+this.value;sv()">
-            </div>
-          ` : ''}
+          <div>
+            ${sw(isSubjectOn, "toggleSubjectMode()", "", "")}
+          </div>
         </div>
       </div>
 
-      <!-- Enable Subject Toggle Box -->
-      <div style="margin-top:18px; padding:16px; background:var(--hi); border:1.5px solid var(--br); border-radius:14px;">
-        ${sw(isSubjectOn, "toggleSubjectMode()", "Enable Subject?", "Turn ON if your test has subjects (e.g. History, Geography, Science). Turn OFF for a single direct test.")}
-      </div>
-
-      <div class="rowx" style="margin-top:22px;">
+      <div class="rowx" style="margin-top:24px;">
         <span class="mu" style="font-size:0.85rem;">Draft saved automatically</span>
         <button class="b" type="button" onclick="saveDetailsAndNext()">
-          ${isSubjectOn ? "Next: Add Subjects →" : "Next: Add Questions →"}
+          ${isSubjectOn ? "Next: Add Subjects & Questions →" : "Next: Add Questions →"}
         </button>
       </div>
     </div>
@@ -1305,19 +1299,16 @@ function toggleSubjectMode() {
   if (!E.sub) E.sub = { on: false, v: '' };
 
   if (E.sub.on) {
-    if (E.hierarchy_tree && E.hierarchy_tree.length > 0) {
-      if (!confirm("Disable subjects? Existing subjects and chapters will be cleared from this test.")) {
+    let subs = getTestSubjects(E);
+    if (subs.length > 0) {
+      if (!confirm("Disable subjects? Existing subjects and question groups will be unlinked.")) {
         return;
       }
     }
     E.sub.on = false;
     E.sub.v = '';
-    E.hierarchy_tree = [];
-    E.q.forEach(q => { q.subject = ''; q.chapter = ''; q.topic = ''; });
-    syncTestHierarchyFields(E);
   } else {
     E.sub.on = true;
-    if (!E.hierarchy_tree) E.hierarchy_tree = [];
   }
   sv();
   updateTestInDb(E);
@@ -1330,543 +1321,220 @@ function saveDetailsAndNext() {
   updateTestInDb(E);
   if (E.sub?.on) {
     HIER_VIEW.screen = 'subjects';
-    HIER_VIEW.subIdx = -1;
-    HIER_VIEW.chIdx = -1;
-    HIER_VIEW.tpIdx = -1;
+    HIER_VIEW.subName = '';
   } else {
     HIER_VIEW.screen = 'questions';
-    HIER_VIEW.subIdx = -1;
-    HIER_VIEW.chIdx = -1;
-    HIER_VIEW.tpIdx = -1;
+    HIER_VIEW.subName = '';
+    QE = -2;
+    QF = { id: "q" + rid(), t: "", o: ["", "", "", ""], a: 0, e: "", subject: "", chapter: "", topic: "" };
   }
   render();
   scrollTo(0, 0);
 }
 
 // ==========================================
-// SCREEN 2: SUBJECT ADDED (List of Subjects)
+// SCREEN 2: SUBJECTS & QUESTIONS (Subject toggle ON)
 // ==========================================
 function renderScreen2_Subjects() {
   let t = E;
   initHierarchyTree(t);
-  let subjects = t.hierarchy_tree || [];
+  let subjects = getTestSubjects(t);
 
   return `
     <div class="c2">
       <!-- Header -->
       <div class="rowx" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--br);">
         <div style="display:flex; align-items:center; gap:10px;">
-          <a class="bkb" style="margin:0;" href="javascript:void(0)" onclick="HIER_VIEW.screen='details';render();">${ic("back")} <span>Details</span></a>
-          <b style="font-size:1.18rem;">Subjects (${subjects.length})</b>
+          <a class="bkb" style="margin:0;" href="javascript:void(0)" onclick="HIER_VIEW.screen='details';render();">
+            ${ic("back")}<span>Back to Details</span>
+          </a>
+          <div>
+            <h3 style="margin:0;">Subjects in ${esc(t.title)}</h3>
+            <small class="mu">Add subjects and organize questions for this test.</small>
+          </div>
         </div>
-        <button class="b s" type="button" onclick="focusAddSubjectInput()">+ Add Subject</button>
+        <button class="b s" type="button" onclick="HIER_VIEW.screen='review';render();">Review & Publish →</button>
       </div>
 
-      <!-- Add Subject Input Card -->
-      <div style="background:var(--hi); border:1.5px solid var(--ac); border-radius:14px; padding:16px; margin-bottom:18px;">
-        <b style="display:block; color:var(--ac); font-size:1rem; margin-bottom:4px;">Add Subject</b>
-        <small class="mu" style="display:block; margin-bottom:10px;">Create a subject like History, Geography, Physics, Chemistry.</small>
-        <div style="display:flex; gap:8px;">
-          <input id="sub_name_in" class="in" placeholder="Enter Subject Name (e.g. History)" style="flex:1;" onkeydown="if(event.key==='Enter')confirmAddSubject()">
-          <button class="b" type="button" onclick="confirmAddSubject()">+ Add Subject</button>
-        </div>
-        <div class="tabs wrap" style="margin-top:12px;">
-          <small class="mu" style="width:100%; display:block; margin-bottom:4px;">Quick suggestions:</small>
-          ${["History", "Geography", "Polity", "Economics", "Physics", "Chemistry", "Biology", "Mathematics", "General Science"].map(s => `
-            <button type="button" onclick="$('#sub_name_in').value='${s}';confirmAddSubject()">+ ${s}</button>
-          `).join("")}
-        </div>
-      </div>
-
-      <!-- Subjects List -->
-      <div style="display:flex; flex-direction:column; gap:14px;">
-        ${subjects.map((sub, sIdx) => {
-          let subQs = t.q.filter(q => (q.subject||'').trim() === sub.name);
-          let chCount = (sub.chapters||[]).length;
+      <!-- List of Subjects -->
+      <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px;">
+        ${subjects.map((subName, sIdx) => {
+          let subQuestions = (t.q || []).filter(q => (q.subject || '').trim() === subName.trim());
           return `
-            <div class="c2" style="background:var(--sf); border:1.5px solid var(--br); border-radius:16px; padding:18px; box-shadow:var(--sh);">
-              <div class="rowx" style="margin-bottom:14px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                  <span style="width:38px; height:38px; border-radius:10px; background:var(--hi); color:var(--ac); display:grid; place-items:center; font-size:1.3rem;">📘</span>
+            <div class="c2" style="background:var(--hi); border:1.5px solid var(--br); border-radius:14px; padding:16px;">
+              <div class="rowx">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span class="tg" style="font-weight:700; background:var(--sf);">${sIdx + 1}</span>
                   <div>
-                    <b style="font-size:1.15rem;">${esc(sub.name)}</b>
-                    <small class="mu" style="display:block; margin-top:2px;">${chCount} Chapter${chCount===1?'':'s'} · ${subQs.length} Question${subQs.length===1?'':'s'}</small>
+                    <b style="font-size:1.05rem;">${esc(subName)}</b>
+                    <div class="mu" style="font-size:0.85rem;">${subQuestions.length} question${subQuestions.length !== 1 ? 's' : ''}</div>
                   </div>
                 </div>
-                <div style="display:flex; gap:6px;">
-                  <button class="ib2" type="button" title="Rename Subject" onclick="renameSubject(${sIdx})">${ic("edit")}</button>
-                  <button class="ib2 dg" type="button" title="Delete Subject" onclick="deleteSubject(${sIdx})">${ic("trash")}</button>
+
+                <div style="display:flex; gap:8px;">
+                  <button class="b s" type="button" onclick="openQuestionsForSubject('${esc(subName)}')">
+                    ${ic("plus")} Add Questions
+                  </button>
+                  <button class="b o s" type="button" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" onclick="deleteSubject('${esc(subName)}')" title="Delete Subject">
+                    ${ic("trash")}
+                  </button>
                 </div>
               </div>
 
-              <!-- Action Buttons matching diagram: [+ Add Chapter] OR [Upload Questions] -->
-              <div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--br);">
-                <button class="b s" type="button" style="background:#10b981; border-color:#10b981; color:#fff;" onclick="openSubjectChapters(${sIdx})">
-                  + Add Chapter ${chCount ? '(${chCount})' : ''}
-                </button>
-                <button class="b o s" type="button" style="border-color:#8b5cf6; color:#8b5cf6;" onclick="openQuestionsForContext(${sIdx}, -1, -1)">
-                  ${ic("upload")} Upload Questions (in ${esc(sub.name)})
-                </button>
-              </div>
+              <!-- Inline Question List (if any) -->
+              ${subQuestions.length > 0 ? `
+                <div style="margin-top:12px; padding-top:10px; border-top:1px dashed var(--br); display:flex; flex-direction:column; gap:8px;">
+                  ${subQuestions.map(q => {
+                    let globalIdx = t.q.indexOf(q);
+                    return qrow(q, globalIdx);
+                  }).join('')}
+                </div>
+              ` : `
+                <div style="margin-top:10px; font-size:0.85rem; color:var(--mu); font-style:italic;">
+                  No questions in this subject yet. Click "+ Add Questions" to start adding questions!
+                </div>
+              `}
             </div>
           `;
-        }).join("") || `
-          <div class="em" style="padding:24px; border:1px dashed var(--br); border-radius:14px;">
-            No subjects added yet. Enter a subject name above to start organizing your test!
+        }).join('')}
+
+        ${subjects.length === 0 ? `
+          <div class="em" style="padding:28px; border:1.5px dashed var(--br); border-radius:14px;">
+            <div style="font-size:1.8rem; margin-bottom:8px;">📚</div>
+            <b>No subjects added yet.</b>
+            <p class="mu" style="font-size:0.9rem; margin:4px 0 0;">Add your first subject using the field below to organize your test questions.</p>
           </div>
-        `}
+        ` : ''}
       </div>
 
-      <!-- Navigation -->
+      <!-- Add Subject Input Section -->
+      <div class="c2" style="background:var(--sf); border:1.5px solid var(--ac); border-radius:14px; padding:16px;">
+        <label class="l2" style="margin-top:0; font-weight:700;" for="newSubInput">Add New Subject</label>
+        <div style="display:flex; gap:10px;">
+          <input class="in" id="newSubInput" placeholder="Enter subject name (e.g. Physics, History, Reasoning)..." onkeydown="if(event.key==='Enter')addNewSubject()">
+          <button class="b" type="button" style="flex-shrink:0;" onclick="addNewSubject()">
+            ${ic("plus")} Add Subject
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Footer -->
       <div class="rowx" style="margin-top:24px;">
-        <button class="b o" type="button" onclick="HIER_VIEW.screen='details';render();">← Back: Basic Details</button>
-        <button class="b" type="button" onclick="HIER_VIEW.screen='settings';render();">Next: Settings →</button>
+        <button class="b o" type="button" onclick="HIER_VIEW.screen='details';render();">← Back to Details</button>
+        <button class="b" type="button" onclick="HIER_VIEW.screen='review';render();">Review & Publish →</button>
       </div>
     </div>
   `;
 }
 
-function focusAddSubjectInput() {
-  let el = $("#sub_name_in");
-  if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-}
+function addNewSubject(nameVal) {
+  let el = $("#newSubInput");
+  let val = (nameVal || (el ? el.value : "")).trim();
+  if (!val) { toast("Please enter a subject name"); if(el) el.focus(); return; }
 
-function confirmAddSubject() {
-  let inp = $("#sub_name_in");
-  let val = inp ? inp.value.trim() : "";
-  if (!val) { toast("Please type a subject name"); return; }
-  initHierarchyTree(E);
-  if (!E.hierarchy_tree.some(s => s.name.toLowerCase() === val.toLowerCase())) {
-    E.hierarchy_tree.push({ name: val, ch_on: false, chapters: [] });
-    E.sub.on = true;
-    syncTestHierarchyFields(E);
-    sv();
-    updateTestInDb(E);
-    toast("Subject added: " + val);
-    render();
-  } else {
-    toast("Subject already exists");
+  let t = E;
+  initHierarchyTree(t);
+  let subs = getTestSubjects(t);
+
+  if (subs.some(s => s.toLowerCase() === val.toLowerCase())) {
+    toast("Subject '" + val + "' already exists!");
+    if (el) el.focus();
+    return;
   }
-}
 
-function renameSubject(sIdx) {
-  let sub = E.hierarchy_tree[sIdx];
-  let newName = prompt("Rename subject:", sub.name);
-  if (newName && newName.trim() && newName.trim() !== sub.name) {
-    let oldName = sub.name;
-    sub.name = newName.trim();
-    // Update all questions that had oldName
-    E.q.forEach(q => { if (q.subject === oldName) q.subject = sub.name; });
-    syncTestHierarchyFields(E);
-    sv();
-    updateTestInDb(E);
-    render();
-  }
-}
-
-function deleteSubject(sIdx) {
-  let sub = E.hierarchy_tree[sIdx];
-  if (!confirm("Delete subject '" + sub.name + "'? Questions under this subject will be removed.")) return;
-  E.q = E.q.filter(q => q.subject !== sub.name);
-  E.hierarchy_tree.splice(sIdx, 1);
-  syncTestHierarchyFields(E);
+  t.subjects.push(val);
+  t.hierarchy_tree.push({ name: val, chapters: [] });
+  t.sub.on = true;
   sv();
-  updateTestInDb(E);
-  toast("Subject removed");
+  updateTestInDb(t);
+  toast("Subject '" + val + "' added!");
+  render();
+  setTimeout(() => {
+    let inp = $("#newSubInput");
+    if (inp) { inp.value = ''; inp.focus(); }
+  }, 50);
+}
+
+function deleteSubject(subName) {
+  if (!confirm("Are you sure you want to delete subject '" + subName + "' and all its questions?")) return;
+  let t = E;
+  initHierarchyTree(t);
+
+  t.subjects = t.subjects.filter(s => s !== subName);
+  t.hierarchy_tree = t.hierarchy_tree.filter(s => s.name !== subName);
+
+  let toRemove = (t.q || []).filter(q => (q.subject || '').trim() === subName.trim());
+  toRemove.forEach(q => {
+    if (q.id) deleteQuestionFromDb(q.id, t.id);
+  });
+  t.q = (t.q || []).filter(q => (q.subject || '').trim() !== subName.trim());
+
+  sv();
+  updateTestInDb(t);
+  toast("Subject '" + subName + "' deleted");
   render();
 }
 
-function openSubjectChapters(sIdx) {
-  HIER_VIEW.screen = 'chapters';
-  HIER_VIEW.subIdx = sIdx;
-  HIER_VIEW.chIdx = -1;
-  HIER_VIEW.tpIdx = -1;
+function openQuestionsForSubject(subName) {
+  HIER_VIEW.screen = 'questions';
+  HIER_VIEW.subName = subName;
+  QE = -2;
+  QF = {
+    id: "q" + rid(),
+    t: "",
+    o: ["", "", "", ""],
+    a: 0,
+    e: "",
+    subject: subName,
+    chapter: "",
+    topic: ""
+  };
   render();
   scrollTo(0, 0);
-}
-
-// ==========================================
-// SCREEN 3: CHAPTER ADDED (in History)
-// ==========================================
-function renderScreen3_Chapters() {
-  let t = E;
-  let sIdx = HIER_VIEW.subIdx;
-  let sub = t.hierarchy_tree[sIdx];
-  if (!sub) { HIER_VIEW.screen = 'subjects'; return renderScreen2_Subjects(); }
-
-  let chapters = sub.chapters || [];
-
-  return `
-    <div class="c2">
-      <!-- Breadcrumb Header matching mockup: < History  + Add Chapter -->
-      <div class="rowx" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--br);">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <a class="bkb" style="margin:0;" href="javascript:void(0)" onclick="HIER_VIEW.screen='subjects';render();">${ic("back")} <span>${esc(sub.name)}</span></a>
-          <span style="color:var(--mu);">›</span>
-          <b style="font-size:1.15rem;">Chapters (${chapters.length})</b>
-        </div>
-        <button class="b s" type="button" onclick="focusAddChapterInput()">+ Add Chapter</button>
-      </div>
-
-      <!-- Add Chapter Input Card -->
-      <div style="background:var(--hi); border:1.5px solid var(--ac); border-radius:14px; padding:16px; margin-bottom:18px;">
-        <b style="display:block; color:var(--ac); font-size:1rem; margin-bottom:4px;">Add Chapter in ${esc(sub.name)}</b>
-        <small class="mu" style="display:block; margin-bottom:10px;">e.g. Ancient India, Medieval India, Modern India</small>
-        <div style="display:flex; gap:8px;">
-          <input id="ch_name_in" class="in" placeholder="Chapter Name (e.g. Ancient India)" style="flex:1;" onkeydown="if(event.key==='Enter')confirmAddChapter()">
-          <button class="b" type="button" onclick="confirmAddChapter()">+ Add Chapter</button>
-        </div>
-      </div>
-
-      <!-- Chapters List -->
-      <div style="display:flex; flex-direction:column; gap:14px;">
-        ${chapters.map((ch, cIdx) => {
-          let chQs = t.q.filter(q => (q.subject||'').trim() === sub.name && (q.chapter||'').trim() === ch.name);
-          let tpCount = (ch.topics||[]).length;
-          return `
-            <div class="c2" style="background:var(--sf); border:1.5px solid var(--br); border-radius:16px; padding:18px; box-shadow:var(--sh);">
-              <div class="rowx" style="margin-bottom:14px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                  <span style="width:38px; height:38px; border-radius:10px; background:var(--hi); color:var(--ac); display:grid; place-items:center; font-size:1.2rem;">📑</span>
-                  <div>
-                    <b style="font-size:1.1rem;">${cIdx + 1}. ${esc(ch.name)}</b>
-                    <small class="mu" style="display:block; margin-top:2px;">${tpCount} Topic${tpCount===1?'':'s'} · ${chQs.length} Question${chQs.length===1?'':'s'}</small>
-                  </div>
-                </div>
-                <div style="display:flex; gap:6px;">
-                  <button class="ib2" type="button" title="Rename Chapter" onclick="renameChapter(${sIdx}, ${cIdx})">${ic("edit")}</button>
-                  <button class="ib2 dg" type="button" title="Delete Chapter" onclick="deleteChapter(${sIdx}, ${cIdx})">${ic("trash")}</button>
-                </div>
-              </div>
-
-              <!-- Action buttons matching diagram: [+ Add Topic] OR [Upload Questions] -->
-              <div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--br);">
-                <button class="b s" type="button" style="background:#10b981; border-color:#10b981; color:#fff;" onclick="openChapterTopics(${sIdx}, ${cIdx})">
-                  + Add Topic ${tpCount ? '(${tpCount})' : ''}
-                </button>
-                <button class="b o s" type="button" style="border-color:#8b5cf6; color:#8b5cf6;" onclick="openQuestionsForContext(${sIdx}, ${cIdx}, -1)">
-                  ${ic("upload")} Upload Questions (in ${esc(ch.name)})
-                </button>
-              </div>
-            </div>
-          `;
-        }).join("") || `
-          <div class="em" style="padding:24px; border:1px dashed var(--br); border-radius:14px;">
-            No chapters added yet in ${esc(sub.name)}. Type a chapter name above and tap + Add Chapter!
-          </div>
-        `}
-      </div>
-
-      <!-- Navigation -->
-      <div class="rowx" style="margin-top:24px;">
-        <button class="b o" type="button" onclick="HIER_VIEW.screen='subjects';render();">← Back to Subjects</button>
-        <button class="b" type="button" onclick="HIER_VIEW.screen='settings';render();">Next: Settings →</button>
-      </div>
-    </div>
-  `;
-}
-
-function focusAddChapterInput() {
-  let el = $("#ch_name_in");
-  if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-}
-
-function confirmAddChapter() {
-  let inp = $("#ch_name_in");
-  let val = inp ? inp.value.trim() : "";
-  if (!val) { toast("Please type a chapter name"); return; }
-  let sub = E.hierarchy_tree[HIER_VIEW.subIdx];
-  if (!sub.chapters) sub.chapters = [];
-  if (!sub.chapters.some(c => c.name.toLowerCase() === val.toLowerCase())) {
-    sub.chapters.push({ name: val, tp_on: false, topics: [] });
-    sub.ch_on = true;
-    syncTestHierarchyFields(E);
-    sv();
-    updateTestInDb(E);
-    toast("Chapter added: " + val);
-    render();
-  } else {
-    toast("Chapter already exists");
-  }
-}
-
-function renameChapter(sIdx, cIdx) {
-  let sub = E.hierarchy_tree[sIdx];
-  let ch = sub.chapters[cIdx];
-  let newName = prompt("Rename chapter:", ch.name);
-  if (newName && newName.trim() && newName.trim() !== ch.name) {
-    let oldName = ch.name;
-    ch.name = newName.trim();
-    E.q.forEach(q => {
-      if (q.subject === sub.name && q.chapter === oldName) q.chapter = ch.name;
-    });
-    syncTestHierarchyFields(E);
-    sv();
-    updateTestInDb(E);
-    render();
-  }
-}
-
-function deleteChapter(sIdx, cIdx) {
-  let sub = E.hierarchy_tree[sIdx];
-  let ch = sub.chapters[cIdx];
-  if (!confirm("Delete chapter '" + ch.name + "'? Questions under this chapter will be removed.")) return;
-  E.q = E.q.filter(q => !(q.subject === sub.name && q.chapter === ch.name));
-  sub.chapters.splice(cIdx, 1);
-  syncTestHierarchyFields(E);
-  sv();
-  updateTestInDb(E);
-  toast("Chapter removed");
-  render();
-}
-
-function openChapterTopics(sIdx, cIdx) {
-  HIER_VIEW.screen = 'topics';
-  HIER_VIEW.subIdx = sIdx;
-  HIER_VIEW.chIdx = cIdx;
-  HIER_VIEW.tpIdx = -1;
-  render();
-  scrollTo(0, 0);
-}
-
-// ==========================================
-// SCREEN 4: TOPIC ADDED (in Ancient India)
-// ==========================================
-function renderScreen4_Topics() {
-  let t = E;
-  let sIdx = HIER_VIEW.subIdx;
-  let cIdx = HIER_VIEW.chIdx;
-  let sub = t.hierarchy_tree[sIdx];
-  let ch = sub?.chapters?.[cIdx];
-  if (!sub || !ch) { HIER_VIEW.screen = 'chapters'; return renderScreen3_Chapters(); }
-
-  let topics = ch.topics || [];
-
-  return `
-    <div class="c2">
-      <!-- Breadcrumb Header matching mockup: < History > Ancient India   + Add Topic -->
-      <div class="rowx" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--br);">
-        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-          <a class="bkb" style="margin:0;" href="javascript:void(0)" onclick="openSubjectChapters(${sIdx})">${ic("back")} <span>${esc(sub.name)}</span></a>
-          <span style="color:var(--mu);">›</span>
-          <b style="font-size:1.12rem;">${esc(ch.name)}: Topics (${topics.length})</b>
-        </div>
-        <button class="b s" type="button" onclick="focusAddTopicInput()">+ Add Topic</button>
-      </div>
-
-      <!-- Add Topic Input Card -->
-      <div style="background:var(--hi); border:1.5px solid var(--ac); border-radius:14px; padding:16px; margin-bottom:18px;">
-        <b style="display:block; color:var(--ac); font-size:1rem; margin-bottom:4px;">Add Topic in ${esc(ch.name)}</b>
-        <small class="mu" style="display:block; margin-bottom:10px;">e.g. Indus Valley Civilization, Vedic Period, Mauryan Empire</small>
-        <div style="display:flex; gap:8px;">
-          <input id="tp_name_in" class="in" placeholder="Topic Name (e.g. Indus Valley Civilization)" style="flex:1;" onkeydown="if(event.key==='Enter')confirmAddTopic()">
-          <button class="b" type="button" onclick="confirmAddTopic()">+ Add Topic</button>
-        </div>
-      </div>
-
-      <!-- Topics List -->
-      <div style="display:flex; flex-direction:column; gap:14px;">
-        ${topics.map((tp, pIdx) => {
-          let tpName = typeof tp === 'string' ? tp : tp.name;
-          let tpQs = t.q.filter(q => (q.subject||'').trim() === sub.name && (q.chapter||'').trim() === ch.name && (q.topic||'').trim() === tpName);
-          return `
-            <div class="c2" style="background:var(--sf); border:1.5px solid var(--br); border-radius:16px; padding:18px; box-shadow:var(--sh);">
-              <div class="rowx" style="margin-bottom:14px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                  <span style="width:38px; height:38px; border-radius:10px; background:var(--hi); color:var(--ac); display:grid; place-items:center; font-size:1.2rem;">🎯</span>
-                  <div>
-                    <b style="font-size:1.1rem;">${pIdx + 1}. ${esc(tpName)}</b>
-                    <small class="mu" style="display:block; margin-top:2px;">${tpQs.length} Question${tpQs.length===1?'':'s'}</small>
-                  </div>
-                </div>
-                <div style="display:flex; gap:6px;">
-                  <button class="ib2" type="button" title="Rename Topic" onclick="renameTopic(${sIdx}, ${cIdx}, ${pIdx})">${ic("edit")}</button>
-                  <button class="ib2 dg" type="button" title="Delete Topic" onclick="deleteTopic(${sIdx}, ${cIdx}, ${pIdx})">${ic("trash")}</button>
-                </div>
-              </div>
-
-              <!-- Action button matching diagram: [Upload Questions] -->
-              <div style="display:flex; gap:10px; padding-top:12px; border-top:1px solid var(--br);">
-                <button class="b o s" type="button" style="border-color:#8b5cf6; color:#8b5cf6;" onclick="openQuestionsForContext(${sIdx}, ${cIdx}, ${pIdx})">
-                  ${ic("upload")} Upload Questions (in ${esc(tpName)})
-                </button>
-              </div>
-            </div>
-          `;
-        }).join("") || `
-          <div class="em" style="padding:24px; border:1px dashed var(--br); border-radius:14px;">
-            No topics added yet in ${esc(ch.name)}. Enter a topic name above!
-          </div>
-        `}
-      </div>
-
-      <!-- Navigation -->
-      <div class="rowx" style="margin-top:24px;">
-        <button class="b o" type="button" onclick="openSubjectChapters(${sIdx})">← Back to Chapters</button>
-        <button class="b" type="button" onclick="HIER_VIEW.screen='settings';render();">Next: Settings →</button>
-      </div>
-    </div>
-  `;
-}
-
-function focusAddTopicInput() {
-  let el = $("#tp_name_in");
-  if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-}
-
-function confirmAddTopic() {
-  let inp = $("#tp_name_in");
-  let val = inp ? inp.value.trim() : "";
-  if (!val) { toast("Please type a topic name"); return; }
-  let sub = E.hierarchy_tree[HIER_VIEW.subIdx];
-  let ch = sub.chapters[HIER_VIEW.chIdx];
-  if (!ch.topics) ch.topics = [];
-  if (!ch.topics.some(tp => (typeof tp === 'string' ? tp : tp.name).toLowerCase() === val.toLowerCase())) {
-    ch.topics.push(val);
-    ch.tp_on = true;
-    syncTestHierarchyFields(E);
-    sv();
-    updateTestInDb(E);
-    toast("Topic added: " + val);
-    render();
-  } else {
-    toast("Topic already exists");
-  }
-}
-
-function renameTopic(sIdx, cIdx, pIdx) {
-  let sub = E.hierarchy_tree[sIdx];
-  let ch = sub.chapters[cIdx];
-  let tpName = typeof ch.topics[pIdx] === 'string' ? ch.topics[pIdx] : ch.topics[pIdx].name;
-  let newName = prompt("Rename topic:", tpName);
-  if (newName && newName.trim() && newName.trim() !== tpName) {
-    let oldName = tpName;
-    ch.topics[pIdx] = newName.trim();
-    E.q.forEach(q => {
-      if (q.subject === sub.name && q.chapter === ch.name && q.topic === oldName) q.topic = ch.topics[pIdx];
-    });
-    syncTestHierarchyFields(E);
-    sv();
-    updateTestInDb(E);
-    render();
-  }
-}
-
-function deleteTopic(sIdx, cIdx, pIdx) {
-  let sub = E.hierarchy_tree[sIdx];
-  let ch = sub.chapters[cIdx];
-  let tpName = typeof ch.topics[pIdx] === 'string' ? ch.topics[pIdx] : ch.topics[pIdx].name;
-  if (!confirm("Delete topic '" + tpName + "'? Questions under this topic will be removed.")) return;
-  E.q = E.q.filter(q => !(q.subject === sub.name && q.chapter === ch.name && q.topic === tpName));
-  ch.topics.splice(pIdx, 1);
-  syncTestHierarchyFields(E);
-  sv();
-  updateTestInDb(E);
-  toast("Topic removed");
-  render();
 }
 
 // ==========================================
 // SCREEN 5: QUESTION CREATION / UPLOAD
 // ==========================================
-function openQuestionsForContext(sIdx, cIdx, pIdx) {
-  HIER_VIEW.screen = 'questions';
-  HIER_VIEW.subIdx = sIdx;
-  HIER_VIEW.chIdx = cIdx;
-  HIER_VIEW.tpIdx = pIdx;
-
-  let subName = sIdx >= 0 ? E.hierarchy_tree[sIdx]?.name : '';
-  let chName = (sIdx >= 0 && cIdx >= 0) ? E.hierarchy_tree[sIdx]?.chapters?.[cIdx]?.name : '';
-  let tpName = '';
-  if (sIdx >= 0 && cIdx >= 0 && pIdx >= 0) {
-    let raw = E.hierarchy_tree[sIdx]?.chapters?.[cIdx]?.topics?.[pIdx];
-    tpName = typeof raw === 'string' ? raw : (raw?.name || '');
-  }
-
-  // Set target for new questions
-  Q_TARGET = { sub: subName || '', ch: chName || '', tp: tpName || '' };
-  QE = -2; // fresh manual question ready
-  QF = { id: "q" + rid(), t: "", o: ["", "", "", ""], a: 0, e: "", subject: subName, chapter: chName, topic: tpName };
-
-  render();
-  scrollTo(0, 0);
-}
-
-function goBackFromQuestions() {
-  if (HIER_VIEW.tpIdx >= 0) {
-    HIER_VIEW.screen = 'topics';
-  } else if (HIER_VIEW.chIdx >= 0) {
-    HIER_VIEW.screen = 'chapters';
-  } else if (HIER_VIEW.subIdx >= 0) {
-    HIER_VIEW.screen = 'subjects';
-  } else if (E.sub?.on) {
-    HIER_VIEW.screen = 'subjects';
-  } else {
-    HIER_VIEW.screen = 'details';
-  }
-  render();
-  scrollTo(0, 0);
-}
-
 function renderScreen5_Questions() {
   let t = E;
-  let sub = HIER_VIEW.subIdx >= 0 ? t.hierarchy_tree[HIER_VIEW.subIdx] : null;
-  let ch = (sub && HIER_VIEW.chIdx >= 0) ? sub.chapters[HIER_VIEW.chIdx] : null;
-  let tpName = '';
-  if (ch && HIER_VIEW.tpIdx >= 0) {
-    let raw = ch.topics[HIER_VIEW.tpIdx];
-    tpName = typeof raw === 'string' ? raw : (raw?.name || '');
-  }
+  let activeSub = HIER_VIEW.subName || '';
+  let contextLabel = activeSub ? `Subject: ${activeSub}` : t.title;
 
-  let breadcrumbs = [];
-  if (sub) breadcrumbs.push(sub.name);
-  if (ch) breadcrumbs.push(ch.name);
-  if (tpName) breadcrumbs.push(tpName);
-  let contextLabel = breadcrumbs.length ? breadcrumbs.join(' › ') : 'Direct Test Questions';
-
-  // Filter questions that belong to this exact context
-  let contextQuestions = t.q.filter(q => {
-    let qSub = (q.subject || '').trim();
-    let qCh = (q.chapter || '').trim();
-    let qTp = (q.topic || '').trim();
-
-    if (!breadcrumbs.length) {
-      return !qSub && !qCh && !qTp;
-    }
-    if (tpName) {
-      return qSub === sub.name && qCh === ch.name && qTp === tpName;
-    }
-    if (ch) {
-      return qSub === sub.name && qCh === ch.name && !qTp;
-    }
-    if (sub) {
-      return qSub === sub.name && !qCh && !qTp;
-    }
-    return true;
-  });
+  let contextQuestions = activeSub
+    ? (t.q || []).filter(q => (q.subject || '').trim() === activeSub.trim())
+    : (t.q || []);
 
   return `
     <div class="c2">
       <!-- Breadcrumb Header -->
       <div class="rowx" style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--br);">
-        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-          <a class="bkb" style="margin:0;" href="javascript:void(0)" onclick="goBackFromQuestions()">${ic("back")} <span>Back</span></a>
-          <span style="color:var(--mu);">›</span>
-          <b style="font-size:1.1rem;">Questions in:</b>
-          <span class="chip g" style="font-weight:700;">${esc(contextLabel)}</span>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <a class="bkb" style="margin:0;" href="javascript:void(0)" onclick="goBackFromQuestions()">
+            ${ic("back")}<span>${t.sub?.on ? "Back to Subjects" : "Back to Details"}</span>
+          </a>
+          <div>
+            <h3 style="margin:0;">Adding Questions: ${esc(contextLabel)}</h3>
+            <small class="mu">${contextQuestions.length} questions in this level · ${t.q.length} total in test</small>
+          </div>
         </div>
-        <span class="chip">${contextQuestions.length} Questions</span>
+        <button class="b s" type="button" onclick="HIER_VIEW.screen='review';render();">Review & Publish →</button>
       </div>
 
-      <!-- Tabs: Create Manually | Upload (Excel/Text) -->
+      <!-- Mode Switcher Tabs (Manual vs Bulk) -->
       <div class="tabs" style="margin-bottom:16px;">
-        <button class="${HIER_VIEW.qTab==='manual'?'on':''}" type="button" onclick="HIER_VIEW.qTab='manual';render();">Create Manually</button>
-        <button class="${HIER_VIEW.qTab==='bulk'?'on':''}" type="button" onclick="HIER_VIEW.qTab='bulk';render();">Upload (Excel / Text)</button>
+        <button class="${HIER_VIEW.qTab === 'manual' ? 'on' : ''}" type="button" onclick="HIER_VIEW.qTab='manual';render();">
+          Create Manually
+        </button>
+        <button class="${HIER_VIEW.qTab === 'bulk' ? 'on' : ''}" type="button" onclick="HIER_VIEW.qTab='bulk';render();">
+          Upload (Excel / Text)
+        </button>
       </div>
 
-      ${HIER_VIEW.qTab === 'bulk' ? bulk() : renderManualQuestionCard(contextLabel)}
+      <!-- Form View -->
+      ${HIER_VIEW.qTab === 'manual' ? renderManualQuestionCard(contextLabel) : renderBulkUploadCard(contextLabel)}
 
-      <!-- Existing Questions List for this Context -->
+      <!-- Existing Questions List -->
       <div style="margin-top:24px; padding-top:16px; border-top:1.5px solid var(--br);">
         <div class="rowx" style="margin-bottom:12px;">
           <b style="font-size:1.05rem;">Questions in ${esc(contextLabel)} (${contextQuestions.length})</b>
@@ -1878,7 +1546,7 @@ function renderScreen5_Questions() {
             return QE === globalIdx ? '' : qrow(q, globalIdx);
           }).join("") || `
             <div class="em" style="padding:20px; border:1px dashed var(--br); border-radius:12px;">
-              No questions added in this level yet. Use the form above to add your first question!
+              No questions added yet. Use the form above to add your first question!
             </div>
           `}
         </div>
@@ -1886,11 +1554,25 @@ function renderScreen5_Questions() {
 
       <!-- Navigation -->
       <div class="rowx" style="margin-top:26px;">
-        <button class="b o" type="button" onclick="goBackFromQuestions()">← Back</button>
+        <button class="b o" type="button" onclick="goBackFromQuestions()">
+          ${t.sub?.on ? "← Done (Back to Subjects)" : "← Back to Details"}
+        </button>
         <button class="b" type="button" onclick="HIER_VIEW.screen='review';render();">Review & Publish →</button>
       </div>
     </div>
   `;
+}
+
+function goBackFromQuestions() {
+  if (E.sub?.on) {
+    HIER_VIEW.screen = 'subjects';
+    HIER_VIEW.subName = '';
+  } else {
+    HIER_VIEW.screen = 'details';
+    HIER_VIEW.subName = '';
+  }
+  render();
+  scrollTo(0, 0);
 }
 
 function renderManualQuestionCard(contextLabel) {
@@ -1900,42 +1582,35 @@ function renderManualQuestionCard(contextLabel) {
     <div class="c2" style="background:var(--hi); border:1.5px solid var(--ac); border-radius:16px; padding:18px; margin-bottom:16px;">
       <div class="rowx" style="margin-bottom:12px;">
         <b style="color:var(--ac); font-size:1.05rem;">${QE === -2 ? "Add Question" : "Edit Question"}</b>
-        <span class="chip g">${esc(contextLabel)}</span>
+        <span class="tg" style="font-weight:600;">${esc(contextLabel)}</span>
       </div>
 
-      <div class="g2" style="margin-bottom:10px;">
-        <div>
-          <label class="l2" style="margin-top:0;">Question Type</label>
-          <select class="in" disabled style="opacity:0.8;">
-            <option>MCQ (Single Correct Option)</option>
-          </select>
-        </div>
+      <!-- Question Text -->
+      <label class="l2" for="qt" style="margin-top:0;">Question Text <span style="color:#ef4444;">*</span></label>
+      <textarea id="qt" class="in" rows="3" placeholder="Enter question statement here..." oninput="QF.t=this.value">${esc(q.t)}</textarea>
+
+      <!-- MCQ Options (With Radio Selection) -->
+      <label class="l2" style="margin-top:14px;">Options (Select radio for correct answer) <span style="color:#ef4444;">*</span></label>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${[0, 1, 2, 3].map(i => `
+          <div style="display:flex; align-items:center; gap:10px; background:var(--sf); border:1.5px solid ${q.a === i ? '#22c55e' : 'var(--br)'}; border-radius:12px; padding:6px 12px;">
+            <input type="radio" name="opt_correct" id="rad_${i}" value="${i}" ${q.a === i ? "checked" : ""} onchange="QF.a=${i};render()" style="width:18px; height:18px; cursor:pointer; accent-color:#22c55e;">
+            <label for="rad_${i}" style="font-weight:700; width:22px; cursor:pointer; color:${q.a === i ? '#22c55e' : 'inherit'};">${String.fromCharCode(65 + i)}.</label>
+            <input class="in" style="border:none; background:transparent; padding:6px 0; font-size:0.95rem;" placeholder="Option ${String.fromCharCode(65 + i)} text..." value="${esc(q.o[i] || '')}" oninput="QF.o[${i}]=this.value">
+            ${q.a === i ? `<span style="color:#22c55e; font-size:0.8rem; font-weight:700;">CORRECT</span>` : ''}
+          </div>
+        `).join("")}
       </div>
 
-      <label class="l2" for="qt" style="margin-top:0;">Question Text *</label>
-      <textarea id="qt" class="in" rows="4" placeholder="Type or paste question text here..." oninput="QF.t=this.value">${esc(q.t)}</textarea>
+      <!-- Explanation -->
+      <label class="l2" for="qe" style="margin-top:14px;">Explanation (Shown to student in test solutions)</label>
+      <textarea id="qe" class="in" rows="2" placeholder="Explain why the answer is correct..." oninput="QF.e=this.value">${esc(q.e || "")}</textarea>
 
-      <label class="l2" style="margin-top:14px;">Options (Tap radio button to mark correct answer) *</label>
-      ${q.o.map((o, j) => `
-        <div class="of" style="margin-bottom:8px;">
-          <button class="rd${q.a == j ? " on" : ""}" type="button" aria-label="Option ${LT[j]} is correct" onclick="QF.a=${j};render()">${q.a == j ? ic("check") : ""}</button>
-          <span class="lt">${LT[j]}</span>
-          <input class="in" aria-label="Option ${LT[j]}" placeholder="Option ${LT[j]} text..." value="${esc(o)}" oninput="QF.o[${j}]=this.value">
-          ${q.o.length > 2 ? `<button class="ib2" type="button" aria-label="Remove option" onclick="rmO(${j})">${ic("x")}</button>` : ""}
-        </div>
-      `).join("")}
+      <div id="qer" style="color:#ef4444; font-size:0.85rem; margin-top:10px;"></div>
 
-      ${q.o.length < 6 ? `
-        <button class="b o s" type="button" style="margin-top:4px;" onclick="QF.o.push('');render();">${ic("plus")} Add Option</button>
-      ` : ""}
-
-      <div style="margin-top:14px;">
-        <label class="l2" for="qe" style="margin-top:0;">Explanation (optional - shown after test)</label>
-        <textarea id="qe" class="in" rows="2" placeholder="Explain why the answer is correct..." oninput="QF.e=this.value">${esc(q.e)}</textarea>
-      </div>
-
-      <div class="rowx" style="margin-top:16px;">
-        <span class="hint bad" id="qer"></span>
+      <!-- Form Actions -->
+      <div class="rowx" style="margin-top:18px; padding-top:14px; border-top:1px solid var(--br);">
+        <span class="mu" style="font-size:0.85rem;">Draft saved automatically</span>
         <div style="display:flex; gap:10px;">
           ${QE >= 0 ? `
             <button class="b o" type="button" onclick="cancelEditQ()">Cancel</button>
@@ -1950,16 +1625,105 @@ function renderManualQuestionCard(contextLabel) {
   `;
 }
 
+function renderBulkUploadCard(contextLabel) {
+  return `
+    <div class="c2" style="background:var(--hi); border:1.5px solid var(--ac); border-radius:16px; padding:18px; margin-bottom:16px;">
+      <b style="color:var(--ac); font-size:1.05rem;">Bulk Question Upload (${esc(contextLabel)})</b>
+      <p class="mu" style="font-size:0.85rem; margin:4px 0 12px;">Paste questions in text format, or upload a formatted text/csv file.</p>
+
+      <div style="background:var(--sf); padding:10px; border-radius:8px; font-family:monospace; font-size:0.8rem; margin-bottom:12px; color:var(--mu);">
+        Format:<br>
+        Q: What is the capital of India?<br>
+        A) Mumbai<br>
+        B) New Delhi<br>
+        C) Kolkata<br>
+        D) Chennai<br>
+        Ans: B<br>
+        Exp: New Delhi is the national capital.
+      </div>
+
+      <textarea id="bulkText" class="in" rows="6" placeholder="Paste questions here following the format above..."></textarea>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+        <label class="b o s" style="cursor:pointer; margin:0;">
+          ${ic("upload")} Upload File (.txt, .csv)
+          <input type="file" accept=".txt,.csv" style="display:none;" onchange="handleBulkFile(event)">
+        </label>
+        <button class="b" type="button" onclick="processBulkText()">Process & Import</button>
+      </div>
+    </div>
+  `;
+}
+
+function handleBulkFile(e) {
+  let file = e.target.files[0];
+  if (!file) return;
+  let reader = new FileReader();
+  reader.onload = (evt) => {
+    let el = $("#bulkText");
+    if (el) el.value = evt.target.result;
+    toast("File loaded. Click 'Process & Import' to finish.");
+  };
+  reader.readAsText(file);
+}
+
+function processBulkText() {
+  let el = $("#bulkText");
+  let raw = el ? el.value : "";
+  if (!raw.trim()) { toast("Please paste or upload questions first."); return; }
+
+  let lines = raw.split(/\r?\n/);
+  let parsed = [];
+  let curr = null;
+
+  for (let line of lines) {
+    let trimmed = line.trim();
+    if (!trimmed) continue;
+
+    if (/^Q\d*[:.]/i.test(trimmed)) {
+      if (curr && curr.t && curr.o.length >= 2) parsed.push(curr);
+      curr = { t: trimmed.replace(/^Q\d*[:.]\s*/i, ""), o: [], a: 0, e: "" };
+    } else if (curr && /^[A-D][\).:]/i.test(trimmed)) {
+      curr.o.push(trimmed.replace(/^[A-D][\).:]\s*/i, ""));
+    } else if (curr && /^Ans[:.]/i.test(trimmed)) {
+      let ansChar = trimmed.replace(/^Ans[:.]\s*/i, "").trim().toUpperCase();
+      let idx = "ABCD".indexOf(ansChar[0]);
+      if (idx >= 0) curr.a = idx;
+    } else if (curr && /^Exp[:.]/i.test(trimmed)) {
+      curr.e = trimmed.replace(/^Exp[:.]\s*/i, "");
+    } else if (curr && curr.o.length === 0) {
+      curr.t += " " + trimmed;
+    }
+  }
+  if (curr && curr.t && curr.o.length >= 2) parsed.push(curr);
+
+  if (!parsed.length) {
+    toast("Could not parse any questions. Please check the format.");
+    return;
+  }
+
+  let activeSub = HIER_VIEW.subName || '';
+  parsed.forEach(q => {
+    q.id = "q" + rid();
+    q.subject = activeSub;
+    q.chapter = '';
+    q.topic = '';
+    while (q.o.length < 4) q.o.push("");
+    E.q.push(q);
+    saveQuestionToDb(q, E?.id);
+  });
+
+  sv();
+  updateTestInDb(E);
+  toast(`${parsed.length} questions imported successfully!`);
+  HIER_VIEW.qTab = 'manual';
+  render();
+}
+
 function cancelEditQ() {
   QE = -2;
-  let subName = HIER_VIEW.subIdx >= 0 ? E.hierarchy_tree[HIER_VIEW.subIdx]?.name : '';
-  let chName = (HIER_VIEW.subIdx >= 0 && HIER_VIEW.chIdx >= 0) ? E.hierarchy_tree[HIER_VIEW.subIdx]?.chapters?.[HIER_VIEW.chIdx]?.name : '';
-  let tpName = '';
-  if (HIER_VIEW.subIdx >= 0 && HIER_VIEW.chIdx >= 0 && HIER_VIEW.tpIdx >= 0) {
-    let raw = E.hierarchy_tree[HIER_VIEW.subIdx]?.chapters?.[HIER_VIEW.chIdx]?.topics?.[HIER_VIEW.tpIdx];
-    tpName = typeof raw === 'string' ? raw : (raw?.name || '');
-  }
-  QF = { id: "q" + rid(), t: "", o: ["", "", "", ""], a: 0, e: "", subject: subName, chapter: chName, topic: tpName };
+  let activeSub = HIER_VIEW.subName || '';
+  QF = { id: "q" + rid(), t: "", o: ["", "", "", ""], a: 0, e: "", subject: activeSub, chapter: "", topic: "" };
   render();
 }
 
@@ -1977,14 +1741,12 @@ function saveQuestionItem(addAnother) {
   q.t = q.t.trim();
   q.e = (q.e || "").trim();
 
-  // Attach target context
-  if (Q_TARGET) {
-    if (Q_TARGET.sub) q.subject = Q_TARGET.sub;
-    if (Q_TARGET.ch) q.chapter = Q_TARGET.ch;
-    if (Q_TARGET.tp) q.topic = Q_TARGET.tp;
-  }
+  let activeSub = HIER_VIEW.subName || '';
+  q.subject = activeSub;
+  q.chapter = '';
+  q.topic = '';
 
-  if (QE === -2) {
+  if (QE < 0) {
     q.id = "q" + rid();
     E.q.push(q);
     toast("Question saved!");
@@ -1997,36 +1759,24 @@ function saveQuestionItem(addAnother) {
   sv();
   updateTestInDb(E);
 
+  QE = -2;
+  QF = {
+    id: "q" + rid(),
+    t: "",
+    o: ["", "", "", ""],
+    a: 0,
+    e: "",
+    subject: activeSub,
+    chapter: "",
+    topic: ""
+  };
+  render();
+
   if (addAnother) {
-    QE = -2;
-    QF = {
-      id: "q" + rid(),
-      t: "",
-      o: ["", "", "", ""],
-      a: 0,
-      e: "",
-      subject: Q_TARGET.sub || "",
-      chapter: Q_TARGET.ch || "",
-      topic: Q_TARGET.tp || ""
-    };
-    render();
     setTimeout(() => {
       let el = $("#qt");
       if (el) el.focus();
     }, 50);
-  } else {
-    QE = -2;
-    QF = {
-      id: "q" + rid(),
-      t: "",
-      o: ["", "", "", ""],
-      a: 0,
-      e: "",
-      subject: Q_TARGET.sub || "",
-      chapter: Q_TARGET.ch || "",
-      topic: Q_TARGET.tp || ""
-    };
-    render();
   }
 }
 
@@ -2034,6 +1784,10 @@ function editQuestionItem(globalIdx) {
   if (!E || !E.q || !E.q[globalIdx]) return;
   QE = globalIdx;
   QF = JSON.parse(JSON.stringify(E.q[globalIdx]));
+  if (QF.subject && HIER_VIEW.screen !== 'questions') {
+    HIER_VIEW.screen = 'questions';
+    HIER_VIEW.subName = QF.subject;
+  }
   render();
   setTimeout(() => {
     let el = $("#qt");
@@ -2067,8 +1821,6 @@ function qrow(q, globalIdx) {
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
             <span class="tg" style="font-weight:700; background:var(--hi);">Q${displayNum}</span>
             ${q.subject ? `<span class="tg" style="background:rgba(59,130,246,0.1); color:#2563eb; font-weight:600;">${esc(q.subject)}</span>` : ''}
-            ${q.chapter ? `<span class="tg" style="background:rgba(16,185,129,0.1); color:#059669;">${esc(q.chapter)}</span>` : ''}
-            ${q.topic ? `<span class="tg" style="background:rgba(139,92,246,0.1); color:#7c3aed;">${esc(q.topic)}</span>` : ''}
           </div>
           <div style="font-weight:600; font-size:0.95rem; margin-bottom:8px; line-height:1.4;">${esc(q.t)}</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.85rem;">
@@ -2108,79 +1860,55 @@ function renderScreen6_Settings() {
 
       <!-- Timer -->
       <div style="margin-top:14px;">
-        ${sw(t.timer.on, "E.timer.on=!E.timer.on;sv();render()", "Enable Timer", "Auto-submits test when time ends")}
+        ${sw(t.timer.on, "E.timer.on=!E.timer.on;sv();updateTestInDb(E);render()", "Enable Timer", "Auto-submits test when time ends")}
         ${t.timer.on ? `
           <div style="margin:8px 0 16px;">
             <label class="l2" style="margin-top:0;">Duration (minutes)</label>
-            <input class="in" type="number" min="1" max="300" value="${t.timer.min||120}" oninput="E.timer.min=+this.value;sv()">
+            <input class="in" type="number" min="1" max="300" value="${t.timer.min||10}" oninput="E.timer.min=+this.value;sv();updateTestInDb(E)">
           </div>
         ` : ''}
       </div>
 
       <!-- Negative Marking -->
       <div style="margin-top:10px;">
-        ${sw(ng.on, "E.neg.on=!E.neg.on;sv();render()", "Negative Marking", "Deduct marks for incorrect answers")}
+        ${sw(ng.on, "E.neg.on=!E.neg.on;sv();updateTestInDb(E);render()", "Negative Marking", "Deduct marks for incorrect answers")}
         ${ng.on ? `
           <div style="margin:8px 0 14px;">
-            <label class="l2" style="margin-top:0;">Deduct per wrong answer</label>
-            ${chips([[.25,"¼"],[.33,"⅓"],[.5,"½"],[1,"1"],["c","Custom"]], cu?"c":ng.v, "setNg")}
-            ${cu ? `<input class="in" type="number" min="0" step="0.01" value="${ng.v}" oninput="E.neg.v=+this.value;E.neg.cu=true;sv()" style="margin-top:8px;">` : ""}
+            <label class="l2" style="margin-top:0;">Marks deducted per wrong answer</label>
+            <div class="seg" style="margin-bottom:8px;">
+              ${[.25, .33, .5, 1].map(x => `<button class="${!cu && ng.v == x ? "on" : ""}" type="button" onclick="E.neg.v=${x};E.neg.cu=0;sv();updateTestInDb(E);render()">-${x}</button>`).join("")}
+              <button class="${cu ? "on" : ""}" type="button" onclick="E.neg.cu=1;sv();updateTestInDb(E);render()">Custom</button>
+            </div>
+            ${cu ? `<input class="in" type="number" step="0.05" min="0" value="${ng.v}" oninput="E.neg.v=+this.value;sv();updateTestInDb(E)">` : ''}
           </div>
-        ` : ""}
+        ` : ''}
       </div>
 
       <!-- Leaderboard -->
       <div style="margin-top:10px;">
-        ${sw(t.lb && !D.cfg.hide, "E.lb=!E.lb;sv();render()", "Show Leaderboard", "Students see their rank and percentile against peers")}
+        ${sw(t.lb !== false, "E.lb=!(E.lb!==false);sv();updateTestInDb(E);render()", "Show Leaderboard", "Displays student rankings and percentiles")}
       </div>
 
-      <!-- Show Answers -->
-      <div style="margin:14px 0;">
-        <label class="l2">Show Answers & Explanations</label>
-        ${rr([
-          ["submit","After test is submitted (Standard CBT)"],
-          ["inst","Immediately after picking each question (Practice mode)"],
-          ["never","Never show answers"]
-        ], t.res||'submit', "setRes")}
-      </div>
-
-      <!-- Shuffling & Nav -->
-      ${sw(t.shufQ, "E.shufQ=!E.shufQ;sv();render()", "Shuffle Questions", "Randomize question order")}
-      ${sw(t.shufO, "E.shufO=!E.shufO;sv();render()", "Shuffle Options", "Randomize options A/B/C/D order")}
-      ${sw(t.back!==false, "E.back=!E.back;sv();render()", "Allow Going Back", "Students can revisit earlier questions")}
-
-      <!-- Disclaimer -->
-      <div style="margin-top:14px;">
-        ${sw(t.dis.on, "E.dis.on=!E.dis.on;sv();render()", "Show Instructions / Disclaimer", "Shown to students before starting")}
-        ${t.dis.on ? `
-          <div style="margin:8px 0 14px;">
-            <textarea class="in" rows="4" placeholder="Instructions or disclaimer..." oninput="E.dis.txt=this.value;sv()">${esc(t.dis.txt)}</textarea>
-            <button class="b o s" type="button" style="margin-top:6px;" onclick="E.dis.txt=D.cfg.dis;sv();render()">Use Default Template</button>
-          </div>
-        ` : ""}
+      <!-- Shuffle -->
+      <div style="margin-top:10px;">
+        ${sw(!!t.shufQ, "E.shufQ=!E.shufQ;sv();updateTestInDb(E);render()", "Shuffle Questions", "Randomize question order for each attempt")}
       </div>
 
       <div class="rowx" style="margin-top:24px;">
-        <button class="b o" type="button" onclick="goToQuestionsOrHierarchy()">← Back: Hierarchy</button>
-        <button class="b" type="button" onclick="HIER_VIEW.screen='review';render();">Next: Review & Publish →</button>
+        <button class="b o" type="button" onclick="HIER_VIEW.screen=E.sub?.on?'subjects':'details';render();">← Back</button>
+        <button class="b" type="button" onclick="HIER_VIEW.screen='review';render();">Review & Publish →</button>
       </div>
     </div>
   `;
 }
 
 // ==========================================
-// SCREEN 7: REVIEW & PUBLISH (Clean Single Action)
+// SCREEN 7: REVIEW & PUBLISH (SINGLE BUTTON)
 // ==========================================
 function renderScreen7_Review() {
   let t = E;
   let isLive = t.status === "pub";
-
-  let ck = [
-    [!!t.title.trim(), "Title: " + esc(t.title || "Missing title"), 'details'],
-    [t.q.length > 0, t.q.length + " question" + (t.q.length !== 1 ? "s" : "") + " created", 'questions'],
-    [!t.paid || (t.price && t.price > 0), t.paid ? "Paid test: " + inr(t.sale || t.price) : "Free practice test", 'details'],
-    [true, "Timer: " + (t.timer.on ? t.timer.min + " min" : "Untimed") + " · Marks: +" + t.mk + " / -" + (t.neg.on ? t.neg.v : 0), 'settings']
-  ];
+  let subjects = getTestSubjects(t);
 
   return `
     <div class="c2">
@@ -2217,85 +1945,65 @@ function renderScreen7_Review() {
       <div style="background:var(--hi); border:1px solid var(--br); border-radius:14px; padding:16px; margin-bottom:16px;">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <h3 style="margin:0;">${esc(t.title || "Untitled Test")}</h3>
-          ${t.label ? `<span class="chip">${esc(t.label)}</span>` : ""}
-          <span class="chip ${t.paid ? '' : 'g'}">${t.paid ? inr(t.sale || t.price) : "Free"}</span>
+          <span class="tg">#${t.id}</span>
+          ${t.exam ? `<span class="chip">${esc(t.exam)}</span>` : ''}
+          <span class="chip">${t.paid ? (t.sale ? inr(t.sale) : inr(t.price)) : "Free"}</span>
         </div>
-        ${t.exam ? `<div class="eb" style="margin:6px 0 2px;">${esc(t.exam)}</div>` : ""}
-        ${t.desc ? `<p class="mu" style="font-size:0.9rem; margin:4px 0;">${esc(t.desc)}</p>` : ""}
-
-        <div class="g3" style="margin-top:14px; padding-top:12px; border-top:1px solid var(--br);">
-          <div><small class="mu">Total Questions</small><b style="display:block;">${t.q.length} Questions</b></div>
-          <div><small class="mu">Subjects</small><b style="display:block;">${(t.hierarchy_tree||[]).length} Subject(s)</b></div>
-          <div><small class="mu">Duration</small><b style="display:block;">${t.timer.on ? t.timer.min+" mins" : "Untimed"}</b></div>
-          <div><small class="mu">Marking</small><b style="display:block;">+${t.mk} / -${t.neg.on ? t.neg.v : 0}</b></div>
-          <div><small class="mu">Leaderboard</small><b style="display:block;">${t.lb ? "Enabled" : "Disabled"}</b></div>
-          <div><small class="mu">Status</small><b style="display:block;">${isLive ? "Live" : "Draft"}</b></div>
+        <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap; font-size:0.9rem;">
+          <div><b>Total Questions:</b> ${t.q.length}</div>
+          <div><b>Time:</b> ${t.timer?.on ? t.timer.min + " min" : "Untimed"}</div>
+          <div><b>Marks:</b> +${t.mk || 1} / -${t.neg?.on ? t.neg.v : 0}</div>
+          <div><b>Subjects:</b> ${t.sub?.on ? subjects.length : "None (Direct Test)"}</div>
         </div>
-      </div>
 
-      <!-- Checklist -->
-      <div style="margin-bottom:18px;">
-        <b style="font-size:0.95rem;">Readiness Checklist</b>
-        <div style="margin-top:8px;">
-          ${ck.map(c => `
-            <div class="ck" style="padding:6px 0;">
-              <span class="ic ${c[0] ? "y" : "n"}">${ic(c[0] ? "check" : "flag")}</span>
-              <span style="flex:1;">${c[1]}</span>
-              ${!c[0] ? `<button class="b o s" type="button" onclick="HIER_VIEW.screen='${c[2]}';render();">Fix</button>` : ""}
+        ${t.sub?.on && subjects.length > 0 ? `
+          <div style="margin-top:12px; padding-top:10px; border-top:1px dashed var(--br);">
+            <small class="mu">Subject Breakdown:</small>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
+              ${subjects.map(s => {
+                let cnt = (t.q || []).filter(q => (q.subject || '').trim() === s.trim()).length;
+                return `<span class="chip" style="background:var(--sf);">${esc(s)}: <b>${cnt}</b></span>`;
+              }).join('')}
             </div>
-          `).join("")}
-        </div>
+          </div>
+        ` : ''}
       </div>
 
-      <!-- Single Action Buttons -->
-      <div class="rowx" style="margin-top:24px;">
-        <button class="b o" type="button" onclick="HIER_VIEW.screen='settings';render();">← Back: Settings</button>
-        ${isLive ? `
-          <button class="b" type="button" onclick="saveLiveChanges()">✅ Save Live Changes</button>
-        ` : `
-          <button class="b" type="button" onclick="publishTestToStudents()">🚀 Publish to Students Now</button>
-        `}
+      <!-- Action buttons -->
+      <div class="rowx" style="margin-top:20px;">
+        <button class="b o" type="button" onclick="HIER_VIEW.screen=E.sub?.on?'subjects':'details';render();">← Back</button>
+        <div>
+          ${isLive ? `
+            <button class="b dg" type="button" onclick="makeTestPrivate()">🔒 Make Private (Hide from Students)</button>
+          ` : `
+            <button class="b" type="button" onclick="publishTestToStudents()">🚀 Publish to Students</button>
+          `}
+        </div>
       </div>
     </div>
   `;
 }
 
 async function publishTestToStudents() {
-  let t = E;
-  if (!t.title.trim()) { toast("Please set a test title"); HIER_VIEW.screen='details'; render(); return; }
-  if (!t.q.length) { toast("Please add at least 1 question"); goToQuestionsOrHierarchy(); return; }
-  if (t.paid && (!t.price || t.price <= 0)) { toast("Please set a price for paid test"); HIER_VIEW.screen='details'; render(); return; }
-
-  t.status = "pub";
+  if (!E.title.trim()) { toast("Please set a test title before publishing."); return; }
+  if (!E.q.length) { toast("Please add at least 1 question before publishing."); return; }
+  E.status = "pub";
+  E.is_published = true;
   sv();
-  toast("Publishing to Student App...");
-  await updateTestInDb(t);
-  toast("🚀 Test is now LIVE and visible to students!");
+  toast("Publishing test to cloud...");
+  await updateTestInDb(E);
+  toast("🚀 Test is now LIVE! Students can now attempt it.");
   render();
-  setTimeout(() => go("tests"), 1200);
 }
 
 async function makeTestPrivate() {
   E.status = "draft";
+  E.is_published = false;
   sv();
   toast("Making test private...");
   await updateTestInDb(E);
   toast("🔒 Test is now PRIVATE (Hidden from all students)!");
   render();
-}
-
-async function saveLiveChanges() {
-  sv();
-  toast("Saving live test changes...");
-  await updateTestInDb(E);
-  toast("✅ Live test updated successfully!");
-  render();
-}
-
-function saveCurrentTestToCloud() {
-  sv();
-  updateTestInDb(E);
-  toast("Saved");
 }
 
 function plist(){let q=PQ.toLowerCase();return D.tests.filter(t=>t.paid&&(!PF||t.id==PF)&&(t.id.toLowerCase().includes(q)||t.title.toLowerCase().includes(q))).map(t=>{let off=t.price&&t.sale&&t.sale<t.price?Math.round((1-t.sale/t.price)*100):0,er=t.sale&&t.sale>=t.price;return `<div class="c2"><div class="rowx"><div>${idb(t.id)} <b>${esc(t.title||"Untitled")}</b></div>${off?`<span class="st2 pub">${off}% off</span>`:!t.price?'<span class="st2 pending">Set price</span>':""}</div><div class="g3" style="margin-top:6px"><div><label class="l2" for="p${t.id}">Real price (₹)</label><input id="p${t.id}" class="in" type="number" min="0" value="${t.price||""}" onchange="setP('${t.id}','price',this.value)"></div><div><label class="l2" for="s${t.id}">Discount price (₹)</label><input id="s${t.id}" class="in" type="number" min="0" value="${t.sale||""}" placeholder="None" onchange="setP('${t.id}','sale',this.value)"></div><div><label class="l2" for="e${t.id}">Sale ends</label><input id="e${t.id}" class="in" type="date" value="${t.saleEnd}" onchange="setP('${t.id}','saleEnd',this.value)"></div></div>${er?'<p class="hint bad">Discount price must be lower than the real price.</p>':""}</div>`}).join("")||'<div class="em">No paid tests match. Turn a test to Paid in its settings.</div>'}
@@ -2423,7 +2131,14 @@ function render0(){let p=(location.hash.slice(1)||"dash").split("-"),k=({edit:"t
 let CUR="",HS=[],SY={};try{history.scrollRestoration="manual"}catch(e){}
 addEventListener("scroll",()=>{SY[CUR]=scrollY},{passive:true});
 function route(){let h=location.hash||"#dash",i=HS.indexOf(h),y=0;if(i>=0){HS.length=i+1;y=SY[h]||0}else HS.push(h);CUR=h;NO=0;CF="";if(!KP){QE=-1;QF=null}KP=0;BM="";render();scrollTo(0,y)}
-addEventListener("hashchange",route);route();
+addEventListener("hashchange",route);
+window.addEventListener("click", () => {
+  if (ACTIVE_TEST_MENU) {
+    ACTIVE_TEST_MENU = null;
+    render();
+  }
+});
+route();
 // Automatically load Supabase data on start
 if (isAdminAuthenticated()) {
   loadAdminData();

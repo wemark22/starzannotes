@@ -297,10 +297,8 @@ function buildHierarchy(tests) {
     }
 
     const subName = (t.subject || '').trim();
-    const chName = (t.chapter || '').trim();
-    const tpName = (t.topic || '').trim();
 
-    // Level 1: Direct test under series (No subject)
+    // Level 1: Direct test under exam series (No subject)
     if (!subName) {
       series.tests.push(t);
       return;
@@ -322,51 +320,8 @@ function buildHierarchy(tests) {
       series.ch.push(subNode);
     }
 
-    // Direct test under subject (No chapter)
-    if (!chName) {
-      subNode.tests.push(t);
-      return;
-    }
-
-    // Level 3: Chapter folder
-    const chId = subId + '_ch_' + slug(chName);
-    let chNode = N[chId];
-    if (!chNode) {
-      chNode = {
-        id: chId,
-        sid: sid,
-        n: chName,
-        par: subId,
-        ch: [],
-        tests: []
-      };
-      N[chId] = chNode;
-      subNode.ch.push(chNode);
-    }
-
-    // Direct test under chapter (No topic)
-    if (!tpName) {
-      chNode.tests.push(t);
-      return;
-    }
-
-    // Level 4: Topic folder
-    const tpId = chId + '_tp_' + slug(tpName);
-    let tpNode = N[tpId];
-    if (!tpNode) {
-      tpNode = {
-        id: tpId,
-        sid: sid,
-        n: tpName,
-        par: chId,
-        ch: [],
-        tests: []
-      };
-      N[tpId] = tpNode;
-      chNode.ch.push(tpNode);
-    }
-
-    tpNode.tests.push(t);
+    // Direct test under subject folder
+    subNode.tests.push(t);
   });
 
   SER = Object.values(seriesMap);
@@ -1006,12 +961,19 @@ function draw() {
     qa.innerHTML = `<div class="qh">
       <div>
         <span class="qn">Question ${T.q + 1} of ${Q.length}</span>
-        ${q[4] ? `<span class="eb" style="margin-left:8px">${esc(q[4])}</span>` : ""}
+        ${(q[4] && q[4] !== 'General' && q[4] !== 'CHAPTER') ? `<span class="eb" style="margin-left:8px">${esc(q[4])}</span>` : ""}
       </div>
       <button class="rf${rv ? " on" : ""}" title="Bookmark this question for yourself to check before submitting" onclick="togR()">${ic("flag")} ${rv ? "Bookmarked (Review later)" : "Bookmark for later"}</button>
     </div>
     <div class="qt">${esc(q[0])}</div>
-    <div class="op" role="radiogroup">${q[1].map((o, i) => `<button class="rw${a == i ? " on" : ""}" role="radio" aria-checked="${a == i}" onclick="ans(${i})"><i></i><span><b>${"ABCD"[i]}.</b> ${esc(o)}</span></button>`).join("")}</div>`;
+    <div role="radiogroup" style="display:flex; flex-direction:column; gap:10px; margin:18px 0;">
+      ${q[1].map((o, i) => `
+        <button class="op${a == i ? " on" : ""}" type="button" role="radio" aria-checked="${a == i}" onclick="ans(${i})">
+          <i>${"ABCD"[i]}</i>
+          <span style="flex:1; text-align:left; font-size:1rem; font-weight:500; line-height:1.4;">${esc(o)}</span>
+        </button>
+      `).join("")}
+    </div>`;
   }
 
   let xf = $("#xf");
@@ -1148,7 +1110,10 @@ function fin() {
   T = null;
   sv();
   RF = "all";
-  go("result-" + (S.att.length - 1));
+  let resultIdx = S.att.length - 1;
+  location.hash = "#result-" + resultIdx;
+  result(resultIdx);
+  scrollTo(0, 0);
 }
 
 // RESULT PAGE
