@@ -93,136 +93,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
   .tp nav a.on { color: var(--ac); }
 }
 
-/* MODERN APP FOOTER */
-.app-footer {
-  padding: 32px 16px calc(100px + env(safe-area-inset-bottom, 0px));
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.ft-card {
-  background: var(--sf);
-  border: 1px solid var(--br);
-  border-radius: 22px;
-  padding: 28px 24px 20px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.04);
-}
-.ft-top {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-@media(min-width: 768px) {
-  .ft-top {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-}
-.ft-brand {
-  max-width: 380px;
-}
-.ft-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: Fraunces, serif;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--tx);
-  margin-bottom: 8px;
-}
-.ft-logo-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--ac);
-  color: var(--on);
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-.ft-tagline {
-  font-size: 0.88rem;
-  color: var(--mu);
-  line-height: 1.5;
-  margin: 0;
-}
-.ft-links-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.ft-col-title {
-  font-size: 0.74rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--mu);
-}
-.ft-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.ft-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: 99px;
-  background: var(--hi);
-  border: 1px solid var(--br);
-  color: var(--tx);
-  font-size: 0.82rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-.ft-pill:hover {
-  background: var(--ac);
-  color: var(--on);
-  border-color: var(--ac);
-  transform: translateY(-1px);
-}
-.ft-pill svg {
-  flex-shrink: 0;
-}
-.ft-divider {
-  height: 1px;
-  background: var(--br);
-  margin: 22px 0 16px;
-}
-.ft-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 20px;
-  align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 16px;
-}
-.ft-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--mu);
-}
-.ft-badge-icon {
-  font-size: 0.9rem;
-}
-.ft-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 12px;
-  border-top: 1px solid color-mix(in srgb, var(--br) 60%, transparent);
-}
-.ft-bottom small {
-  color: var(--mu);
-  font-size: 0.78rem;
-}
+
 
 </style></head><body><div id="app"></div><div id="m"></div><div id="t" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -292,6 +163,25 @@ const NV = [["home", "Home", "home"], ["explore", "Explore", "search"], ["learn"
 const A = $("#app");
 
 let S = { user: null, own: [], ord: [], att: [] };
+
+function isOwned(item) {
+  if (!item || !S || !S.own) return false;
+  let ownList = S.own || [];
+  if (item.id && ownList.includes(item.id)) return true;
+  if (item.sid && ownList.includes(item.sid)) return true;
+  if (item.n && ownList.includes('ser_' + slug(item.n))) return true;
+  if (item.t && ownList.includes('ser_' + slug(item.t))) return true;
+  if (item.exam && ownList.includes('ser_' + slug(item.exam))) return true;
+  if (item.tests && Array.isArray(item.tests)) {
+    if (item.tests.some(t => ownList.includes(t.id))) return true;
+  }
+  if (item.exam) {
+    let examSid = 'ser_' + slug(item.exam);
+    if (ownList.includes(examSid)) return true;
+  }
+  if (item.sid && ownList.includes(item.sid)) return true;
+  return false;
+}
 let T = null;
 let tm, ci, cn = 0, cp = false, CB = null;
 let F = { q: "", x: "All" };
@@ -591,6 +481,18 @@ async function syncUserWithDb(user) {
         user.status = 'active';
       }
     }
+
+    if (user.id) {
+      const { data: purchases } = await sb.from('purchases').select('series_id').eq('user_id', user.id).eq('status', 'paid');
+      if (purchases && purchases.length) {
+        S.own = S.own || [];
+        purchases.forEach(p => {
+          if (p.series_id && !S.own.includes(p.series_id)) {
+            S.own.push(p.series_id);
+          }
+        });
+      }
+    }
     sv();
     R();
   } catch(e) { console.warn('syncUserWithDb error:', e); }
@@ -621,39 +523,7 @@ function shell(a, b, c, k) {
     </div>
   </header>
   ${b}
-  <footer class="app-footer">
-    <div class="ft-card">
-      <div class="ft-top">
-        <div class="ft-brand">
-          <div class="ft-logo">
-            <span class="ft-logo-icon">★</span>
-            <span class="ft-brand-name">${esc(CFG.name)}</span>
-          </div>
-          <p class="ft-tagline">India's premier CBT test series & real-time exam practice platform. Practice smarter, score higher.</p>
-        </div>
-        <div class="ft-links-wrap">
-          <div class="ft-col-title">Quick Links & Policies</div>
-          <div class="ft-pills">
-            <a href="#page-priv" class="ft-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>Privacy Policy</span></a>
-            <a href="#page-terms" class="ft-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> <span>Terms & Conditions</span></a>
-            <a href="#page-refund" class="ft-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> <span>Refund Policy</span></a>
-            <a href="#page-about" class="ft-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> <span>About Us</span></a>
-            <a href="#page-help" class="ft-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <span>Help & FAQ</span></a>
-          </div>
-        </div>
-      </div>
-      <div class="ft-divider"></div>
-      <div class="ft-badges">
-        <span class="ft-badge"><span class="ft-badge-icon">🔒</span> 256-Bit SSL Secured</span>
-        <span class="ft-badge"><span class="ft-badge-icon">⚡</span> Instant AI Evaluation</span>
-        <span class="ft-badge"><span class="ft-badge-icon">🎯</span> NTA & Govt CBT Pattern</span>
-        <span class="ft-badge"><span class="ft-badge-icon">📱</span> Real-Time Cloud Sync</span>
-      </div>
-      <div class="ft-bottom">
-        <small>© 2026 ${esc(CFG.name)}. All rights reserved. Designed for top rankers.</small>
-      </div>
-    </div>
-  </footer>
+  <div style="height:36px;"></div>
   ${c ? `<div class="ct"><div class="w">${c}</div></div>` : `
     <nav class="bt">
       ${NV.map(n => `<a href="#${n[0]}" class="${a == n[0] ? "on" : ""}">${ic(n[2])}<span>${n[1]}</span></a>`).join("")}
@@ -661,21 +531,24 @@ function shell(a, b, c, k) {
   `}`;
 }
 
-const card = s => `<a class="cd" href="#${s.ln}">
+const card = s => {
+  let own = isOwned(s);
+  return `<a class="cd" href="#${s.ln}">
   <div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${esc(s.t)} banner" loading="lazy"></div>
   <div class="ci">
     <div class="cr">
-      ${s.lb && s.lb !== 'None' ? `<span class="chip ${s.lb.toLowerCase() == 'free' ? 'g' : ''}">${esc(s.lb)}</span>` : ''}
+      ${own ? `<span class="chip g" style="font-weight:700;">Purchased ✓</span>` : (s.lb && s.lb !== 'None' ? `<span class="chip ${s.lb.toLowerCase() == 'free' ? 'g' : ''}">${esc(s.lb)}</span>` : '')}
       <span class="eb">${esc(s.x)}</span>
     </div>
     <h3>${esc(s.t)}</h3>
     <p class="mu cl">${esc(s.d)}</p>
     <div class="cf">
       <span class="mt">${ic("list")}${cnt(s)} test${cnt(s) === 1 ? '' : 's'}</span>
-      <span class="pr">${s.p ? `<b>${inr(s.s)}</b><s>${inr(s.p)}</s>` : "<b>Free</b>"}</span>
+      <span class="pr">${own ? `<b style="color:var(--ac);font-weight:700;">Purchased ✓</b>` : (s.p ? `<b>${inr(s.s)}</b><s>${inr(s.p)}</s>` : "<b>Free</b>")}</span>
     </div>
   </div>
 </a>`;
+};
 
 const car = () => {
   if (!FE || !FE.length) {
@@ -818,7 +691,7 @@ function node(id) {
   if (!n) return go("home");
   let s = N[n.sid] || n;
   let root = !n.par;
-  let own = S.own.includes(s.id);
+  let own = isOwned(s) || isOwned(n);
   let paid = s.p && !own;
   let tot = cnt(n);
   let d = dn(n);
@@ -884,7 +757,13 @@ function node(id) {
   let pc = root ? `
     <aside class="pc">
       <div class="pi">
-        ${!s.p ? `<h3>Free for everyone</h3>` : (own ? `<h3>${ic("check")} You have access</h3>` : `
+        ${own ? `
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span class="chip g" style="font-weight:700;font-size:0.95rem;">Purchased ✓</span>
+          </div>
+          <h3 style="color:var(--ac);margin:0 0 4px;">Full Access Unlocked</h3>
+          <p class="mu" style="font-size:0.88rem;margin:0 0 14px;">You have unlimited access to all tests, detailed solutions, and leaderboards in this series.</p>
+        ` : (!s.p ? `<h3>Free for everyone</h3>` : `
           <div class="pr">
             <b style="font-size:1.7rem">${inr(s.s)}</b>
             ${s.p > s.s ? `<s>${inr(s.p)}</s><small>${Math.round((1 - s.s / s.p) * 100)}% off</small>` : ''}
@@ -926,7 +805,7 @@ function test(testId) {
 
   let parentSeries = Object.values(N).find(n => !n.par && (n.tests?.some(x => x.id === testId) || (n.ch && inNode(testId, n.id))));
   let isPaid = (t.is_paid && t.price > 0) || (parentSeries && parentSeries.p > 0);
-  let isOwned = (parentSeries && S.own.includes(parentSeries.id)) || S.own.includes(t.id);
+  let isOwnedTest = isOwned(t) || (parentSeries && isOwned(parentSeries));
 
   let breadcrumbs = [];
   if (t.exam) breadcrumbs.push(t.exam);
@@ -944,7 +823,7 @@ function test(testId) {
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <span class="idc" title="Test ID">${ic("lock")}ID: ${t.id}</span>
-            <span class="chip ${isPaid ? '' : 'g'}">${isPaid ? (isOwned ? 'Unlocked' : 'Premium') : 'Free'}</span>
+            <span class="chip ${isPaid ? (isOwnedTest ? 'g' : '') : 'g'}">${isPaid ? (isOwnedTest ? 'Purchased ✓' : 'Premium') : 'Free'}</span>
             ${t.label && t.label !== 'None' ? `<span class="chip ${t.label.toLowerCase() == 'free' ? 'g' : ''}">${esc(t.label)}</span>` : ''}
           </div>
           <button class="b o s" style="padding:4px 10px; font-size:0.82rem;" onclick="shareLink('test-${t.id}', '${esc(t.title)}')">${ic("share")} Share</button>
@@ -974,7 +853,7 @@ function test(testId) {
       ` : '<div class="em">No attempts yet. Be the first to take this test!</div>'}
     </main>
   `,
-  isPaid && !isOwned ? `
+  isPaid && !isOwnedTest ? `
     <div class="ctl"><small>Premium Series</small><b>${esc(parentSeries?.t || t.title)}</b></div>
     <button class="b big" onclick="buy('${parentSeries?.id || t.id}')">Unlock to Access (${inr(parentSeries?.s || t.price)})</button>
   ` : `
@@ -1558,6 +1437,18 @@ async function buy(id) {
 
 async function confirmPurchase(id, amt, title) {
   if (!S.own.includes(id)) S.own.push(id);
+  let sObj = N[id] || TESTS_BY_ID[id];
+  if (sObj) {
+    if (sObj.sid && !S.own.includes(sObj.sid)) S.own.push(sObj.sid);
+    if (sObj.n) {
+      let slugId = 'ser_' + slug(sObj.n);
+      if (!S.own.includes(slugId)) S.own.push(slugId);
+    }
+    if (sObj.exam) {
+      let examSid = 'ser_' + slug(sObj.exam);
+      if (!S.own.includes(examSid)) S.own.push(examSid);
+    }
+  }
   S.ord = S.ord || [];
   S.ord.push({ sid: id, title: title, amt: amt, at: Date.now() });
   sv();

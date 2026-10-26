@@ -261,6 +261,213 @@ const sb = (window.supabase && window.supabase.createClient) ? window.supabase.c
 
 const isUuid = (id) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
+const PM=[["dash","Dashboard and sales"],["tests","Create and edit tests"],["publish","Publish tests"],["pricing","Prices and coupons"],["banners","Home banners"],["students","Student actions"],["staff","Staff access"],["settings","App settings"]];
+const RL={creator:{n:"Test creator",p:["tests"]},price:{n:"Pricing manager",p:["pricing"]},support:{n:"Support",p:["students"]},analyst:{n:"Analyst",p:["dash"]},custom:{n:"Custom",p:[]}};
+const NAV=[["dash","Dashboard","bar","dash"],["tests","Tests","list","tests",()=>D.tests.filter(t=>t.status=="draft").length+" drafts"],["reports","Question reports","flag","tests",()=>D.reports.filter(r=>r.st=="open").length+" open"],["pricing","Prices & coupons","tag","pricing"],["students","Students","users","students"],["banners","Home banners","image","banners"],["staff","Staff","shield","staff"],["settings","Settings","gear","settings"]];
+const blank=id=>({id,title:"",desc:"",exam:"",sub:{on:false,v:""},ch:{on:false,v:""},tp:{on:false,v:""},label:"",banner:"",paid:false,price:0,sale:0,saleEnd:"",timer:{on:true,min:10},neg:{on:true,v:.33},mk:1,shufQ:false,shufO:false,back:true,res:"submit",lb:true,dis:{on:true,txt:""},att:{on:false,n:3},status:"draft",sched:"",close:"",q:[],sales:0,at:0,upd:Date.now()});
+const rid=()=>Math.random().toString(36).slice(2,8),mq=(t,o,a,e)=>({t,o,a,e}),QS=[mq("Which gas do green plants absorb for photosynthesis?",["Oxygen","Carbon dioxide","Nitrogen","Hydrogen"],1,"Plants take in carbon dioxide."),mq("What is the SI unit of electric current?",["Volt","Watt","Ampere","Ohm"],2,"Ampere is the SI unit."),mq("What is the pH of a neutral solution?",["0","7","14","1"],1,"Pure water has pH 7.")];
+const ph=(c,g)=>"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000"><rect width="1600" height="1000" fill="${c}"/><text x="120" y="840" font-family="Georgia,serif" font-size="190" fill="#fff">${g}</text></svg>`);
+const LEG={priv:`PRIVACY POLICY
+Last updated: [date]
+
+StarzanNotes ("we", "us") runs online test series at starzannotes.in. This policy explains what we collect, why we collect it, and the choices you have. By using the app you agree to it.
+
+1. What we collect
+- Account details: your name, email address and profile photo from your Google account when you sign in.
+- Activity: tests you attempt, your answers, scores, time taken, ranks, and any question you report.
+- Purchases: order ID, what you bought, amount, payment status and date. Payments are handled by Razorpay. We never see or store your card number, UPI PIN or bank login.
+- Basic technical data: device type, browser and app usage, used to keep the app working and secure.
+
+2. How we use it
+To run your account, show your results and rank, give access to what you bought, prevent cheating and misuse, answer support requests, and improve our tests. We do not sell your personal data.
+
+3. Leaderboards
+Only a shortened display name and your score appear on a test leaderboard. Your email and phone number are never shown to other students.
+
+4. Sharing
+We share data only with service providers that help us run the app (hosting and database, Google sign-in, Razorpay payments, analytics) and when the law requires it.
+
+5. Students and children
+Many of our students are under 18. If you are under 18, please use the app with the knowledge and consent of a parent or guardian. We do not show advertisements targeted at students and we do not track students' behaviour for advertising.
+
+6. Storage and security
+Data is stored on secure cloud servers with access controls and encryption in transit. No system is perfectly secure, so please protect your Google account.
+
+7. How long we keep data
+While your account is active, and afterwards only as long as needed for legal, tax and dispute purposes. You can ask us to delete your account.
+
+8. Your rights
+You can ask to see, correct or delete your data, or withdraw your consent, by writing to us. We will respond within a reasonable time as required by Indian law, including the Digital Personal Data Protection Act, 2023.
+
+9. Cookies and local storage
+We use them to keep you signed in and to remember your test progress.
+
+10. Changes
+We may update this policy. Important changes will be shown in the app.
+
+Contact and grievances: support@starzannotes.in · Grievance Officer: [name, address]`,
+terms:`TERMS AND CONDITIONS
+Last updated: [date]
+
+Welcome to StarzanNotes. By creating an account or using the app you agree to these terms.
+
+1. About the service
+We provide online mock tests, practice tests and study material for school board and competitive exams. Everything is for learning and practice only.
+
+2. Your account
+- Sign in with your own Google account. You are responsible for all activity on it.
+- Give correct information. Do not share your account or let others use what you bought.
+- If you are under 18, use the app with the consent of a parent or guardian.
+
+3. Purchases and access
+- Prices are in Indian rupees and shown before you pay. Payments are processed securely by Razorpay.
+- After a successful payment you get access to the test or series you bought, for the validity shown on its page.
+- Access is personal. It cannot be sold, shared, copied or transferred.
+
+4. Fair use
+You agree not to cheat, use bots or scripts, copy or share questions, answers or explanations, try to break or overload the app, or harass others. We may warn, suspend or ban accounts that break these rules, and in serious cases remove access without refund.
+
+5. Our content
+All questions, explanations, designs and text belong to StarzanNotes or its licensors. You may use them for your own study only. You may not republish, sell or distribute them without written permission.
+
+6. Accuracy and results
+We work hard to keep questions and answers correct, but mistakes can happen. You can report a question from your result page and we will review it. Scores, ranks and analysis are for practice and do not predict or guarantee any exam result.
+
+7. Refunds
+Please read our Refund Policy.
+
+8. Availability
+We may update, pause or change features, tests or prices. We will try to give notice of major changes.
+
+9. Limit of liability
+To the extent allowed by law, StarzanNotes is not liable for indirect or consequential loss, or for loss caused by internet, device or third-party service failures. Our total liability for any claim is limited to the amount you paid for the item concerned.
+
+10. Governing law
+These terms are governed by the laws of India. The courts at [your city], India have jurisdiction.
+
+11. Contact
+support@starzannotes.in`,
+about:`ABOUT STARZANNOTES
+
+StarzanNotes helps students practise smarter. We make clear, exam-pattern mock tests for school boards and competitive exams, with simple explanations and honest analysis, so you know exactly what to work on next.
+
+What you get
+- Subject, chapter and topic-wise tests
+- A real exam-style timer and question palette
+- Explained answers after every test
+- A leaderboard on every test
+- Free tests to try before you buy
+
+Our promise
+We keep prices fair, fix mistakes quickly (you can report any question from your result page), and respect your privacy. We never sell your data.
+
+Contact: support@starzannotes.in`,
+refund:`REFUND POLICY
+Last updated: [date]
+
+Our tests are digital products that can be used right after purchase, so refunds work like this.
+
+You can get a full refund if
+- You were charged twice for the same item.
+- Payment was taken but access was not given within 24 hours.
+- The test or series is broken and we cannot fix it within a reasonable time.
+
+Refunds are not given when
+- You have already attempted the test or most of the series.
+- You changed your mind after using it.
+- Your account was suspended for breaking our terms.
+
+How to ask
+Email support@starzannotes.in within 7 days of payment, with your registered email and order ID.
+
+How you get the money
+Approved refunds go back to the original payment method through Razorpay and usually reach you in 5 to 7 working days. Access to the refunded item ends once the refund is processed.`,
+help:`HELP AND FAQ
+
+How do I start a test?
+Open a test and tap Start. Sign in with Google first.
+
+Can I pause a test?
+No. The timer keeps running even if you close the app. Your answers are saved automatically.
+
+My payment went through but I cannot see the test.
+Wait a few minutes and refresh. If it is still missing, email us with your order ID.
+
+How do I report a wrong question?
+Open your result, go to the question review and tap Report an issue.
+
+When do I see answers and explanations?
+As set for each test: right after each question, after you submit, or after the test closes.
+
+Which languages are supported?
+Tests can be in Hindi, English or both.
+
+How do I delete my account?
+Email us from your registered address and we will delete it.
+
+Contact us
+support@starzannotes.in`,
+dis:`Please read before you start.
+- This test is for practice and learning. Your score does not predict any official exam result.
+- The timer starts when you tap Start and keeps running, even if you leave the app.
+- Do not refresh, switch apps or take help from other devices. Your answers are saved automatically.
+- Do not copy, screenshot or share the questions. Unfair use can lead to a ban.
+- If you find a mistake in a question, report it from your result page.
+By tapping Start you agree to these rules.`};
+
+function seed(){
+  return {
+    exams: [],
+    tests: [],
+    orders: [],
+    coupons: [],
+    students: [],
+    staff: [{id:"owner", n:"Admin", e:"admin@starzannotes.in", r:"Owner", p:PM.map(p=>p[0])}],
+    banners: [],
+    reports: [],
+    cfg: {
+      name: "StarzanNotes Tests",
+      tag: "Practise like it’s the real exam.",
+      logo: "",
+      email: "support@starzannotes.in",
+      phone: "",
+      wa: "",
+      hide: false,
+      signup: true,
+      maint: false,
+      mmsg: "We are updating. Back soon.",
+      mk: 1,
+      neg: 0.33,
+      dis: LEG.dis,
+      legal: { priv: LEG.priv, terms: LEG.terms, about: LEG.about, refund: LEG.refund, help: LEG.help },
+      rz: "",
+      rzm: "test",
+      rzs: "",
+      rzw: ""
+    }
+  };
+}
+
+const K="snA2";
+let D;
+try{ D=JSON.parse(localStorage.getItem(K)); }catch(e){}
+if(!D || !D.tests) D=seed();
+migrate();
+
+let AS="owner",NO=0,E=null,ST=0,QM="manual",QE=-1,QF=null,QX="all",NX=0,TQ="",TF="all",CF="",PT="p",PQ="",CP=null,CPI=-1,SQ="",SF="all",SX="",XS="",SN=null,BNF=null,LG="priv",BK={fmt:"txt",raw:"",res:null},BM="",PF="",RT="open",RX="",RS={},RSN="Cheating or sharing answers",BQ="",BT="test",KP=0;
+
+const perms=()=>AS=="owner"?PM.map(p=>p[0]):(D.staff.find(s=>s.id==AS)||{p:[]}).p,can=k=>perms().includes(k),tid=i=>D.tests.find(t=>t.id==i);
+
+function toast(m){ let t=$("#t"); if(!t) return; t.textContent=m; t.classList.add("sh"); clearTimeout(toast.h); toast.h=setTimeout(()=>t.classList.remove("sh"),2400); }
+function sv(){ if(E) E.upd=Date.now(); try{localStorage.setItem(K,JSON.stringify(D))}catch(e){toast("Storage is full. Use a smaller banner.")} let e=$("#svt"); if(e) e.textContent="Draft saved "+hm(); }
+function cp2(txt,msg){ let fb=()=>{ let a=document.createElement("textarea"); a.value=txt; document.body.appendChild(a); a.select(); try{document.execCommand("copy");toast(msg)}catch(e){toast("Select the text and copy it")} a.remove(); }; try{navigator.clipboard.writeText(txt).then(()=>toast(msg),fb)}catch(e){fb()} }
+const sw=(on,fn,lb,sub,ds)=>`<div class="swr${ds?" ds":""}"><div><b>${lb}</b>${sub?`<small class="mu">${sub}</small>`:""}</div><button class="sw${on?" on":""}" role="switch" aria-checked="${!!on}" aria-label="${lb}" ${ds?"disabled":`onclick="${fn}"`}><i></i></button></div>`;
+const cf=(k,msg,yes)=>CF==k?`<div class="cf2"><span>${msg}</span><button class="b dg" onclick="${yes};CF='';render()">Yes</button><button class="b o" onclick="CF='';render()">No</button></div>`:"";
+const chips=(o,v,fn)=>`<div class="tabs wrap">${o.map(x=>`<button class="${v==x[0]?"on":""}" onclick="${fn}('${String(x[0]).replace(/'/g,"\\'")}')">${esc(x[1])}</button>`).join("")}</div>`;
+const rr=(opts,cur,fn)=>opts.map(o=>`<label class="opt ${cur==o[0]?"sel":""}"><input type="radio" name="rr" value="${o[0]}" ${cur==o[0]?"checked":""} onchange="${fn}('${o[0]}')"><div><b>${esc(o[1])}</b>${o[2]?`<small class="mu">${esc(o[2])}</small>`:""}</div></label>`).join("");
+const idb=id=>`<span class="idc-tag">#${esc(id)}</span>`;
+
+
 // Admin Authentication State
 function isAdminAuthenticated() {
   try {
@@ -712,6 +919,127 @@ async function deleteCouponFromDb(code) {
   try {
     await sb.from('coupons').delete().eq('code', code);
   } catch(e) { console.warn("deleteCouponFromDb error:", e); }
+}
+
+function lay(a,t,h,act){
+  if (!isAdminAuthenticated()) {
+    $("#app").innerHTML = `
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;">
+        <div class="c2" style="max-width:420px;width:100%;text-align:center;border-radius:18px;box-shadow:0 12px 36px rgba(0,0,0,0.25);">
+          <div style="font-size:2.2rem;margin-bottom:12px;">🛡️</div>
+          <h2 style="margin:0 0 8px;">Admin Login</h2>
+          <p class="mu" style="margin-bottom:20px;">Enter your admin email and password</p>
+          <div style="text-align:left;display:flex;flex-direction:column;gap:12px;">
+            <div>
+              <label class="l2">Admin Email</label>
+              <input id="adm_email" class="in" type="email" placeholder="admin@starzannotes.in" value="admin@starzannotes.in">
+            </div>
+            <div>
+              <label class="l2">Password</label>
+              <input id="adm_pass" class="in" type="password" placeholder="admin123" value="admin123" onkeydown="if(event.key==='Enter')doAdminLogin()">
+            </div>
+            <div id="adm_err" style="color:var(--dg);font-size:0.85rem;min-height:18px;"></div>
+            <button class="b" onclick="doAdminLogin()" style="width:100%;margin-top:6px;">Sign In to Admin</button>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+  let P=perms();
+  $("#app").innerHTML=`<div class="ad"><div class="scr${NO?" on":""}" onclick="NO=0;render()"></div><aside class="sn${NO?" open":""}"><div class="lg2">${D.cfg.logo?`<img src="${D.cfg.logo}" alt="">`:'<span class="mk">S</span>'}<b>${esc(D.cfg.name)}</b><small>Admin</small></div><nav>${NAV.filter(n=>P.includes(n[3])).map(n=>`<a class="ni${a==n[0]?" on":""}" href="#${n[0]}">${ic(n[2])}<span>${n[1]}</span>${n[4]?"<em>"+n[4]()+"</em>":""}</a>`).join("")}</nav><div class="pv"><small>Preview as role</small>${rr([["owner","Owner (all access)"]].concat(D.staff.filter(s=>s.id!="owner").map(s=>[s.id,s.n+" · "+s.r])),AS,"setAS",1)}</div><div style="padding:14px;border-top:1px solid var(--br);"><button class="b o s" style="width:100%;" onclick="adminSignOut()">Sign Out</button></div></aside><div class="mn"><header class="mb"><button class="ib" aria-label="Menu" onclick="NO=1;render()">${ic("menu")}</button><b>${esc(D.cfg.name)}</b><div style="margin-left:auto;"><button class="b o s" onclick="adminSignOut()">Sign Out</button></div></header><main class="pg2"><div class="ph2"><h1>${t}</h1>${act||""}</div>${h}</main></div></div>`;
+}
+
+const sum=a=>a.reduce((s,x)=>s+(x.amt||0),0);
+const pth=t=>[t.exam, t.sub&&t.sub.on&&t.sub.v, t.ch&&t.ch.on&&t.ch.v, t.tp&&t.tp.on&&t.tp.v].filter(Boolean).join(" › ");
+
+function dash(){
+  let o=D.orders||[], g=sum(o), rf=sum(o.filter(x=>x.st=="refunded")), bx={}, bt={};
+  o.forEach(x=>{
+    let t=tid(x.tid);
+    if(!t) return;
+    let b=bx[t.exam]=bx[t.exam]||{r:0,n:0};
+    if(x.st=="paid"){b.r+=x.amt;b.n++;bt[t.id]=(bt[t.id]||0)+x.amt;}
+  });
+  let ex=Object.entries(bx).sort((a,b)=>b[1].r-a[1].r), mx=Math.max(1,...ex.map(e=>e[1].r));
+  lay("dash","Dashboard",`<div class="kp"><div><small>Gross sales</small><b>${inr(g)}</b></div><div><small>Refunds</small><b>${inr(rf)}</b></div><div><small>Net sales*</small><b>${inr(g-rf)}</b></div><div><small>Orders</small><b>${o.length}</b></div><div><small>Students</small><b>${(D.students||[]).length}</b></div><div><small>Live tests</small><b>${(D.tests||[]).filter(t=>t.status=="pub").length}</b></div><div><small>Attempts</small><b>${(D.tests||[]).reduce((a,t)=>a+(t.at||0),0)}</b></div><div><small>Open reports</small><b>${(D.reports||[]).filter(r=>r.st=="open").length}</b></div></div>
+  <div class="c2"><h3>Sales by exam</h3><p class="mu">Net of refunds, before payment-gateway fees.</p>${ex.length ? ex.map(e=>`<div class="xb"><div class="ln"><b>${esc(e[0])}</b><span>${inr(e[1].r)} · ${e[1].n} orders</span></div><div class="bar"><i style="width:${e[1].r/mx*100}%"></i></div></div>`).join("") : '<div class="em">No sales yet. Real student purchases will appear here.</div>'}</div>
+  <div class="c2"><h3>Top tests</h3>${Object.entries(bt).length ? Object.entries(bt).sort((a,b)=>b[1]-a[1]).slice(0,4).map(e=>`<div class="ln"><span>${idb(e[0])} ${esc(tid(e[0])?tid(e[0]).title:"Test")}</span><b>${inr(e[1])}</b></div>`).join("") : '<div class="em">No test sales yet.</div>'}</div>
+  <div class="c2"><h3>Recent orders</h3>${o.length ? o.slice(0,6).map(x=>`<div class="qr"><div class="bd2"><b>${esc(x.stu||"Student")}</b><small>${x.tid} · ${new Date(x.at).toLocaleDateString("en-IN")}</small>${cf("rf"+x.id,"Refund "+inr(x.amt)+"?","refund('"+x.id+"')")}</div><b>${inr(x.amt)}</b><span class="st2 ${x.st}">${x.st}</span>${x.st=="paid"&&CF!="rf"+x.id?`<button class="b o s" onclick="CF='rf${x.id}';render()">Refund</button>`:""}</div>`).join("") : '<div class="em">No orders placed yet. Orders from students will appear here.</div>'}</div><p class="hint">*Net sales = gross sales minus refunds. Gateway fees and taxes are not deducted.</p>`);
+}
+
+function refund(i){
+  let ord=(D.orders||[]).find(x=>x.id==i);
+  if(ord) ord.st="refunded";
+  sv();
+  toast("Order refunded");
+  render();
+}
+
+function tlist(){
+  let q=(TQ||"").toLowerCase();
+  let l=(D.tests||[]).filter(t=>{
+    let stOk = TF=="all" || (TF=="paid" && t.paid) || (TF=="free" && !t.paid) || (TF=="draft" && t.status=="draft") || (TF=="pub" && t.status=="pub");
+    let match = (t.id||"").toLowerCase().includes(q) || (t.title||"").toLowerCase().includes(q) || (t.exam||"").toLowerCase().includes(q);
+    return stOk && match;
+  });
+  return l.map(t=>`
+    <div class="tw">
+      ${idb(t.id)}
+      <div class="bd2">
+        <a href="#edit-${t.id}">
+          <b>${esc(t.title||"Untitled test")}</b>
+          <small class="mu">${esc(pth(t)||"No exam yet")} · ${(t.q||[]).length} questions</small>
+        </a>
+        ${cf("dt"+t.id, "Delete this test?", "delT('"+t.id+"')")}
+      </div>
+      <div class="rt">
+        <span class="st2 ${t.status}">${t.status=="pub" ? "Live" : "Draft"}</span>
+        <small>${t.paid ? (t.price ? inr(t.sale||t.price) : "Price not set") : "Free"}</small>
+      </div>
+      <button class="ib2 dg" aria-label="Delete" onclick="CF='dt${t.id}';render()">${ic("trash")}</button>
+    </div>
+  `).join("") || '<div class="em">No tests found. Click "+ New test" above to create one.</div>';
+}
+
+function tests(){
+  lay("tests","Tests",`
+    <div class="tl2">
+      <input class="in" type="search" aria-label="Search tests" placeholder="Search by ID, title or exam" value="${esc(TQ)}" oninput="TQ=this.value;$('#tl').innerHTML=tlist()">
+    </div>
+    <div class="tabs">
+      ${[["all","All"],["draft","Drafts"],["pub","Live"],["free","Free"],["paid","Paid"]].map(f=>`<button class="${TF==f[0]?"on":""}" onclick="TF='${f[0]}';render()">${f[1]}</button>`).join("")}
+    </div>
+    <div id="tl">${tlist()}</div>
+  `, `<button class="b" onclick="newT()">${ic("plus")}New test</button>`);
+}
+
+function uid(){
+  let c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",x;
+  do{x=Array.from({length:5},()=>c[Math.random()*c.length|0]).join("")}while(!/\d/.test(x)||!/[A-Z]/.test(x)||tid(x));
+  return x;
+}
+
+function newT(){
+  let t = blank(uid());
+  t.exam = (D.exams && D.exams[0]) || "";
+  t.neg = t.neg || { on: true, v: 0.33 };
+  t.timer = t.timer || { on: true, min: 10 };
+  t.dis = t.dis || { on: true, txt: (D.cfg && D.cfg.dis) || "" };
+  t.status = "draft";
+  t._fresh = true;
+  D.tests.unshift(t);
+  WIZ_STEP = 1;
+  sv();
+  go("edit-" + t.id);
+}
+
+function delT(i){
+  D.tests = (D.tests || []).filter(t => t.id != i);
+  deleteTestFromDb(i);
+  sv();
+  toast("Test deleted");
+  render();
 }
 
 // ==========================================
