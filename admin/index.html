@@ -110,6 +110,141 @@ body{padding-bottom:0}main{animation:none}
 .rrg{display:grid;gap:8px;margin:8px 0}.rrw{display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;background:var(--sf);color:var(--tx);border:1.5px solid var(--br);border-radius:14px;padding:12px 14px;cursor:pointer;font:inherit;transition:.18s}.rrw:hover{border-color:var(--ac)}.rrw i{width:20px;height:20px;border-radius:50%;border:2px solid var(--br);flex:none;margin-top:2px;transition:.18s;position:relative}.rrw.on{border-color:var(--ac);background:var(--hi)}.rrw.on i{border-color:var(--ac)}.rrw.on i::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--ac)}.rrw b{display:block;font-weight:600;line-height:1.35}.rrw small{display:block}.rrg.sm .rrw{padding:8px 10px}.rrg.sm small{display:none}
 .idc{display:inline-flex;align-items:center;user-select:none}.idc .ic{width:12px;height:12px;margin-right:5px}
 .qr{flex-wrap:wrap}.qr .bd2{flex:1 1 180px}.qr .ac{margin-left:auto}a.st2{text-decoration:none}
+
+/* ACCORDION WIZARD STYLES */
+.wiz-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 10px;
+}
+.wiz-collapsed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--sf);
+  border: 1px solid var(--br);
+  border-radius: 16px;
+  box-shadow: var(--sh);
+  animation: up .25s both;
+  transition: border-color .2s;
+}
+.wiz-collapsed:hover {
+  border-color: var(--ac);
+}
+.wiz-col-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.wiz-step-pill {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ac);
+  color: var(--on);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.wiz-col-texts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.wiz-step-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ac);
+}
+.wiz-col-summary {
+  font-size: 0.94rem;
+  color: var(--tx);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 520px;
+}
+.wiz-edit-btn {
+  flex-shrink: 0;
+}
+.wiz-open {
+  animation: up .35s both;
+}
+.wiz-step-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--br);
+}
+.wiz-active-pill {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--ac);
+  color: var(--on);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.wiz-step-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+.wiz-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--br);
+}
+.hier-sub-card {
+  background: var(--hi);
+  border: 1px solid var(--br);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 12px;
+}
+.hier-ch-card {
+  background: var(--sf);
+  border: 1px solid var(--br);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 10px;
+}
+.hier-tp-card {
+  background: var(--hi);
+  border: 1px solid var(--br);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+.idc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  background: var(--hi);
+  border: 1px solid var(--br);
+  border-radius: 8px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--mu);
+}
+
 </style></head><body><div id="app"></div><div id="t" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -578,401 +713,831 @@ async function deleteCouponFromDb(code) {
     await sb.from('coupons').delete().eq('code', code);
   } catch(e) { console.warn("deleteCouponFromDb error:", e); }
 }
-// ====================================================================
 
-const PM=[["dash","Dashboard and sales"],["tests","Create and edit tests"],["publish","Publish tests"],["pricing","Prices and coupons"],["banners","Home banners"],["students","Student actions"],["staff","Staff access"],["settings","App settings"]];
-const RL={creator:{n:"Test creator",p:["tests"]},price:{n:"Pricing manager",p:["pricing"]},support:{n:"Support",p:["students"]},analyst:{n:"Analyst",p:["dash"]},custom:{n:"Custom",p:[]}};
-const NAV=[["dash","Dashboard","bar","dash"],["tests","Tests","list","tests",()=>D.tests.filter(t=>t.status=="draft").length+" drafts"],["reports","Question reports","flag","tests",()=>D.reports.filter(r=>r.st=="open").length+" open"],["pricing","Prices & coupons","tag","pricing"],["students","Students","users","students"],["banners","Home banners","image","banners"],["staff","Staff","shield","staff"],["settings","Settings","gear","settings"]];
-const blank=id=>({id,title:"",desc:"",exam:"",sub:{on:false,v:""},ch:{on:false,v:""},tp:{on:false,v:""},label:"",banner:"",paid:false,price:0,sale:0,saleEnd:"",timer:{on:true,min:10},neg:{on:true,v:.33},mk:1,shufQ:false,shufO:false,back:true,res:"submit",lb:true,dis:{on:true,txt:""},att:{on:false,n:3},status:"draft",sched:"",close:"",q:[],sales:0,at:0,upd:Date.now()});
-const rid=()=>Math.random().toString(36).slice(2,8),mq=(t,o,a,e)=>({t,o,a,e}),QS=[mq("Which gas do green plants absorb for photosynthesis?",["Oxygen","Carbon dioxide","Nitrogen","Hydrogen"],1,"Plants take in carbon dioxide."),mq("What is the SI unit of electric current?",["Volt","Watt","Ampere","Ohm"],2,"Ampere is the SI unit."),mq("What is the pH of a neutral solution?",["0","7","14","1"],1,"Pure water has pH 7.")];
-const ph=(c,g)=>"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000"><rect width="1600" height="1000" fill="${c}"/><text x="120" y="840" font-family="Georgia,serif" font-size="190" fill="#fff">${g}</text></svg>`);
-const LEG={priv:`PRIVACY POLICY
-Last updated: [date]
+// ==========================================
+// STEP-BY-STEP ACCORDION WIZARD FOR TEST CREATION
+// ==========================================
+let WIZ_STEP = 1; // 1: Title & Banner, 2: Exam, 3: Hierarchy & Questions, 4: Access, 5: Timing, 6: Rules, 7: Review
+let Q_TARGET = { sub: '', ch: '', tp: '' };
 
-StarzanNotes ("we", "us") runs online test series at starzannotes.in. This policy explains what we collect, why we collect it, and the choices you have. By using the app you agree to it.
-
-1. What we collect
-- Account details: your name, email address and profile photo from your Google account when you sign in.
-- Activity: tests you attempt, your answers, scores, time taken, ranks, and any question you report.
-- Purchases: order ID, what you bought, amount, payment status and date. Payments are handled by Razorpay. We never see or store your card number, UPI PIN or bank login.
-- Basic technical data: device type, browser and app usage, used to keep the app working and secure.
-
-2. How we use it
-To run your account, show your results and rank, give access to what you bought, prevent cheating and misuse, answer support requests, and improve our tests. We do not sell your personal data.
-
-3. Leaderboards
-Only a shortened display name and your score appear on a test leaderboard. Your email and phone number are never shown to other students.
-
-4. Sharing
-We share data only with service providers that help us run the app (hosting and database, Google sign-in, Razorpay payments, analytics) and when the law requires it.
-
-5. Students and children
-Many of our students are under 18. If you are under 18, please use the app with the knowledge and consent of a parent or guardian. We do not show advertisements targeted at students and we do not track students' behaviour for advertising.
-
-6. Storage and security
-Data is stored on secure cloud servers with access controls and encryption in transit. No system is perfectly secure, so please protect your Google account.
-
-7. How long we keep data
-While your account is active, and afterwards only as long as needed for legal, tax and dispute purposes. You can ask us to delete your account.
-
-8. Your rights
-You can ask to see, correct or delete your data, or withdraw your consent, by writing to us. We will respond within a reasonable time as required by Indian law, including the Digital Personal Data Protection Act, 2023.
-
-9. Cookies and local storage
-We use them to keep you signed in and to remember your test progress.
-
-10. Changes
-We may update this policy. Important changes will be shown in the app.
-
-Contact and grievances: support@starzannotes.in · Grievance Officer: [name, address]`,
-terms:`TERMS AND CONDITIONS
-Last updated: [date]
-
-Welcome to StarzanNotes. By creating an account or using the app you agree to these terms.
-
-1. About the service
-We provide online mock tests, practice tests and study material for school board and competitive exams. Everything is for learning and practice only.
-
-2. Your account
-- Sign in with your own Google account. You are responsible for all activity on it.
-- Give correct information. Do not share your account or let others use what you bought.
-- If you are under 18, use the app with the consent of a parent or guardian.
-
-3. Purchases and access
-- Prices are in Indian rupees and shown before you pay. Payments are processed securely by Razorpay.
-- After a successful payment you get access to the test or series you bought, for the validity shown on its page.
-- Access is personal. It cannot be sold, shared, copied or transferred.
-
-4. Fair use
-You agree not to cheat, use bots or scripts, copy or share questions, answers or explanations, try to break or overload the app, or harass others. We may warn, suspend or ban accounts that break these rules, and in serious cases remove access without refund.
-
-5. Our content
-All questions, explanations, designs and text belong to StarzanNotes or its licensors. You may use them for your own study only. You may not republish, sell or distribute them without written permission.
-
-6. Accuracy and results
-We work hard to keep questions and answers correct, but mistakes can happen. You can report a question from your result page and we will review it. Scores, ranks and analysis are for practice and do not predict or guarantee any exam result.
-
-7. Refunds
-Please read our Refund Policy.
-
-8. Availability
-We may update, pause or change features, tests or prices. We will try to give notice of major changes.
-
-9. Limit of liability
-To the extent allowed by law, StarzanNotes is not liable for indirect or consequential loss, or for loss caused by internet, device or third-party service failures. Our total liability for any claim is limited to the amount you paid for the item concerned.
-
-10. Governing law
-These terms are governed by the laws of India. The courts at [your city], India have jurisdiction.
-
-11. Contact
-support@starzannotes.in`,
-about:`ABOUT STARZANNOTES
-
-StarzanNotes helps students practise smarter. We make clear, exam-pattern mock tests for school boards and competitive exams, with simple explanations and honest analysis, so you know exactly what to work on next.
-
-What you get
-- Subject, chapter and topic-wise tests
-- A real exam-style timer and question palette
-- Explained answers after every test
-- A leaderboard on every test
-- Free tests to try before you buy
-
-Our promise
-We keep prices fair, fix mistakes quickly (you can report any question from your result page), and respect your privacy. We never sell your data.
-
-Contact: support@starzannotes.in`,
-refund:`REFUND POLICY
-Last updated: [date]
-
-Our tests are digital products that can be used right after purchase, so refunds work like this.
-
-You can get a full refund if
-- You were charged twice for the same item.
-- Payment was taken but access was not given within 24 hours.
-- The test or series is broken and we cannot fix it within a reasonable time.
-
-Refunds are not given when
-- You have already attempted the test or most of the series.
-- You changed your mind after using it.
-- Your account was suspended for breaking our terms.
-
-How to ask
-Email support@starzannotes.in within 7 days of payment, with your registered email and order ID.
-
-How you get the money
-Approved refunds go back to the original payment method through Razorpay and usually reach you in 5 to 7 working days. Access to the refunded item ends once the refund is processed.`,
-help:`HELP AND FAQ
-
-How do I start a test?
-Open a test and tap Start. Sign in with Google first.
-
-Can I pause a test?
-No. The timer keeps running even if you close the app. Your answers are saved automatically.
-
-My payment went through but I cannot see the test.
-Wait a few minutes and refresh. If it is still missing, email us with your order ID.
-
-How do I report a wrong question?
-Open your result, go to the question review and tap Report an issue.
-
-When do I see answers and explanations?
-As set for each test: right after each question, after you submit, or after the test closes.
-
-Which languages are supported?
-Tests can be in Hindi, English or both.
-
-How do I delete my account?
-Email us from your registered address and we will delete it.
-
-Contact us
-support@starzannotes.in`,
-dis:`Please read before you start.
-- This test is for practice and learning. Your score does not predict any official exam result.
-- The timer starts when you tap Start and keeps running, even if you leave the app.
-- Do not refresh, switch apps or take help from other devices. Your answers are saved automatically.
-- Do not copy, screenshot or share the questions. Unfair use can lead to a ban.
-- If you find a mistake in a question, report it from your result page.
-By tapping Start you agree to these rules.`};
-function seed(){
-  return {
-    exams: [],
-    tests: [],
-    orders: [],
-    coupons: [],
-    students: [],
-    banners: [],
-    staff: [],
-    reports: [],
-    cfg: {
-      name: "StarzanNotes",
-      tag: "Practice smarter, score higher.",
-      logo: "",
-      email: "support@starzannotes.in",
-      phone: "",
-      wa: "",
-      hide: false,
-      signup: true,
-      maint: false,
-      mmsg: "We are updating the app. Please check back soon.",
-      mk: 1,
-      neg: 0.33,
-      dis: "",
-      rz: "",
-      rzm: "test",
-      rzs: "",
-      rzw: "",
-      legal: { priv: "", terms: "", about: "", refund: "", help: "" }
+function initHierarchyTree(t) {
+  if (!t.hierarchy_tree) t.hierarchy_tree = [];
+  if (t.sub && t.sub.on && t.sub.v && !t.hierarchy_tree.some(s => s.name === t.sub.v)) {
+    let subObj = { name: t.sub.v, ch_on: !!(t.ch && t.ch.on), chapters: [] };
+    if (t.ch && t.ch.on && t.ch.v) {
+      let chObj = { name: t.ch.v, tp_on: !!(t.tp && t.tp.on), topics: [] };
+      if (t.tp && t.tp.on && t.tp.v) {
+        chObj.topics.push(t.tp.v);
+      }
+      subObj.chapters.push(chObj);
     }
-  };
-}
-const K="snA2";let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}if(!D||!D.tests)D=seed();else{D.tests=(D.tests||[]).filter(t=>!["K7P2X","B4M9Q","A2X8R","T5N3H"].includes(t.id));}migrate();
-let AS="owner",NO=0,E=null,ST=0,QM="manual",QE=-1,QF=null,QX="all",NX=0,TQ="",TF="all",CF="",PT="p",PQ="",CP=null,CPI=-1,SQ="",SF="all",SX="",XS="",SN=null,BNF=null,LG="priv",BK={fmt:"txt",raw:"",res:null},BM="",PF="",RT="open",RX="",RS={},RSN="Cheating or sharing answers",BQ="",BT="test",KP=0;
-const perms=()=>AS=="owner"?PM.map(p=>p[0]):(D.staff.find(s=>s.id==AS)||{p:[]}).p,can=k=>perms().includes(k),tid=i=>D.tests.find(t=>t.id==i);
-function toast(m){let t=$("#t");t.textContent=m;t.classList.add("sh");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("sh"),2400)}
-function sv(){if(E)E.upd=Date.now();try{localStorage.setItem(K,JSON.stringify(D))}catch(e){toast("Storage is full. Use a smaller banner.")}let e=$("#svt");if(e)e.textContent="Draft saved "+hm()}
-function cp2(txt,msg){let fb=()=>{let a=document.createElement("textarea");a.value=txt;document.body.appendChild(a);a.select();try{document.execCommand("copy");toast(msg)}catch(e){toast("Select the text and copy it")}a.remove()};try{navigator.clipboard.writeText(txt).then(()=>toast(msg),fb)}catch(e){fb()}}
-const sw=(on,fn,lb,sub,ds)=>`<div class="swr${ds?" ds":""}"><div><b>${lb}</b>${sub?`<small class="mu">${sub}</small>`:""}</div><button class="sw${on?" on":""}" role="switch" aria-checked="${!!on}" aria-label="${lb}" ${ds?"disabled":`onclick="${fn}"`}><i></i></button></div>`;
-const cf=(k,msg,yes)=>CF==k?`<div class="cf2"><span>${msg}</span><button class="b dg" onclick="${yes};CF='';render()">Yes</button><button class="b o" onclick="CF='';render()">No</button></div>`:"";
-const chips=(o,v,fn)=>`<div class="tabs wrap">${o.map(x=>`<button class="${v==x[0]?"on":""}" onclick="${fn}('${String(x[0]).replace(/'/g,"\\'")}')">${esc(x[1])}</button>`).join("")}</div>`;
-const rr=(o,v,fn,sm)=>`<div class="rrg${sm?" sm":""}" role="radiogroup">${o.map(x=>`<button class="rrw${v==x[0]?" on":""}" role="radio" aria-checked="${v==x[0]}" onclick="${fn}('${String(x[0]).replace(/'/g,"\\'")}')"><i></i><span><b>${esc(x[1])}</b>${x[2]?`<small class="mu">${esc(x[2])}</small>`:""}</span></button>`).join("")}</div>`;
-const idb=i=>`<button class="idc" title="Fixed ID. Tap to copy" aria-label="Test ID ${i}, fixed, tap to copy" onclick="cp2('${i}','Test ID copied')">${ic("lock")}${i}</button>`;
-const rpc=q=>D.reports.filter(r=>r.qid==q&&r.st=="open").length;
-function lay(a,t,h,act){
-  if (!isAdminAuthenticated()) {
-    $("#app").innerHTML = `<div class="ad"><div class="ov" style="z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(11,18,16,.85);position:fixed;inset:0"><div class="md" role="dialog" aria-modal="true" style="max-width:400px;width:90%;margin:auto;background:var(--sf);padding:28px;border-radius:16px;box-shadow:var(--sh);border:1px solid var(--br)"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span class="mk" style="width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--ac);color:var(--on);font-weight:700">S</span><h2 style="margin:0">Admin Sign In</h2></div><p class="mu" style="margin-bottom:18px">StarzanNotes Control Panel</p><label class="l2" for="adm_email">Admin Email</label><input id="adm_email" class="in" type="email" value="admin@starzannotes.in" placeholder="admin@starzannotes.in" style="margin-bottom:12px"><label class="l2" for="adm_pass">Password</label><input id="adm_pass" class="in" type="password" value="admin123" placeholder="admin123" style="margin-bottom:6px"><div id="adm_err" class="hint bad" style="margin-bottom:12px"></div><button class="b f" onclick="doAdminLogin()">Sign In as Admin</button><p class="sm" style="margin-top:14px;color:var(--mu);text-align:center">Demo login: any email with "admin" and password "admin123"</p></div></div></div>`;
-    return;
+    t.hierarchy_tree.push(subObj);
   }
-  let P=perms();
-  $("#app").innerHTML=`<div class="ad"><div class="scr${NO?" on":""}" onclick="NO=0;render()"></div><aside class="sn${NO?" open":""}"><div class="lg2">${D.cfg.logo?`<img src="${D.cfg.logo}" alt="">`:'<span class="mk">S</span>'}<b>${esc(D.cfg.name)}</b><small>Admin</small></div><nav>${NAV.filter(n=>P.includes(n[3])).map(n=>`<a class="ni${a==n[0]?" on":""}" href="#${n[0]}">${ic(n[2])}<span>${n[1]}</span>${n[4]?`<em>${n[4]()}</em>`:""}</a>`).join("")}</nav><div class="pv"><small>Preview as role</small>${rr([["owner","Owner (all access)"]].concat(D.staff.filter(s=>s.id!="owner").map(s=>[s.id,s.n+" · "+s.r])),AS,"setAS",1)}<button class="b o s" style="margin-top:12px;width:100%" onclick="adminSignOut()">Sign out</button></div></aside><div class="mn"><header class="mb"><button class="ib" aria-label="Menu" onclick="NO=1;render()">${ic("menu")}</button><b>${esc(D.cfg.name)}</b></header><main class="pg2"><div class="ph2"><h1>${t}</h1>${act||""}</div>${h}</main></div></div>`}
-const sum=a=>a.reduce((s,x)=>s+x.amt,0),pth=t=>[t.exam,t.sub.on&&t.sub.v,t.ch.on&&t.ch.v,t.tp.on&&t.tp.v].filter(Boolean).join(" › ");
-function dash(){let o=D.orders,g=sum(o),rf=sum(o.filter(x=>x.st=="refunded")),bx={},bt={};o.forEach(x=>{let t=tid(x.tid);if(!t)return;let b=bx[t.exam]=bx[t.exam]||{r:0,n:0};if(x.st=="paid"){b.r+=x.amt;b.n++;bt[t.id]=(bt[t.id]||0)+x.amt}});let ex=Object.entries(bx).sort((a,b)=>b[1].r-a[1].r),mx=Math.max(1,...ex.map(e=>e[1].r));
-lay("dash","Dashboard",`<div class="kp"><div><small>Gross sales</small><b>${inr(g)}</b></div><div><small>Refunds</small><b>${inr(rf)}</b></div><div><small>Net sales*</small><b>${inr(g-rf)}</b></div><div><small>Orders</small><b>${o.length}</b></div><div><small>Students</small><b>${D.students.length}</b></div><div><small>Live tests</small><b>${D.tests.filter(t=>t.status=="pub").length}</b></div><div><small>Attempts</small><b>${D.tests.reduce((a,t)=>a+t.at,0)}</b></div><div><small>Open reports</small><b>${D.reports.filter(r=>r.st=="open").length}</b></div></div>
-<div class="c2"><h3>Sales by exam</h3><p class="mu">Net of refunds, before payment-gateway fees.</p>${ex.map(e=>`<div class="xb"><div class="ln"><b>${esc(e[0])}</b><span>${inr(e[1].r)} · ${e[1].n} orders</span></div><div class="bar"><i style="width:${e[1].r/mx*100}%"></i></div></div>`).join("")||'<div class="em">No sales yet.</div>'}</div>
-<div class="c2"><h3>Top tests</h3>${Object.entries(bt).sort((a,b)=>b[1]-a[1]).slice(0,4).map(e=>`<div class="ln"><span>${idb(e[0])} ${esc(tid(e[0]).title)}</span><b>${inr(e[1])}</b></div>`).join("")}</div>
-<div class="c2"><h3>Recent orders</h3>${o.slice(0,6).map(x=>`<div class="qr"><div class="bd2"><b>${esc(x.stu)}</b><small>${x.tid} · ${new Date(x.at).toLocaleDateString("en-IN")}</small>${cf("rf"+x.id,"Refund "+inr(x.amt)+"?","refund('"+x.id+"')")}</div><b>${inr(x.amt)}</b><span class="st2 ${x.st}">${x.st}</span>${x.st=="paid"&&CF!="rf"+x.id?`<button class="b o s" onclick="CF='rf${x.id}';render()">Refund</button>`:""}</div>`).join("")}</div><p class="hint">*Net sales = gross sales minus refunds. Gateway fees and taxes are not deducted.</p>`)}
-function refund(i){D.orders.find(x=>x.id==i).st="refunded";sv();toast("Order refunded")}
-function tlist(){let q=TQ.toLowerCase(),l=D.tests.filter(t=>(TF=="all"||(TF=="paid"&&t.paid)||(TF=="free"&&!t.paid)||t.status==TF)&&(t.id.toLowerCase().includes(q)||t.title.toLowerCase().includes(q)||t.exam.toLowerCase().includes(q)));
-return l.map(t=>`<div class="tw">${idb(t.id)}<div class="bd2"><a href="#edit-${t.id}"><b>${esc(t.title||"Untitled test")}</b><small class="mu">${esc(pth(t)||"No exam yet")} · ${t.q.length} questions</small></a>${cf("dt"+t.id,"Delete this test?","delT('"+t.id+"')")}</div><div class="rt"><span class="st2 ${t.status}">${{draft:"Draft",pub:"Live",sched:"Scheduled",pending:"Awaiting approval"}[t.status]||t.status}</span><small>${t.paid?(t.price?inr(t.sale||t.price):"Price not set"):"Free"}</small></div><button class="ib2" aria-label="Duplicate" onclick="dupT('${t.id}')">${ic("copy")}</button><button class="ib2 dg" aria-label="Delete" onclick="CF='dt${t.id}';render()">${ic("trash")}</button></div>`).join("")||'<div class="em">No tests found.</div>'}
-function tests(){lay("tests","Tests",`<div class="tl2"><input class="in" type="search" aria-label="Search tests" placeholder="Search by ID, title or exam" value="${esc(TQ)}" oninput="TQ=this.value;$('#tl').innerHTML=tlist()"></div><div class="tabs">${[["all","All"],["draft","Drafts"],["pub","Live"],["free","Free"],["paid","Paid"]].map(f=>`<button class="${TF==f[0]?"on":""}" onclick="TF='${f[0]}';render()">${f[1]}</button>`).join("")}</div><div id="tl">${tlist()}</div>`,`<button class="b" onclick="newT()">${ic("plus")}New test</button>`)}
-function uid(){let c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",x;do{x=Array.from({length:5},()=>c[Math.random()*c.length|0]).join("")}while(!/\d/.test(x)||!/[A-Z]/.test(x)||tid(x));return x}
-function newT(){let t=blank(uid());t.exam=D.exams[0]||"";t.neg.v=D.cfg.neg;t.mk=D.cfg.mk;t.dis.txt=D.cfg.dis;D.tests.unshift(t);ST=0;QM="manual";QE=-1;QF=null;sv();insertTestToDb(t);go("edit-"+t.id)}
-function dupT(i){let t=JSON.parse(JSON.stringify(tid(i)));t.id=uid();t.title+=" (copy)";t.status="draft";t.sales=0;t.at=0;D.tests.unshift(t);sv();insertTestToDb(t);toast("Duplicated as "+t.id);render()}
-function delT(i){D.tests=D.tests.filter(t=>t.id!=i);sv();deleteTestFromDb(i);toast("Test deleted")}
-const STP=["Basics","Questions","Settings","Review"];
-function sug(k,f){return [...new Set(D.tests.filter(t=>t.exam==E.exam&&f(t)).map(t=>t[k].v).filter(Boolean))]}
-
-async function saveCurrentTestToCloud() {
-  if (!E) return;
-  toast("Saving test & questions to Supabase...");
-  await updateTestInDb(E);
-  toast("✅ Test \"" + (E.title || E.id) + "\" saved to Cloud!");
-  render();
+  // Sync from existing questions
+  (t.q || []).forEach(q => {
+    let s = (q.subject || '').trim();
+    let c = (q.chapter || '').trim();
+    let p = (q.topic || '').trim();
+    if (s) {
+      let sObj = t.hierarchy_tree.find(x => x.name === s);
+      if (!sObj) {
+        sObj = { name: s, ch_on: !!c, chapters: [] };
+        t.hierarchy_tree.push(sObj);
+      }
+      if (c) {
+        sObj.ch_on = true;
+        let cObj = sObj.chapters.find(x => x.name === c);
+        if (!cObj) {
+          cObj = { name: c, tp_on: !!p, topics: [] };
+          sObj.chapters.push(cObj);
+        }
+        if (p) {
+          cObj.tp_on = true;
+          if (!cObj.topics.includes(p)) cObj.topics.push(p);
+        }
+      }
+    }
+  });
 }
 
-function edit(i){
+function syncTestHierarchyFields(t) {
+  if (t.hierarchy_tree && t.hierarchy_tree.length > 0) {
+    t.sub.on = true;
+    t.sub.v = t.hierarchy_tree[0].name;
+    let firstCh = t.hierarchy_tree[0].chapters && t.hierarchy_tree[0].chapters[0];
+    if (firstCh) {
+      t.ch.on = true;
+      t.ch.v = firstCh.name;
+      let firstTp = firstCh.topics && firstCh.topics[0];
+      if (firstTp) {
+        t.tp.on = true;
+        t.tp.v = typeof firstTp === 'string' ? firstTp : firstTp.name;
+      } else {
+        t.tp.on = false; t.tp.v = '';
+      }
+    } else {
+      t.ch.on = false; t.ch.v = '';
+      t.tp.on = false; t.tp.v = '';
+    }
+  }
+}
+
+function setWizStep(n) {
+  WIZ_STEP = n;
+  QE = -1;
+  QF = null;
+  QM = "manual";
+  render();
+  scrollTo(0, 0);
+}
+
+function edit(i) {
   let t = tid(i);
   if (!t) return go("tests");
   E = t;
-  let b = [bas, qs, set, rev][ST]();
+  initHierarchyTree(t);
   let isLive = t.status === "pub";
-  
-  lay("tests", esc(t.title) || "New test", `
+
+  // If opening an existing completed test without active step, go to review
+  if (t.title && t.exam && t.q && t.q.length > 0 && WIZ_STEP === 1 && !t._fresh) {
+    WIZ_STEP = 7;
+  }
+  delete t._fresh;
+
+  lay("tests", esc(t.title) || "Test Creation", `
     <div class="rowx" style="margin:-8px 0 14px">
       <a class="bkb" style="margin:0" href="#tests">${ic("back")}<span>Tests</span></a>
       <span style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+        <span class="idc-tag">#${esc(t.id)}</span>
+        <span class="st2 ${t.status}">${t.status === "pub" ? "Live" : "Private Draft"}</span>
         <button class="b ${isLive ? 's' : 'o s'}" onclick="saveCurrentTestToCloud()">${ic("check")} ${isLive ? "Save Changes" : "Save Draft"}</button>
-        ${idb(t.id)} <span class="st2 ${t.status}">${{draft:"Draft",pub:"Live",sched:"Scheduled",pending:"Awaiting approval"}[t.status]}</span>
       </span>
     </div>
-    <div class="stp">${STP.map((s,n)=>`<button class="${ST==n?"on":""}${n<ST?" dn":""}" onclick="stp(${n})"><span>${n<ST?ic("check"):n+1}</span>${s}</button>`).join("")}</div>
-    ${b}
-    <div class="sbar">
-      <span class="sp"><i></i><span id="svt">${isLive ? "Live test active" : "Draft saved"} ${hm()}</span></span>
-      ${ST > 0 ? `<button class="b o" onclick="stp(ST-1)">Back</button>` : ""}
-      ${ST < 3 ? `<button class="b" onclick="stp(ST+1)">Next ${ic("chev")}</button>` : `<button class="b" onclick="${isLive ? 'saveCurrentTestToCloud()' : 'pubT()'}">${isLive ? "Save Live Changes" : (can("publish") ? (t.sched ? "Schedule Test" : "🚀 Publish to Student App") : "Send for approval")}</button>`}
-    </div>`);
-}
-function stp(n){ST=n;QE=-1;QF=null;render();scrollTo(0,0)}
-function bas(){
-  let t = E, ex = D.exams;
-  let subSuggestions = sug("sub", x => x.sub.on);
-  let chSuggestions = sug("ch", x => x.ch.on && x.sub.v == t.sub.v);
-  let tpSuggestions = sug("tp", x => x.tp.on && x.ch.v == t.ch.v);
 
-  return `<div class="c2">
-    <h3>Exam and where it appears</h3>
-    <p class="mu">Choose the exam, then turn on only the levels you need.</p>
-    
-    <div class="tabs" style="margin-top:12px">
-      ${ex.map(x => `<button class="${t.exam==x?"on":""}" onclick="E.exam='${esc(x).replace(/'/g,"\\'")}' ;sv();render()">${esc(x)}</button>`).join("")}
-      <button onclick="NX=!NX;render()">${ic("plus")}New exam</button>
+    <!-- STEP PROGRESS TRACKER -->
+    <div class="stp" style="margin-bottom:14px;">
+      ${[
+        [1, "Title & Banner"],
+        [2, "Exam"],
+        [3, "Hierarchy & Qs"],
+        [4, "Access"],
+        [5, "Timer & Marks"],
+        [6, "Rules"],
+        [7, "Review & Finalize"]
+      ].map(([n, title]) => `
+        <button class="${WIZ_STEP == n ? "on" : ""}${n < WIZ_STEP ? " dn" : ""}" ${n <= WIZ_STEP ? `onclick="setWizStep(${n})"` : 'disabled style="opacity:0.45;cursor:not-allowed;"'}>
+          <span>${n < WIZ_STEP ? ic("check") : n}</span>${title}
+        </button>
+      `).join("")}
     </div>
-    ${NX ? `<div class="cp"><input id="nx" class="in" placeholder="Exam name, e.g. SSC CGL" aria-label="New exam name"><button class="b" onclick="addEx()">Add</button></div>` : ""}
-    
-    ${sw(t.sub.on, "togL('sub')", "Subject", "Add a subject level")}
-    ${t.sub.on ? `
-      <div style="margin: 8px 0 14px;">
-        ${subSuggestions.length ? `
-          <small class="mu" style="display:block;margin-bottom:4px;">Existing subjects in this exam (tap to select):</small>
-          <div class="tabs wrap" style="margin-bottom:8px;">
-            ${subSuggestions.map(s => `<button class="${t.sub.v==s?"on":""}" type="button" onclick="E.sub.v='${esc(s).replace(/'/g,"\\'")}' ;sv();updateTestInDb(E);render()">${esc(s)}</button>`).join("")}
-          </div>
-        ` : ''}
-        <div style="display:flex; gap:8px;">
-          <input id="sub_in" class="in" aria-label="Subject name" placeholder="Subject name, e.g. Physics" value="${esc(t.sub.v)}" oninput="E.sub.v=this.value;sv();pp()">
-          <button class="b s" type="button" style="white-space:nowrap;" onclick="addLevel('sub')">+ Add Subject</button>
-        </div>
-      </div>
-    ` : ""}
-    
-    ${sw(t.ch.on, "togL('ch')", "Chapter", "Needs a subject", !t.sub.on)}
-    ${t.ch.on ? `
-      <div style="margin: 8px 0 14px;">
-        ${chSuggestions.length ? `
-          <small class="mu" style="display:block;margin-bottom:4px;">Existing chapters in ${esc(t.sub.v || 'this subject')}:</small>
-          <div class="tabs wrap" style="margin-bottom:8px;">
-            ${chSuggestions.map(c => `<button class="${t.ch.v==c?"on":""}" type="button" onclick="E.ch.v='${esc(c).replace(/'/g,"\\'")}' ;sv();updateTestInDb(E);render()">${esc(c)}</button>`).join("")}
-          </div>
-        ` : ''}
-        <div style="display:flex; gap:8px;">
-          <input id="ch_in" class="in" aria-label="Chapter name" placeholder="Chapter name, e.g. Mechanics" value="${esc(t.ch.v)}" oninput="E.ch.v=this.value;sv();pp()">
-          <button class="b s" type="button" style="white-space:nowrap;" onclick="addLevel('ch')">+ Add Chapter</button>
-        </div>
-      </div>
-    ` : ""}
-    
-    ${sw(t.tp.on, "togL('tp')", "Topic", "Needs a chapter", !t.ch.on)}
-    ${t.tp.on ? `
-      <div style="margin: 8px 0 14px;">
-        ${tpSuggestions.length ? `
-          <small class="mu" style="display:block;margin-bottom:4px;">Existing topics in ${esc(t.ch.v || 'this chapter')}:</small>
-          <div class="tabs wrap" style="margin-bottom:8px;">
-            ${tpSuggestions.map(tp => `<button class="${t.tp.v==tp?"on":""}" type="button" onclick="E.tp.v='${esc(tp).replace(/'/g,"\\'")}' ;sv();updateTestInDb(E);render()">${esc(tp)}</button>`).join("")}
-          </div>
-        ` : ''}
-        <div style="display:flex; gap:8px;">
-          <input id="tp_in" class="in" aria-label="Topic name" placeholder="Topic name, e.g. Kinematics" value="${esc(t.tp.v)}" oninput="E.tp.v=this.value;sv();pp()">
-          <button class="b s" type="button" style="white-space:nowrap;" onclick="addLevel('tp')">+ Add Topic</button>
-        </div>
-      </div>
-    ` : ""}
-    
-    <div class="pth"><small>Students will find it here</small><span id="pp">${esc(pth(t)||"Choose an exam")} › ${esc(t.title||"This test")}</span></div>
-  </div>
-  
-  <div class="c2">
-    <h3>Title and banner</h3>
-    <label class="l2" for="ti">Test title</label>
-    <input id="ti" class="in" value="${esc(t.title)}" placeholder="e.g. Unit Test 1" oninput="E.title=this.value;sv();pp()">
-    <label class="l2" for="de">Short description</label>
-    <textarea id="de" class="in" maxlength="140" placeholder="One line shown on the card" oninput="E.desc=this.value;sv()">${esc(t.desc)}</textarea>
-    <label class="l2">Card label</label>
-    ${chips([["","None"],["New","New"],["Popular","Popular"],["Bestseller","Bestseller"],["Free","Free"]],t.label,"setLb")}
-    <label class="l2">Banner image</label>
-    <div class="pvw" id="pvw" style="${t.banner?`background-image:url('${t.banner}')`:""}">${t.banner?"":"16:10 preview"}</div>
-    <label class="up2">${ic("upload")}<div><b>Upload banner</b></div><small>1600 × 1000 px (16:10) · JPG or WebP · under 400 KB</small><input type="file" accept="image/*" onchange="upImg(this,'${"E"}')"></label>
-    <div class="hint" id="bm">${esc(BM)}</div>
-  </div>`;
+
+    <div class="wiz-container">
+      ${renderWizard()}
+    </div>
+  `);
 }
 
-function addLevel(k) {
-  let inp = $("#" + k + "_in");
-  let val = (inp ? inp.value : E[k].v || "").trim();
-  if (!val) { toast("Please type a name first"); return; }
-  E[k].v = val;
+function renderWizard() {
+  let html = "";
+  for (let s = 1; s <= WIZ_STEP; s++) {
+    if (s < WIZ_STEP) {
+      html += renderWizCollapsed(s);
+    } else {
+      html += renderWizOpen(s);
+    }
+  }
+  return html;
+}
+
+// ------------------------------------------
+// COLLAPSED STEP CARDS (With Edit Button)
+// ------------------------------------------
+function renderWizCollapsed(s) {
+  let t = E;
+  let title = "", summary = "";
+
+  if (s === 1) {
+    title = "Step 1: Title & Banner";
+    summary = esc(t.title || "Untitled") + (t.label ? ' · [' + esc(t.label) + ']' : '') + (t.banner ? ' · Banner attached' : ' · No banner');
+  } else if (s === 2) {
+    title = "Step 2: Exam Category";
+    summary = t.exam ? ('Exam: ' + esc(t.exam)) : "Standalone Practice Test (Direct)";
+  } else if (s === 3) {
+    title = "Step 3: Questions & Hierarchy";
+    let hier = pth(t) || "Direct Test Questions";
+    summary = t.q.length + " questions added · " + esc(hier);
+  } else if (s === 4) {
+    title = "Step 4: Access & Pricing";
+    summary = t.paid ? ("Paid Test · " + inr(t.sale || t.price) + (t.sale ? " (was " + inr(t.price) + ")" : "")) : "Free Practice Test";
+  } else if (s === 5) {
+    title = "Step 5: Timer & Marking";
+    summary = (t.timer.on ? t.timer.min + " mins" : "Untimed") + " · +" + t.mk + " / -" + (t.neg.on ? t.neg.v : 0);
+  } else if (s === 6) {
+    title = "Step 6: Leaderboard & Rules";
+    summary = "Leaderboard: " + (t.lb ? "ON" : "OFF") + " · Disclaimer: " + (t.dis.on ? "ON" : "OFF");
+  }
+
+  return `
+    <div class="wiz-collapsed">
+      <div class="wiz-col-left">
+        <span class="wiz-step-pill">${s}</span>
+        <div class="wiz-col-texts">
+          <span class="wiz-step-label">${title}</span>
+          <span class="wiz-col-summary">${summary}</span>
+        </div>
+      </div>
+      <button class="b o s wiz-edit-btn" onclick="setWizStep(${s})">✏️ Edit</button>
+    </div>
+  `;
+}
+
+// ------------------------------------------
+// EXPANDED ACTIVE STEP FORMS
+// ------------------------------------------
+function renderWizOpen(s) {
+  if (s === 1) return wizStep1();
+  if (s === 2) return wizStep2();
+  if (s === 3) return wizStep3();
+  if (s === 4) return wizStep4();
+  if (s === 5) return wizStep5();
+  if (s === 6) return wizStep6();
+  if (s === 7) return wizStep7();
+  return "";
+}
+
+// STEP 1: Title, Description & Banner
+function wizStep1() {
+  let t = E;
+  return `
+    <div class="c2 wiz-open">
+      <div class="wiz-step-header">
+        <span class="wiz-active-pill">1</span>
+        <div>
+          <h3>Title, Description & Banner</h3>
+          <small class="mu">Give your test a clear title, optional card label, and cover banner.</small>
+        </div>
+      </div>
+
+      <label class="l2" for="ti">Test Title *</label>
+      <input id="ti" class="in" value="${esc(t.title)}" placeholder="e.g. Unit Test 1: Complete Kinematics" oninput="E.title=this.value;sv()">
+
+      <label class="l2" for="de">Short Description</label>
+      <textarea id="de" class="in" maxlength="140" placeholder="One line summary shown to students on test cards" oninput="E.desc=this.value;sv()">${esc(t.desc)}</textarea>
+
+      <label class="l2">Card Label / Badge</label>
+      ${chips([["","None"],["New","New"],["Popular","Popular"],["Bestseller","Bestseller"],["Free","Free"]], t.label, "setLb")}
+
+      <label class="l2">Banner Image (16:10)</label>
+      <div class="pvw" id="pvw" style="${t.banner ? `background-image:url('${t.banner}')` : ""}">${t.banner ? "" : "16:10 Banner Preview"}</div>
+      <label class="up2">
+        ${ic("upload")}<div><b>Upload Cover Banner</b></div>
+        <small>1600 × 1000 px · JPG or WebP · under 400 KB</small>
+        <input type="file" accept="image/*" onchange="upImg(this,'E')">
+      </label>
+      <div class="hint" id="bm">${esc(BM)}</div>
+
+      <div class="wiz-actions">
+        <button class="b" onclick="saveWiz1()">💾 Save & Next: Exam Category →</button>
+      </div>
+    </div>
+  `;
+}
+
+function saveWiz1() {
+  if (!E.title.trim()) { toast("Please enter a test title"); return; }
   sv();
   updateTestInDb(E);
-  toast("Added " + (k=="sub"?"Subject":k=="ch"?"Chapter":"Topic") + ": " + val);
+  toast("Step 1 saved");
+  WIZ_STEP = 2;
+  render();
+  scrollTo(0, 0);
+}
+
+// STEP 2: Exam Category
+function wizStep2() {
+  let t = E;
+  let hasExam = t.hasExam !== false && !!t.exam;
+  return `
+    <div class="c2 wiz-open">
+      <div class="wiz-step-header">
+        <span class="wiz-active-pill">2</span>
+        <div>
+          <h3>Exam Category</h3>
+          <small class="mu">Choose whether this test belongs to an Exam Series, or is a standalone test.</small>
+        </div>
+      </div>
+
+      ${sw(hasExam, "toggleExamSwitch()", "Assign to an Exam Series?", "Enable if this test belongs to NEET UG, JEE Main, UPSC, etc.")}
+
+      ${hasExam ? `
+        <div style="margin-top:14px;">
+          <label class="l2">Select Exam Category</label>
+          <div class="tabs wrap" style="margin-top:6px">
+            ${D.exams.map(x => `<button class="${t.exam==x?"on":""}" onclick="E.exam='${esc(x).replace(/'/g,"\\'")}' ;sv();render()">${esc(x)}</button>`).join("")}
+            <button onclick="NX=!NX;render()">${ic("plus")} New Exam</button>
+          </div>
+          ${NX ? `<div class="cp" style="margin-top:8px;"><input id="nx" class="in" placeholder="New Exam Name, e.g. SSC CGL" aria-label="New exam name"><button class="b" onclick="addEx()">Add Exam</button></div>` : ""}
+        </div>
+      ` : `
+        <div class="pth" style="margin-top:14px;">
+          <small>Standalone Mode</small>
+          Direct practice test without exam series nesting.
+        </div>
+      `}
+
+      <div class="wiz-actions">
+        <button class="b o" onclick="setWizStep(1)">Back</button>
+        <button class="b" onclick="saveWiz2()">💾 Save & Next: Subject & Questions →</button>
+      </div>
+    </div>
+  `;
+}
+
+function toggleExamSwitch() {
+  if (E.hasExam === false || !E.exam) {
+    E.hasExam = true;
+    if (!E.exam) E.exam = D.exams[0] || "General Practice";
+  } else {
+    E.hasExam = false;
+    E.exam = "";
+    E.sub.on = false; E.sub.v = "";
+    E.ch.on = false; E.ch.v = "";
+    E.tp.on = false; E.tp.v = "";
+  }
+  sv();
   render();
 }
 
-function pp(){let e=$("#pp");if(e)e.textContent=(pth(E)||"Choose an exam")+" › "+(E.title||"This test")}
-function togL(k){
-  E[k].on = !E[k].on;
-  if (!E[k].on) {
-    E[k].v = "";
-    if (k == "sub") { E.ch.on = false; E.ch.v = ""; E.tp.on = false; E.tp.v = ""; }
-    if (k == "ch") { E.tp.on = false; E.tp.v = ""; }
+function saveWiz2() {
+  if (E.hasExam && !E.exam) { toast("Please select or add an exam name"); return; }
+  sv();
+  updateTestInDb(E);
+  toast("Step 2 saved");
+  WIZ_STEP = 3;
+  render();
+  scrollTo(0, 0);
+}
+
+// STEP 3: Subject & Questions Setup
+function wizStep3() {
+  let t = E;
+  let hasExam = t.hasExam !== false && !!t.exam;
+
+  return `
+    <div class="c2 wiz-open">
+      <div class="wiz-step-header">
+        <span class="wiz-active-pill">3</span>
+        <div>
+          <h3>Hierarchy & Questions Setup</h3>
+          <small class="mu">Enable Subject, Chapter, and Topic levels as needed, and add questions.</small>
+        </div>
+      </div>
+
+      ${hasExam ? `
+        ${sw(t.sub.on, "toggleSubjectSwitch()", "Enable Subjects?", "Group questions or tests by Subjects (e.g. Physics, Chemistry)")}
+      ` : `
+        <p class="mu">Direct test questions (No exam nesting).</p>
+      `}
+
+      ${(!hasExam || !t.sub.on) ? renderDirectQuestionsSection() : renderHierarchicalQuestionsSection()}
+
+      <div class="wiz-actions" style="margin-top:20px;">
+        <button class="b o" onclick="setWizStep(2)">Back</button>
+        <button class="b" onclick="saveWiz3()">💾 Save & Next: Access & Pricing →</button>
+      </div>
+    </div>
+  `;
+}
+
+function toggleSubjectSwitch() {
+  E.sub.on = !E.sub.on;
+  if (!E.sub.on) {
+    E.sub.v = "";
+    E.ch.on = false; E.ch.v = "";
+    E.tp.on = false; E.tp.v = "";
+  } else {
+    initHierarchyTree(E);
+    if (!E.hierarchy_tree.length) {
+      E.hierarchy_tree.push({ name: "Physics", ch_on: false, chapters: [] });
+      E.sub.v = "Physics";
+    }
   }
   sv();
   updateTestInDb(E);
   render();
 }
-function addEx(){let v=$("#nx").value.trim();if(!v)return;if(!D.exams.some(x=>x.toLowerCase()==v.toLowerCase()))D.exams.push(v);E.exam=D.exams.find(x=>x.toLowerCase()==v.toLowerCase());NX=0;sv();render()}
-function upImg(inp,w,cb){let f=inp.files[0];if(!f)return;
-let r=new FileReader();
-r.onload=()=>{
-  let im=new Image();
-  im.onload=()=>{
-    try {
-      let canvas=document.createElement('canvas');
-      let maxW=1200,maxH=750;
-      let width=im.width,height=im.height;
-      if(width>maxW){height=Math.round(height*maxW/width);width=maxW;}
-      if(height>maxH){width=Math.round(width*maxH/height);height=maxH;}
-      canvas.width=width;canvas.height=height;
-      let ctx=canvas.getContext('2d');
-      ctx.drawImage(im,0,0,width,height);
-      let compressed=canvas.toDataURL('image/jpeg',0.82);
-      if(w=="E")E.banner=compressed;else BNF.img=compressed;
-      BM="Image ready ("+width+" × "+height+", optimized)";
-      sv();render();
-    } catch(err) {
-      if(w=="E")E.banner=r.result;else BNF.img=r.result;
-      sv();render();
-    }
+
+// DIRECT QUESTIONS SECTION (When no subjects)
+function renderDirectQuestionsSection() {
+  let t = E;
+  return `
+    <div style="margin-top:14px;">
+      <div class="rowx" style="margin-bottom:12px;">
+        <div>
+          <b>Test Questions (${t.q.length})</b>
+          <small class="mu" style="display:block;">Questions added directly to this test.</small>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="b s" type="button" onclick="openNewQDirect()">${ic("plus")} Add Question</button>
+          <button class="b o s" type="button" onclick="openBulkDirect()">${ic("upload")} Bulk Upload</button>
+        </div>
+      </div>
+
+      ${QM == 'bulk' ? bulk() : ''}
+      ${QE == -2 || QE >= 0 ? qf() : ''}
+
+      <div style="margin-top:12px;">
+        ${t.q.length ? t.q.map((q, i) => QE == i ? '' : qrow(q, i)).join("") : '<div class="em">No questions added yet. Tap "Add Question" or "Bulk Upload" above.</div>'}
+      </div>
+    </div>
+  `;
+}
+
+// HIERARCHICAL QUESTIONS SECTION (When subjects enabled)
+function renderHierarchicalQuestionsSection() {
+  let t = E;
+  initHierarchyTree(t);
+
+  return `
+    <div style="margin-top:14px;">
+      <!-- Add Subject Toolbar -->
+      <div style="background:var(--sf); border:1px solid var(--br); padding:14px; border-radius:14px; margin-bottom:16px;">
+        <label class="l2" style="margin-top:0;">Add a Subject</label>
+        <div style="display:flex; gap:8px;">
+          <input id="new_sub_in" class="in" placeholder="Subject name, e.g. Physics, Chemistry, Biology">
+          <button class="b s" type="button" onclick="addHierSubject()">+ Add Subject</button>
+        </div>
+        <div class="tabs wrap" style="margin:10px 0 0;">
+          <small class="mu" style="width:100%; display:block; margin-bottom:4px;">Quick add suggested subjects:</small>
+          ${["Physics", "Chemistry", "Biology", "Mathematics", "General Knowledge", "Reasoning", "English"].map(s => `
+            <button type="button" onclick="$('#new_sub_in').value='${s}';addHierSubject()">+ ${s}</button>
+          `).join("")}
+        </div>
+      </div>
+
+      <!-- Active Question Form or Bulk if open -->
+      ${QM == 'bulk' ? bulk() : ''}
+      ${QE == -2 || QE >= 0 ? qf() : ''}
+
+      <!-- List of Subjects in hierarchy -->
+      ${t.hierarchy_tree.map((sub, sIdx) => renderSubjectCard(sub, sIdx)).join("") || '<div class="em">No subjects added yet. Add a subject above.</div>'}
+
+      <!-- ALL QUESTIONS OVERVIEW -->
+      <div style="margin-top:20px; padding:16px; background:var(--sf); border:1px solid var(--br); border-radius:14px;">
+        <div class="rowx">
+          <b>Total Questions in Test: ${t.q.length}</b>
+          <small class="mu">${t.hierarchy_tree.length} Subject(s)</small>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function addHierSubject() {
+  let val = $("#new_sub_in") ? $("#new_sub_in").value.trim() : "";
+  if (!val) { toast("Please type a subject name"); return; }
+  initHierarchyTree(E);
+  if (!E.hierarchy_tree.some(s => s.name.toLowerCase() === val.toLowerCase())) {
+    E.hierarchy_tree.push({ name: val, ch_on: false, chapters: [] });
+    syncTestHierarchyFields(E);
+    sv();
+    updateTestInDb(E);
+    toast("Subject added: " + val);
+    render();
+  } else {
+    toast("Subject already exists");
+  }
+}
+
+function removeHierSubject(sIdx) {
+  let subName = E.hierarchy_tree[sIdx].name;
+  E.hierarchy_tree.splice(sIdx, 1);
+  syncTestHierarchyFields(E);
+  sv();
+  updateTestInDb(E);
+  toast("Subject removed: " + subName);
+  render();
+}
+
+function renderSubjectCard(sub, sIdx) {
+  let subQuestions = E.q.filter(q => (q.subject || '').trim() === sub.name);
+
+  return `
+    <div class="hier-sub-card">
+      <div class="rowx" style="padding-bottom:10px; border-bottom:1px solid var(--br);">
+        <div>
+          <b style="font-size:1.05rem;">📘 Subject: ${esc(sub.name)}</b>
+          <small class="mu" style="display:block;">${subQuestions.length} Question${subQuestions.length === 1 ? '' : 's'}</small>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="ib2 dg" type="button" title="Delete Subject" onclick="removeHierSubject(${sIdx})">${ic("trash")}</button>
+        </div>
+      </div>
+
+      <!-- Chapter Toggle for this Subject -->
+      <div style="margin-top:10px;">
+        ${sw(sub.ch_on, `toggleChapterSwitch(${sIdx})`, "Enable Chapters for " + esc(sub.name) + "?", "Break down " + esc(sub.name) + " into specific chapters")}
+      </div>
+
+      ${!sub.ch_on ? `
+        <!-- Direct Questions to Subject -->
+        <div style="margin-top:12px; background:var(--sf); border:1px solid var(--br); padding:12px 14px; border-radius:12px;">
+          <div class="rowx">
+            <b>Questions for ${esc(sub.name)} (${subQuestions.length})</b>
+            <div style="display:flex; gap:8px;">
+              <button class="b s" type="button" onclick="openNewQSub(${sIdx})">${ic("plus")} Add Question</button>
+              <button class="b o s" type="button" onclick="openBulkSub(${sIdx})">${ic("upload")} Bulk Upload</button>
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            ${subQuestions.map(q => {
+              let idx = E.q.indexOf(q);
+              return QE == idx ? '' : qrow(q, idx);
+            }).join("") || '<small class="mu">No questions in this subject yet. Tap "Add Question" above.</small>'}
+          </div>
+        </div>
+      ` : `
+        <!-- Chapters List -->
+        <div style="margin-top:12px;">
+          <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <input id="new_ch_in_${sIdx}" class="in" placeholder="Chapter name, e.g. Mechanics, Optics">
+            <button class="b s" type="button" onclick="addHierChapter(${sIdx})">+ Add Chapter</button>
+          </div>
+
+          ${sub.chapters.map((ch, cIdx) => renderChapterCard(sub, sIdx, ch, cIdx)).join("") || '<small class="mu">No chapters added yet. Type a chapter name above.</small>'}
+        </div>
+      `}
+    </div>
+  `;
+}
+
+function toggleChapterSwitch(sIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  sub.ch_on = !sub.ch_on;
+  if (!sub.ch_on) {
+    sub.chapters = [];
+  }
+  syncTestHierarchyFields(E);
+  sv();
+  updateTestInDb(E);
+  render();
+}
+
+function addHierChapter(sIdx) {
+  let inp = $("#new_ch_in_" + sIdx);
+  let val = inp ? inp.value.trim() : "";
+  if (!val) { toast("Please type a chapter name"); return; }
+  let sub = E.hierarchy_tree[sIdx];
+  if (!sub.chapters.some(c => c.name.toLowerCase() === val.toLowerCase())) {
+    sub.chapters.push({ name: val, tp_on: false, topics: [] });
+    syncTestHierarchyFields(E);
+    sv();
+    updateTestInDb(E);
+    toast("Chapter added: " + val);
+    render();
+  } else {
+    toast("Chapter already exists");
+  }
+}
+
+function removeHierChapter(sIdx, cIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  sub.chapters.splice(cIdx, 1);
+  syncTestHierarchyFields(E);
+  sv();
+  updateTestInDb(E);
+  render();
+}
+
+function renderChapterCard(sub, sIdx, ch, cIdx) {
+  let chQuestions = E.q.filter(q => (q.subject || '').trim() === sub.name && (q.chapter || '').trim() === ch.name);
+
+  return `
+    <div class="hier-ch-card">
+      <div class="rowx" style="padding-bottom:8px; border-bottom:1px solid var(--br);">
+        <div>
+          <b>📑 Chapter: ${esc(ch.name)}</b>
+          <small class="mu" style="display:block;">${chQuestions.length} Question${chQuestions.length === 1 ? '' : 's'}</small>
+        </div>
+        <button class="ib2 dg" type="button" title="Delete Chapter" onclick="removeHierChapter(${sIdx},${cIdx})">${ic("trash")}</button>
+      </div>
+
+      <!-- Topic Toggle for this Chapter -->
+      <div style="margin-top:8px;">
+        ${sw(ch.tp_on, `toggleTopicSwitch(${sIdx},${cIdx})`, "Enable Topics for " + esc(ch.name) + "?", "Break down " + esc(ch.name) + " into specific topics")}
+      </div>
+
+      ${!ch.tp_on ? `
+        <!-- Direct Questions to Chapter -->
+        <div style="margin-top:10px; background:var(--hi); border:1px solid var(--br); padding:10px 12px; border-radius:10px;">
+          <div class="rowx">
+            <b>Questions for ${esc(ch.name)} (${chQuestions.length})</b>
+            <div style="display:flex; gap:8px;">
+              <button class="b s" type="button" onclick="openNewQCh(${sIdx}, ${cIdx})">${ic("plus")} Add Question</button>
+              <button class="b o s" type="button" onclick="openBulkCh(${sIdx}, ${cIdx})">${ic("upload")} Bulk Upload</button>
+            </div>
+          </div>
+          <div style="margin-top:8px;">
+            ${chQuestions.map(q => {
+              let idx = E.q.indexOf(q);
+              return QE == idx ? '' : qrow(q, idx);
+            }).join("") || '<small class="mu">No questions in this chapter yet.</small>'}
+          </div>
+        </div>
+      ` : `
+        <!-- Topics List -->
+        <div style="margin-top:10px;">
+          <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <input id="new_tp_in_${sIdx}_${cIdx}" class="in" placeholder="Topic name, e.g. Kinematics, Projectile Motion">
+            <button class="b s" type="button" onclick="addHierTopic(${sIdx},${cIdx})">+ Add Topic</button>
+          </div>
+
+          ${ch.topics.map((tp, pIdx) => renderTopicCard(sub, sIdx, ch, cIdx, tp, pIdx)).join("") || '<small class="mu">No topics added yet. Type a topic name above.</small>'}
+        </div>
+      `}
+    </div>
+  `;
+}
+
+function toggleTopicSwitch(sIdx, cIdx) {
+  let ch = E.hierarchy_tree[sIdx].chapters[cIdx];
+  ch.tp_on = !ch.tp_on;
+  if (!ch.tp_on) {
+    ch.topics = [];
+  }
+  syncTestHierarchyFields(E);
+  sv();
+  updateTestInDb(E);
+  render();
+}
+
+function addHierTopic(sIdx, cIdx) {
+  let inp = $("#new_tp_in_" + sIdx + "_" + cIdx);
+  let val = inp ? inp.value.trim() : "";
+  if (!val) { toast("Please type a topic name"); return; }
+  let ch = E.hierarchy_tree[sIdx].chapters[cIdx];
+  if (!ch.topics.includes(val)) {
+    ch.topics.push(val);
+    syncTestHierarchyFields(E);
+    sv();
+    updateTestInDb(E);
+    toast("Topic added: " + val);
+    render();
+  } else {
+    toast("Topic already exists");
+  }
+}
+
+function removeHierTopic(sIdx, cIdx, pIdx) {
+  let ch = E.hierarchy_tree[sIdx].chapters[cIdx];
+  ch.topics.splice(pIdx, 1);
+  syncTestHierarchyFields(E);
+  sv();
+  updateTestInDb(E);
+  render();
+}
+
+function renderTopicCard(sub, sIdx, ch, cIdx, tp, pIdx) {
+  let tpName = typeof tp === 'string' ? tp : tp.name;
+  let tpQuestions = E.q.filter(q => (q.subject || '').trim() === sub.name && (q.chapter || '').trim() === ch.name && (q.topic || '').trim() === tpName);
+
+  return `
+    <div class="hier-tp-card">
+      <div class="rowx">
+        <b>🎯 Topic: ${esc(tpName)}</b>
+        <div style="display:flex; gap:6px;">
+          <button class="b s" type="button" style="font-size:0.75rem; padding:4px 10px;" onclick="openNewQTp(${sIdx}, ${cIdx}, ${pIdx})">+ Question</button>
+          <button class="b o s" type="button" style="font-size:0.75rem; padding:4px 10px;" onclick="openBulkTp(${sIdx}, ${cIdx}, ${pIdx})">Bulk</button>
+          <button class="ib2 dg" type="button" style="width:28px;height:28px;" title="Delete Topic" onclick="removeHierTopic(${sIdx},${cIdx},${pIdx})">${ic("trash")}</button>
+        </div>
+      </div>
+      <small class="mu" style="display:block; margin-top:2px;">${tpQuestions.length} Question${tpQuestions.length === 1 ? '' : 's'}</small>
+      <div style="margin-top:6px;">
+        ${tpQuestions.map(q => {
+          let idx = E.q.indexOf(q);
+          return QE == idx ? '' : qrow(q, idx);
+        }).join("") || '<small class="mu">No questions in this topic yet.</small>'}
+      </div>
+    </div>
+  `;
+}
+
+function openNewQDirect() {
+  openNewQuestion('', '', '');
+}
+
+function openNewQSub(sIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  openNewQuestion(sub.name, '', '');
+}
+
+function openNewQCh(sIdx, cIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  let ch = sub.chapters[cIdx];
+  openNewQuestion(sub.name, ch.name, '');
+}
+
+function openNewQTp(sIdx, cIdx, pIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  let ch = sub.chapters[cIdx];
+  let tp = ch.topics[pIdx];
+  let tpName = typeof tp === 'string' ? tp : tp.name;
+  openNewQuestion(sub.name, ch.name, tpName);
+}
+
+function openBulkDirect() {
+  QM = 'bulk';
+  Q_TARGET = { sub: '', ch: '', tp: '' };
+  render();
+}
+
+function openBulkSub(sIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  QM = 'bulk';
+  Q_TARGET = { sub: sub.name, ch: '', tp: '' };
+  render();
+}
+
+function openBulkCh(sIdx, cIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  let ch = sub.chapters[cIdx];
+  QM = 'bulk';
+  Q_TARGET = { sub: sub.name, ch: ch.name, tp: '' };
+  render();
+}
+
+function openBulkTp(sIdx, cIdx, pIdx) {
+  let sub = E.hierarchy_tree[sIdx];
+  let ch = sub.chapters[cIdx];
+  let tp = ch.topics[pIdx];
+  let tpName = typeof tp === 'string' ? tp : tp.name;
+  QM = 'bulk';
+  Q_TARGET = { sub: sub.name, ch: ch.name, tp: tpName };
+  render();
+}
+
+function openNewQuestion(sub, ch, tp) {
+  QE = -2;
+  QF = {
+    id: "q" + rid(),
+    t: "",
+    o: ["", "", "", ""],
+    a: 0,
+    e: "",
+    subject: sub || "",
+    chapter: ch || "",
+    topic: tp || ""
   };
-  im.src=r.result;
-};
-r.readAsDataURL(f);}
-function qs(){let t=E,rv=t.q.filter(q=>rpc(q.id)).length,l=t.q.map((q,i)=>[q,i]).filter(x=>QX=="all"||rpc(x[0].id));
-return `<div class="seg wide ${QM=="bulk"?"r":""}" style="margin-bottom:14px"><button class="${QM=="manual"?"on":""}" onclick="QM='manual';render()">${ic("edit")}Add manually</button><button class="${QM=="bulk"?"on":""}" onclick="QM='bulk';render()">${ic("upload")}Bulk upload</button></div>${QM=="bulk"?bulk():`<div class="c2"><div class="rowx"><div><h3>Questions (${t.q.length})</h3><small class="mu">Tap edit to change a question.</small></div><button class="b" onclick="QE=-2;QF={t:'',o:['','','',''],a:0,e:''};render()">${ic("plus")}Add question</button></div>${QE==-2?qf():""}
-<div class="tabs" style="margin-top:12px"><button class="${QX=="all"?"on":""}" onclick="QX='all';render()">All (${t.q.length})</button><button class="${QX=="rp"?"on":""}" onclick="QX='rp';render()">${ic("flag")}Reported (${rv})</button></div>${l.map(x=>QE==x[1]?qf():qrow(x[0],x[1])).join("")||'<div class="em">No questions here yet. Add one, or use Bulk upload.</div>'}</div>`}`}
-function qrow(q,i){return `<div class="qr"><span class="qn">${i+1}</span><div class="bd2"><p>${esc(q.t)}</p><small class="mu">Answer: <b>${LT[q.a]}</b> · ${q.o.length} options${q.e?"":" · no explanation"}</small> ${rpc(q.id)?`<a href="#reports" class="st2 pending">${rpc(q.id)} report${rpc(q.id)>1?"s":""}</a>`:""}${q.drop?'<span class="st2">Not scored</span>':q.credit?'<span class="st2 pub">Full marks</span>':""}${cf("dq"+i,"Remove question "+(i+1)+"?","E.q.splice("+i+",1);sv()")}</div><div class="ac"><button class="ib2" aria-label="Edit question ${i+1}" onclick="QE=${i};QF=JSON.parse(JSON.stringify(E.q[${i}]));render()">${ic("edit")}</button><button class="ib2 dg" aria-label="Remove" onclick="CF='dq${i}';render()">${ic("trash")}</button></div></div>`}
-function qf(){let q=QF;return `<div class="c2" style="background:var(--hi);box-shadow:none"><label class="l2" for="qt">Question</label><textarea id="qt" class="in" oninput="QF.t=this.value">${esc(q.t)}</textarea><label class="l2">Options. Tap the circle to choose the correct answer.</label>${q.o.map((o,j)=>`<div class="of"><button class="rd${q.a==j?" on":""}" aria-label="Option ${LT[j]} is correct" onclick="QF.a=${j};render()">${q.a==j?ic("check"):""}</button><span class="lt">${LT[j]}</span><input class="in" aria-label="Option ${LT[j]}" value="${esc(o)}" oninput="QF.o[${j}]=this.value">${q.o.length>2?`<button class="ib2" aria-label="Remove option" onclick="rmO(${j})">${ic("x")}</button>`:""}</div>`).join("")}${q.o.length<6?`<button class="b o s" onclick="QF.o.push('');render()">${ic("plus")}Add option</button>`:""}<label class="l2" for="qe">Explanation (shown after the test)</label><textarea id="qe" class="in" oninput="QF.e=this.value">${esc(q.e)}</textarea><div class="rowx" style="margin-top:10px"><span class="hint bad" id="qer"></span><span><button class="b o" onclick="QE=-1;QF=null;render()">Cancel</button> <button class="b" onclick="saveQ()">Save question</button></span></div></div>`}
-function rmO(j){QF.o.splice(j,1);if(QF.a>=QF.o.length)QF.a=0;else if(QF.a>j)QF.a--;render()}
-function saveQ(){let q=QF,er=!q.t.trim()?"Write the question.":q.o.filter(x=>x.trim()).length<2?"Add at least two options.":!q.o[q.a].trim()?"The correct option is empty.":"";if(er){$("#qer").textContent=er;return}q.o=q.o.map(x=>x.trim());q.t=q.t.trim();let m="Question saved";if(QE==-2){q.id="q"+rid();E.q.push(q)}else{E.q[QE]=q;let n=0;D.reports.forEach(r=>{if(r.qid==q.id&&r.st=="open"){r.st="resolved";r.res="Question edited";n++}});if(n)m="Saved. "+n+" report"+(n>1?"s":"")+" marked resolved"}saveQuestionToDb(q, E?.id);QE=-1;QF=null;sv();toast(m);render()}
-const EX={txt:`Q1.
+  render();
+  setTimeout(() => {
+    let el = $("#qt");
+    if (el) el.focus();
+  }, 50);
+}
+
+function editQuestionAt(idx) {
+  QE = idx;
+  QF = JSON.parse(JSON.stringify(E.q[idx]));
+  render();
+}
+
+function saveWiz3() {
+  syncTestHierarchyFields(E);
+  sv();
+  updateTestInDb(E);
+  toast("Step 3 saved");
+  WIZ_STEP = 4;
+  render();
+  scrollTo(0, 0);
+}
+
+// ------------------------------------------
+// QUESTION BUILDER & BULK HELPERS
+// ------------------------------------------
+function qrow(q, i) {
+  let tag = [q.subject, q.chapter, q.topic].filter(Boolean).join(" › ");
+  return `<div class="qr">
+    <span class="qn">${i + 1}</span>
+    <div class="bd2">
+      <p>${esc(q.t)}</p>
+      <small class="mu">Answer: <b>${LT[q.a]}</b> · ${q.o.length} options${q.e ? "" : " · no explanation"}${tag ? ` · <span style="color:var(--ac);font-weight:600;">[${esc(tag)}]</span>` : ""}</small>
+      ${rpc(q.id) ? `<a href="#reports" class="st2 pending">${rpc(q.id)} report${rpc(q.id) > 1 ? "s" : ""}</a>` : ""}
+      ${q.drop ? '<span class="st2">Not scored</span>' : q.credit ? '<span class="st2 pub">Full marks</span>' : ""}
+      ${cf("dq" + i, "Remove question " + (i + 1) + "?", "E.q.splice(" + i + ",1);sv();updateTestInDb(E);")}
+    </div>
+    <div class="ac">
+      <button class="ib2" type="button" aria-label="Edit question ${i + 1}" onclick="editQuestionAt(${i})">${ic("edit")}</button>
+      <button class="ib2 dg" type="button" aria-label="Remove" onclick="CF='dq${i}';render()">${ic("trash")}</button>
+    </div>
+  </div>`;
+}
+
+function qf() {
+  let q = QF;
+  let targetDesc = [q.subject, q.chapter, q.topic].filter(Boolean).join(" › ") || "Direct Test Questions";
+  return `<div class="c2" style="background:var(--hi);box-shadow:none;border:1.5px solid var(--ac);margin:14px 0;">
+    <div class="rowx" style="margin-bottom:10px;">
+      <b style="color:var(--ac);">${QE == -2 ? "Add New Question" : "Edit Question"}</b>
+      <span class="chip g">${esc(targetDesc)}</span>
+    </div>
+    <label class="l2" for="qt" style="margin-top:0;">Question Text *</label>
+    <textarea id="qt" class="in" rows="4" placeholder="Type question here..." oninput="QF.t=this.value">${esc(q.t)}</textarea>
+    <label class="l2">Options (Tap the circle to mark correct answer) *</label>
+    ${q.o.map((o, j) => `<div class="of">
+      <button class="rd${q.a == j ? " on" : ""}" type="button" aria-label="Option ${LT[j]} is correct" onclick="QF.a=${j};render()">${q.a == j ? ic("check") : ""}</button>
+      <span class="lt">${LT[j]}</span>
+      <input class="in" aria-label="Option ${LT[j]}" placeholder="Option ${LT[j]}" value="${esc(o)}" oninput="QF.o[${j}]=this.value">
+      ${q.o.length > 2 ? `<button class="ib2" type="button" aria-label="Remove option" onclick="rmO(${j})">${ic("x")}</button>` : ""}
+    </div>`).join("")}
+    ${q.o.length < 6 ? `<button class="b o s" type="button" onclick="QF.o.push('');render()">${ic("plus")} Add Option</button>` : ""}
+    <label class="l2" for="qe">Explanation (Shown to students after test)</label>
+    <textarea id="qe" class="in" rows="3" placeholder="Provide solution and explanation..." oninput="QF.e=this.value">${esc(q.e)}</textarea>
+    <div class="rowx" style="margin-top:14px;">
+      <span class="hint bad" id="qer"></span>
+      <div style="display:flex; gap:8px;">
+        <button class="b o" type="button" onclick="QE=-1;QF=null;render()">Cancel</button>
+        <button class="b" type="button" onclick="saveQ()">Save Question</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function rmO(j) {
+  QF.o.splice(j, 1);
+  if (QF.a >= QF.o.length) QF.a = 0;
+  else if (QF.a > j) QF.a--;
+  render();
+}
+
+function saveQ() {
+  let q = QF;
+  let er = !q.t.trim() ? "Write the question." : q.o.filter(x => x.trim()).length < 2 ? "Add at least two options." : !q.o[q.a].trim() ? "The correct option is empty." : "";
+  if (er) { $("#qer").textContent = er; return; }
+  q.o = q.o.map(x => x.trim());
+  q.t = q.t.trim();
+  let m = "Question saved";
+  if (QE == -2) {
+    q.id = "q" + rid();
+    E.q.push(q);
+  } else {
+    E.q[QE] = q;
+    let n = 0;
+    D.reports.forEach(r => {
+      if (r.qid == q.id && r.st == "open") { r.st = "resolved"; r.res = "Question edited"; n++; }
+    });
+    if (n) m = "Saved. " + n + " report" + (n > 1 ? "s" : "") + " marked resolved";
+  }
+  saveQuestionToDb(q, E?.id);
+  QE = -1;
+  QF = null;
+  sv();
+  updateTestInDb(E);
+  toast(m);
+  render();
+}
+
+const EX = {
+  txt: `Q1.
 QUESTION: Which gas is absorbed by plants during photosynthesis?
 A: Oxygen
 B: Carbon dioxide
@@ -988,44 +1553,522 @@ B: नई दिल्ली
 C: कोलकाता
 D: चेन्नई
 ANSWER: B
-EXPLANATION: भारत की राजधानी नई दिल्ली है।`,csv:`Question,A,B,C,D,Answer,Explanation
+EXPLANATION: भारत की राजधानी नई दिल्ली है।`,
+  csv: `Question,A,B,C,D,Answer,Explanation
 Which gas is absorbed by plants during photosynthesis?,Oxygen,Carbon dioxide,Nitrogen,Hydrogen,B,Plants absorb carbon dioxide to make glucose.
-भारत की राजधानी क्या है?,मुंबई,नई दिल्ली,कोलकाता,चेन्नई,B,भारत की राजधानी नई दिल्ली है।`};
-function prm(){let f=BK.fmt;return `Write the exam questions I ask for in EXACTLY the format below.
+भारत की राजधानी क्या है?,मुंबई,नई दिल्ली,कोलकाता,चेन्नई,B,भारत की राजधानी नई दिल्ली है।`
+};
+
+function prm() {
+  let f = BK.fmt;
+  return `Write the exam questions I ask for in EXACTLY the format below.
 - Write as many questions as I ask for, or as many as there are in the text I give you.
-- Keep the question, options and explanation in the same language I use (Hindi or English). Only the labels (${f=="txt"?"Q1., QUESTION, A, B, C, D, ANSWER, EXPLANATION":"the header row"}) stay in English.
+- Keep the question, options and explanation in the same language I use (Hindi or English). Only the labels (${f == "txt" ? "Q1., QUESTION, A, B, C, D, ANSWER, EXPLANATION" : "the header row"}) stay in English.
 - Every question has 4 options (A to D), exactly one correct answer and a short explanation.
 - The answer is one letter only: A, B, C or D.
-- ${f=="txt"?"Put one blank line between questions.":"Put any text that contains a comma inside double quotes."}
+- ${f == "txt" ? "Put one blank line between questions." : "Put any text that contains a comma inside double quotes."}
 - Output plain text only. No markdown, no bold, no extra comments.
 - Double-check that every answer is correct.
 
 Format:
 ${EX[f]}
 
-My request:`}
-function bulk(){let b=BK;return `<div class="c2"><h3>1. Get questions from any AI</h3><p class="mu">Choose a format, copy the prompt, paste it into ChatGPT, Gemini or any AI, and write your topic or paste your text after “My request”. Then bring the answer back here. Any language and any number of questions work.</p><div class="seg wide ${b.fmt=="csv"?"r":""}" style="margin:10px 0"><button class="${b.fmt=="txt"?"on":""}" onclick="BK.fmt='txt';BK.res=null;render()">Text (TXT)</button><button class="${b.fmt=="csv"?"on":""}" onclick="BK.fmt='csv';BK.res=null;render()">Spreadsheet (CSV)</button></div>
-<label class="l2" for="pr">Prompt for AI (tap, select all, copy)</label><textarea id="pr" class="in" readonly rows="10" onfocus="this.select()">${esc(prm())}</textarea><div class="rowx" style="margin-top:10px"><button class="b" onclick="cp2($('#pr').value,'Prompt copied')">${ic("copy")}Copy prompt</button><button class="b o" onclick="cp2(EX[BK.fmt],'Example copied')">Copy example</button></div><label class="l2">Example of the format (works in Hindi too)</label><div class="pre">${esc(EX[b.fmt])}</div></div>
-<div class="c2"><h3>2. Paste the AI’s answer</h3><textarea id="bt" class="in" rows="7" placeholder="Paste here, or upload a file below" oninput="BK.raw=this.value">${esc(b.raw)}</textarea><div class="rowx" style="margin-top:10px"><label class="b o" style="cursor:pointer">${ic("upload")}Upload .txt or .csv<input type="file" accept=".txt,.csv,text/plain,text/csv" hidden onchange="ldF(this)"></label><button class="b" onclick="chk()">Check questions</button></div></div><div id="bres">${bres()}</div>`}
-function ldF(i){let f=i.files[0];if(!f)return;if(f.size>1e6){toast("File is too large. Keep it under 1 MB.");return}let r=new FileReader();r.onload=()=>{BK.raw=String(r.result);if(/\.csv$/i.test(f.name))BK.fmt="csv";else BK.fmt="txt";chk()};r.readAsText(f)}
-const nz=s=>s.toLowerCase().replace(/[^a-z0-9\u0900-\u097f]/g,"");
-function mk(f,n,o,bad){let op=f.o,ix=LT.slice(0,op.length),a=-1,s=(f.a||"").trim(),m=s.match(/^[\s(]*(?:option\s*)?([A-F1-6])\b/i);if(m){let c=m[1].toUpperCase();a=/\d/.test(c)?+c-1:LT.indexOf(c)}if(a<0&&s)a=op.findIndex(x=>nz(x)==nz(s));
-let er=!f.t.trim()?"question text is empty":op.filter(x=>x.trim()).length<2?"needs at least 2 options":op.some(x=>!x.trim())?"an option is empty":!s?"ANSWER is missing":a<0||a>=op.length?"ANSWER '"+s+"' does not match any option":"";if(er)bad.push({n,m:er});else return{id:"q"+rid(),t:f.t.trim(),o:op.map(x=>x.trim()),a,e:(f.e||"").trim()}}
-function pTxt(s){let ok=[],bad=[];s.replace(/\r/g,"").split(/^(?=[ \t]*QUESTION[ \t]*:)/im).map(b=>b.replace(/^[ \t]*Q(?:uestion)?[ \t]*\d+[ \t]*[.):\-]?[ \t]*$/gim,"").trim()).filter(b=>/^\s*QUESTION\s*:/i.test(b)).forEach((b,i)=>{let f={t:"",o:[],a:"",e:""},cur=null,mp={};b.split("\n").forEach(ln=>{let m=ln.match(/^\s*(QUESTION|ANSWER|EXPLANATION|[A-F])\s*[:.)]\s*(.*)$/i);if(m){cur=m[1].toUpperCase();let v=m[2];if(cur=="QUESTION")f.t=v;else if(cur=="ANSWER")f.a=v;else if(cur=="EXPLANATION")f.e=v;else mp[cur]=v}else if(cur&&ln.trim()){let v=ln.trim();if(cur=="QUESTION")f.t+="\n"+v;else if(cur=="EXPLANATION")f.e+="\n"+v;else if(cur!="ANSWER")mp[cur]+=" "+v}});f.o=Object.keys(mp).sort().map(k=>mp[k]);let q=mk(f,i+1,0,bad);if(q)ok.push(q)});if(!ok.length&&!bad.length)bad.push({n:0,m:"No questions found. Each question must start with a QUESTION: line."});return{ok,bad}}
-function pCsv(s){let rows=[],r=[],c="",q=false;s=s.replace(/\r/g,"");for(let i=0;i<s.length;i++){let h=s[i];if(q){if(h=='"'){if(s[i+1]=='"'){c+='"';i++}else q=false}else c+=h}else if(h=='"')q=true;else if(h==","){r.push(c);c=""}else if(h=="\n"){r.push(c);rows.push(r);r=[];c=""}else c+=h}if(c||r.length){r.push(c);rows.push(r)}rows=rows.filter(r=>r.some(x=>x.trim()));let ok=[],bad=[];if(!rows.length)return{ok,bad:[{n:0,m:"The file is empty."}]};let H=rows[0].map(x=>x.trim().toLowerCase()),ci=re=>H.findIndex(x=>re.test(x)),qi=ci(/^(q|question)\b/),ai=ci(/answer|correct|key/),ei=ci(/explan/),oi=[];LT.split("").forEach(l=>{let k=H.findIndex(x=>x==l.toLowerCase()||x=="option "+l.toLowerCase()||x=="opt "+l.toLowerCase());if(k>=0)oi.push(k)});if(qi<0||ai<0||oi.length<2)return{ok,bad:[{n:0,m:"Header row not found. Use: Question,A,B,C,D,Answer,Explanation"}]};rows.slice(1).forEach((r,i)=>{let q=mk({t:r[qi]||"",o:oi.map(k=>r[k]||""),a:r[ai]||"",e:ei>=0?r[ei]:""},i+2,0,bad);if(q)ok.push(q)});return{ok,bad}}
-function chk(){let b=BK,r=b.fmt=="csv"?pCsv(b.raw):pTxt(b.raw),seen=new Set(E.q.map(q=>nz(q.t))),dup=0,keep=[];r.ok.forEach(q=>{let k=nz(q.t);if(seen.has(k))dup++;else{seen.add(k);keep.push(q)}});b.res={ok:keep,bad:r.bad,dup};render();setTimeout(()=>{let e=$("#bres");e&&e.scrollIntoView({behavior:"smooth"})},50)}
-function bres(){let r=BK.res;if(!r)return"";return `<div class="c2"><h3>3. Preview</h3><div class="tabs wrap" style="margin:10px 0"><span class="chip g">${r.ok.length} ready</span><span class="chip">${r.bad.length} with problems</span><span class="chip">${r.dup} duplicates skipped</span></div>${r.bad.length?`<div class="pre bad">${r.bad.map(x=>(x.n?"Question "+x.n+": ":"")+x.m).join("\n")}</div><p class="hint">Fix these in the AI’s answer and press Check again. Nothing is guessed or changed silently.</p>`:""}${r.ok.slice(0,3).map((q,i)=>`<div class="qr"><span class="qn">${i+1}</span><div class="bd2"><p>${esc(q.t)}</p><small class="mu">Answer ${LT[q.a]}: ${esc(q.o[q.a])}${q.e?"":" · no explanation"}</small></div></div>`).join("")}${r.ok.length>3?`<p class="hint">…and ${r.ok.length-3} more</p>`:""}<button class="b f" style="margin-top:10px" ${r.ok.length?"":"disabled"} onclick="impQ()">Import ${r.ok.length} questions</button></div>`}
-function impQ(){let r=BK.res;r.ok.forEach(q=>E.q.push(q));updateTestInDb(E);toast(r.ok.length+" questions imported");BK.raw="";BK.res=null;QM="manual";QX="all";sv();render()}
-function set(){let t=E,pr=t.paid,ng=t.neg,cu=ng.cu||![.25,.33,.5,1].includes(ng.v);return `<div class="c2"><h3>Access</h3><p class="mu">Free tests are open to everyone. Paid tests need a purchase.</p><div class="seg ${pr?"r":""}" style="margin:10px 0"><button class="${!pr?"on":""}" onclick="E.paid=false;sv();render()">Free</button><button class="${pr?"on":""}" onclick="E.paid=true;sv();render()">${ic("lock")}Paid</button></div>${pr?`<p class="hint">${t.price?"Price: <b>"+inr(t.sale||t.price)+"</b>"+(t.sale?" (was "+inr(t.price)+")":""):"<span class='bad'>Price not set yet.</span>"} ${can("pricing")?`<a href="#pricing" onclick="PF='${t.id}';PT='p'" style="color:var(--ac);font-weight:700">Set price and coupons →</a>`:"Prices are managed by the pricing team."}</p>`:""}</div>
-<div class="c2"><h3>Timer and marking</h3>${sw(t.timer.on,"E.timer.on=!E.timer.on;sv();render()","Timer","Auto-submits when time ends")}${t.timer.on?`<label class="l2" for="tm">Minutes</label><input id="tm" class="in" type="number" min="1" max="300" value="${t.timer.min}" oninput="E.timer.min=+this.value;sv()">`:""}${sw(ng.on,"E.neg.on=!E.neg.on;sv();render()","Negative marking","Marks deducted for a wrong answer")}${ng.on?`<label class="l2">Deduct per wrong answer</label>${chips([[.25,"¼ · 0.25"],[.33,"⅓ · 0.33"],[.5,"½ · 0.5"],[1,"1 mark"],["c","Custom"]],cu?"c":ng.v,"setNg")}${cu?`<input class="in" type="number" min="0" step="0.01" aria-label="Custom deduction" placeholder="e.g. 0.2" value="${ng.v}" oninput="E.neg.v=+this.value;E.neg.cu=true;sv()"><p class="hint">Type any value, for example 0.2 or 0.75.</p>`:""}`:""}<label class="l2" for="mk">Marks per correct answer</label><input id="mk" class="in" type="number" min="0.25" step="0.25" value="${t.mk}" oninput="E.mk=+this.value;sv()"></div>
-<div class="c2"><h3>Test behaviour</h3>${sw(t.shufQ,"E.shufQ=!E.shufQ;sv();render()","Shuffle questions")}${sw(t.shufO,"E.shufO=!E.shufO;sv();render()","Shuffle options")}${sw(t.back,"E.back=!E.back;sv();render()","Allow going back","Students can revisit earlier questions")}${sw(t.att.on,"E.att.on=!E.att.on;sv();render()","Limit attempts")}${t.att.on?`<input class="in" type="number" min="1" aria-label="Attempts allowed" value="${t.att.n}" oninput="E.att.n=+this.value;sv()">`:""}<label class="l2">Show answers and explanations</label>${rr([["inst","Right after each question","Practice mode. The answer and explanation appear as soon as the student picks an option, and that answer then locks."],["submit","After the student submits"],["close","After the test closes"],["never","Never"]],t.res,"setRes")}</div>
-<div class="c2"><h3>Leaderboard and disclaimer</h3>${sw(t.lb&&!D.cfg.hide,"E.lb=!E.lb;sv();render()","Show leaderboard for this test",D.cfg.hide?"Hidden for all tests in Settings":"Ranks are per test",D.cfg.hide)}${sw(t.dis.on,"E.dis.on=!E.dis.on;sv();render()","Show disclaimer before start","Students must accept it")}${t.dis.on?`<textarea class="in" aria-label="Disclaimer text" rows="6" oninput="E.dis.txt=this.value;sv()">${esc(t.dis.txt)}</textarea><button class="b o s" style="margin-top:8px" onclick="E.dis.txt=D.cfg.dis;sv();render()">Use default text</button>`:""}</div>`}
-function rev(){let t=E,ck=[[!!t.title.trim(),"Title added",0],[!!t.exam,"Exam chosen",0],[t.q.length>0,t.q.length+" questions added",1],[!!t.banner,t.banner?"Banner added":"No banner yet (optional)",0],[!t.paid||!!t.price,t.paid?(t.price?"Price set":"Paid test needs a price"):"Free test",2]];
-return `<div class="c2"><h3>Ready to publish?</h3>${ck.map(c=>`<div class="ck"><span class="ic ${c[0]?"y":"n"}">${ic(c[0]?"check":"flag")}</span><span style="flex:1">${c[1]}</span>${c[0]?"":c[2]==2?(can("pricing")?`<a href="#pricing" onclick="PF='${t.id}';PT='p'" class="okc">Set price</a>`:""):`<button class="b o s" onclick="stp(${c[2]})">Fix</button>`}</div>`).join("")}</div>
-<div class="c2"><h3>When</h3><div class="seg ${t.sched?"r":""}" style="margin:10px 0"><button class="${!t.sched?"on":""}" onclick="E.sched='';sv();render()">Publish now</button><button class="${t.sched?"on":""}" onclick="E.sched=E.sched||new Date(Date.now()+864e5).toISOString().slice(0,16);sv();render()">Schedule</button></div>${t.sched?`<label class="l2" for="sc">Go live at</label><input id="sc" class="in" type="datetime-local" value="${t.sched}" oninput="E.sched=this.value;sv()">`:""}<label class="l2" for="cl">Close at (optional)</label><input id="cl" class="in" type="datetime-local" value="${t.close}" oninput="E.close=this.value;sv()"></div>
-<button class="b o f" style="margin-top:6px" onclick="E.status='draft';sv();toast('Saved as draft');go('tests')">Save as draft and close</button>`}
-function pubT(){let t=E;if(!t.title.trim()||!t.exam||!t.q.length||(t.paid&&!t.price)){toast("Complete the checklist first");return}doPub()}
-function doPub(){let t=E;t.status=!can("publish")?"pending":t.sched?"sched":"pub";sv();updateTestInDb(t);toast(t.status=="pending"?"Sent for approval":t.status=="sched"?"Scheduled":"Test is live");go("tests")}
+My request:`;
+}
+
+function bulk() {
+  let b = BK;
+  let targetDesc = [Q_TARGET?.sub, Q_TARGET?.ch, Q_TARGET?.tp].filter(Boolean).join(" › ") || "Direct Test Questions";
+  return `<div class="c2" style="border:1.5px solid var(--ac);margin:14px 0;">
+    <div class="rowx">
+      <h3>Bulk Question Upload</h3>
+      <span class="chip g">${esc(targetDesc)}</span>
+    </div>
+    <p class="mu">Choose a format, copy the prompt for AI (ChatGPT / Gemini), paste the AI's response below, and import.</p>
+    <div class="seg wide ${b.fmt == 'csv' ? 'r' : ''}" style="margin:10px 0;">
+      <button class="${b.fmt == 'txt' ? 'on' : ''}" type="button" onclick="BK.fmt='txt';BK.res=null;render()">Text (TXT)</button>
+      <button class="${b.fmt == 'csv' ? 'on' : ''}" type="button" onclick="BK.fmt='csv';BK.res=null;render()">Spreadsheet (CSV)</button>
+    </div>
+    <label class="l2" for="pr">Prompt for AI (Tap to select and copy)</label>
+    <textarea id="pr" class="in" readonly rows="7" onfocus="this.select()">${esc(prm())}</textarea>
+    <div class="rowx" style="margin-top:8px;">
+      <button class="b s" type="button" onclick="cp2($('#pr').value,'Prompt copied')">${ic('copy')} Copy Prompt</button>
+      <button class="b o s" type="button" onclick="cp2(EX[BK.fmt],'Example copied')">Copy Example</button>
+    </div>
+    <label class="l2" for="bt">Paste AI's Answer Here</label>
+    <textarea id="bt" class="in" rows="8" placeholder="Paste generated questions here..." oninput="BK.raw=this.value">${esc(b.raw)}</textarea>
+    <div class="rowx" style="margin-top:10px;">
+      <label class="b o" style="cursor:pointer">${ic('upload')} Upload .txt or .csv<input type="file" accept=".txt,.csv,text/plain,text/csv" hidden onchange="ldF(this)"></label>
+      <div style="display:flex; gap:8px;">
+        <button class="b o" type="button" onclick="QM='manual';render()">Close Bulk</button>
+        <button class="b" type="button" onclick="chk()">Check & Preview Questions</button>
+      </div>
+    </div>
+    <div id="bres">${bres()}</div>
+  </div>`;
+}
+
+function ldF(i) {
+  let f = i.files[0];
+  if (!f) return;
+  if (f.size > 1e6) { toast("File is too large. Keep it under 1 MB."); return; }
+  let r = new FileReader();
+  r.onload = () => {
+    BK.raw = String(r.result);
+    if (/\.csv$/i.test(f.name)) BK.fmt = "csv";
+    else BK.fmt = "txt";
+    chk();
+  };
+  r.readAsText(f);
+}
+
+const nz = s => s.toLowerCase().replace(/[^a-z0-9\u0900-\u097f]/g, "");
+
+function mk(f, n, o, bad) {
+  let op = f.o, ix = LT.slice(0, op.length), a = -1, s = (f.a || "").trim(), m = s.match(/^[\s(]*(?:option\s*)?([A-F1-6])\b/i);
+  if (m) {
+    let c = m[1].toUpperCase();
+    a = /\d/.test(c) ? +c - 1 : LT.indexOf(c);
+  }
+  if (a < 0 && s) a = op.findIndex(x => nz(x) == nz(s));
+  let er = !f.t.trim() ? "question text is empty" : op.filter(x => x.trim()).length < 2 ? "needs at least 2 options" : op.some(x => !x.trim()) ? "an option is empty" : !s ? "ANSWER is missing" : a < 0 || a >= op.length ? "ANSWER '" + s + "' does not match any option" : "";
+  if (er) bad.push({ n, m: er });
+  else return { id: "q" + rid(), t: f.t.trim(), o: op.map(x => x.trim()), a, e: (f.e || "").trim() };
+}
+
+function pTxt(s) {
+  let ok = [], bad = [];
+  s.replace(/\r/g, "").split(/^(?=[ \t]*QUESTION[ \t]*:)/im).map(b => b.replace(/^[ \t]*Q(?:uestion)?[ \t]*\d+[ \t]*[.):\-]?[ \t]*$/gim, "").trim()).filter(b => /^\s*QUESTION\s*:/i.test(b)).forEach((b, i) => {
+    let f = { t: "", o: [], a: "", e: "" }, cur = null, mp = {};
+    b.split("\n").forEach(ln => {
+      let m = ln.match(/^\s*(QUESTION|ANSWER|EXPLANATION|[A-F])\s*[:.)]\s*(.*)$/i);
+      if (m) {
+        cur = m[1].toUpperCase();
+        let v = m[2];
+        if (cur == "QUESTION") f.t = v;
+        else if (cur == "ANSWER") f.a = v;
+        else if (cur == "EXPLANATION") f.e = v;
+        else mp[cur] = v;
+      } else if (cur && ln.trim()) {
+        let v = ln.trim();
+        if (cur == "QUESTION") f.t += "\n" + v;
+        else if (cur == "EXPLANATION") f.e += "\n" + v;
+        else if (cur != "ANSWER") mp[cur] += " " + v;
+      }
+    });
+    f.o = Object.keys(mp).sort().map(k => mp[k]);
+    let q = mk(f, i + 1, 0, bad);
+    if (q) ok.push(q);
+  });
+  if (!ok.length && !bad.length) bad.push({ n: 0, m: "No questions found. Each question must start with a QUESTION: line." });
+  return { ok, bad };
+}
+
+function pCsv(s) {
+  let rows = [], r = [], c = "", q = false;
+  s = s.replace(/\r/g, "");
+  for (let i = 0; i < s.length; i++) {
+    let h = s[i];
+    if (q) {
+      if (h == '"') {
+        if (s[i + 1] == '"') { c += '"'; i++; }
+        else q = false;
+      } else c += h;
+    } else if (h == '"') q = true;
+    else if (h == ",") { r.push(c); c = ""; }
+    else if (h == "\n") { r.push(c); rows.push(r); r = []; c = ""; }
+    else c += h;
+  }
+  if (c || r.length) { r.push(c); rows.push(r); }
+  rows = rows.filter(r => r.some(x => x.trim()));
+  let ok = [], bad = [];
+  if (!rows.length) return { ok, bad: [{ n: 0, m: "The file is empty." }] };
+  let H = rows[0].map(x => x.trim().toLowerCase()), ci = re => H.findIndex(x => re.test(x)), qi = ci(/^(q|question)\b/), ai = ci(/answer|correct|key/), ei = ci(/explan/), oi = [];
+  LT.split("").forEach(l => {
+    let k = H.findIndex(x => x == l.toLowerCase() || x == "option " + l.toLowerCase() || x == "opt " + l.toLowerCase());
+    if (k >= 0) oi.push(k);
+  });
+  if (qi < 0 || ai < 0 || oi.length < 2) return { ok, bad: [{ n: 0, m: "Header row not found. Use: Question,A,B,C,D,Answer,Explanation" }] };
+  rows.slice(1).forEach((r, i) => {
+    let q = mk({ t: r[qi] || "", o: oi.map(k => r[k] || ""), a: r[ai] || "", e: ei >= 0 ? r[ei] : "" }, i + 2, 0, bad);
+    if (q) ok.push(q);
+  });
+  return { ok, bad };
+}
+
+function chk() {
+  let b = BK, r = b.fmt == "csv" ? pCsv(b.raw) : pTxt(b.raw), seen = new Set(E.q.map(q => nz(q.t))), dup = 0, keep = [];
+  r.ok.forEach(q => {
+    let k = nz(q.t);
+    if (seen.has(k)) dup++;
+    else { seen.add(k); keep.push(q); }
+  });
+  b.res = { ok: keep, bad: r.bad, dup };
+  render();
+  setTimeout(() => {
+    let e = $("#bres");
+    if (e) e.scrollIntoView({ behavior: "smooth" });
+  }, 50);
+}
+
+function bres() {
+  let r = BK.res;
+  if (!r) return "";
+  return `<div class="c2" style="margin-top:14px;">
+    <h3>Preview Import Results</h3>
+    <div class="tabs wrap" style="margin:10px 0;">
+      <span class="chip g">${r.ok.length} ready to import</span>
+      <span class="chip">${r.bad.length} with issues</span>
+      <span class="chip">${r.dup} duplicates skipped</span>
+    </div>
+    ${r.bad.length ? `<div class="pre bad">${r.bad.map(x => (x.n ? "Question " + x.n + ": " : "") + x.m).join("\n")}</div>` : ""}
+    ${r.ok.slice(0, 3).map((q, i) => `<div class="qr">
+      <span class="qn">${i + 1}</span>
+      <div class="bd2">
+        <p>${esc(q.t)}</p>
+        <small class="mu">Answer ${LT[q.a]}: ${esc(q.o[q.a])}${q.e ? "" : " · no explanation"}</small>
+      </div>
+    </div>`).join("")}
+    ${r.ok.length > 3 ? `<p class="hint">…and ${r.ok.length - 3} more questions</p>` : ""}
+    <button class="b f" style="margin-top:10px;" ${r.ok.length ? "" : "disabled"} onclick="impQ()">Import ${r.ok.length} Questions</button>
+  </div>`;
+}
+
+function impQ() {
+  let r = BK.res;
+  r.ok.forEach(q => {
+    if (Q_TARGET) {
+      if (Q_TARGET.sub) q.subject = Q_TARGET.sub;
+      if (Q_TARGET.ch) q.chapter = Q_TARGET.ch;
+      if (Q_TARGET.tp) q.topic = Q_TARGET.tp;
+    }
+    E.q.push(q);
+  });
+  updateTestInDb(E);
+  toast(r.ok.length + " questions imported");
+  BK.raw = "";
+  BK.res = null;
+  QM = "manual";
+  sv();
+  render();
+}
+
+// STEP 4: Access & Pricing (One step at a time)
+function wizStep4() {
+  let t = E, pr = t.paid;
+  return `
+    <div class="c2 wiz-open">
+      <div class="wiz-step-header">
+        <span class="wiz-active-pill">4</span>
+        <div>
+          <h3>Access & Pricing</h3>
+          <small class="mu">Decide whether this test is free for all students or requires purchase.</small>
+        </div>
+      </div>
+
+      <label class="l2">Access Type</label>
+      <div class="seg ${pr ? "r" : ""}" style="margin:10px 0">
+        <button class="${!pr ? "on" : ""}" type="button" onclick="E.paid=false;sv();render()">Free Access</button>
+        <button class="${pr ? "on" : ""}" type="button" onclick="E.paid=true;sv();render()">${ic("lock")} Paid Access</button>
+      </div>
+
+      ${pr ? `
+        <div style="margin-top:14px; background:var(--hi); border:1px solid var(--br); padding:16px; border-radius:14px;">
+          <div class="g3">
+            <div>
+              <label class="l2" for="p_price" style="margin-top:0;">Regular Price (₹) *</label>
+              <input id="p_price" class="in" type="number" min="0" value="${t.price || ""}" placeholder="e.g. 499" oninput="E.price=+this.value;sv()">
+            </div>
+            <div>
+              <label class="l2" for="p_sale" style="margin-top:0;">Discount / Sale Price (₹)</label>
+              <input id="p_sale" class="in" type="number" min="0" value="${t.sale || ""}" placeholder="e.g. 199" oninput="E.sale=+this.value;sv()">
+            </div>
+            <div>
+              <label class="l2" for="p_saleEnd" style="margin-top:0;">Sale Ends On</label>
+              <input id="p_saleEnd" class="in" type="date" value="${t.saleEnd || ""}" oninput="E.saleEnd=this.value;sv()">
+            </div>
+          </div>
+          ${t.sale && t.price && t.sale >= t.price ? '<p class="hint bad">Discount price must be lower than regular price.</p>' : ''}
+        </div>
+      ` : `
+        <div class="pth" style="margin-top:12px;">
+          <small>Free Access</small>
+          All students can attempt this test series without purchase.
+        </div>
+      `}
+
+      <div class="wiz-actions">
+        <button class="b o" type="button" onclick="setWizStep(3)">Back</button>
+        <button class="b" type="button" onclick="saveWiz4()">💾 Save & Next: Timer & Marking →</button>
+      </div>
+    </div>
+  `;
+}
+
+function saveWiz4() {
+  if (E.paid && (!E.price || E.price <= 0)) {
+    toast("Please enter a regular price for this paid test");
+    return;
+  }
+  sv();
+  updateTestInDb(E);
+  toast("Step 4 saved");
+  WIZ_STEP = 5;
+  render();
+  scrollTo(0, 0);
+}
+
+// STEP 5: Timer & Marking (One step at a time)
+function wizStep5() {
+  let t = E, ng = t.neg;
+  let cu = ng.cu || ![.25, .33, .5, 1].includes(ng.v);
+
+  return `
+    <div class="c2 wiz-open">
+      <div class="wiz-step-header">
+        <span class="wiz-active-pill">5</span>
+        <div>
+          <h3>Timer & Marking Scheme</h3>
+          <small class="mu">Set exam duration, correct mark score, and negative penalty deduction.</small>
+        </div>
+      </div>
+
+      ${sw(t.timer.on, "E.timer.on=!E.timer.on;sv();render()", "Enable Timer", "Auto-submits test when time ends")}
+      ${t.timer.on ? `
+        <div style="margin:10px 0 16px;">
+          <label class="l2" for="tm" style="margin-top:0;">Duration (in Minutes)</label>
+          <input id="tm" class="in" type="number" min="1" max="300" value="${t.timer.min || 60}" oninput="E.timer.min=+this.value;sv()">
+        </div>
+      ` : ''}
+
+      ${sw(ng.on, "E.neg.on=!E.neg.on;sv();render()", "Negative Marking", "Deduct marks for wrong answers")}
+      ${ng.on ? `
+        <div style="margin:10px 0 16px;">
+          <label class="l2" style="margin-top:0;">Deduct per wrong answer</label>
+          ${chips([[.25,"¼ · 0.25"],[.33,"⅓ · 0.33"],[.5,"½ · 0.5"],[1,"1 mark"],["c","Custom"]], cu ? "c" : ng.v, "setNg")}
+          ${cu ? `
+            <input class="in" type="number" min="0" step="0.01" aria-label="Custom deduction" placeholder="e.g. 0.2" value="${ng.v}" oninput="E.neg.v=+this.value;E.neg.cu=true;sv()" style="margin-top:8px;">
+          ` : ''}
+        </div>
+      ` : ''}
+
+      <div style="margin-top:10px;">
+        <label class="l2" for="mk">Marks awarded per correct answer</label>
+        <input id="mk" class="in" type="number" min="0.25" step="0.25" value="${t.mk || 4}" oninput="E.mk=+this.value;sv()">
+      </div>
+
+      <div class="wiz-actions">
+        <button class="b o" type="button" onclick="setWizStep(4)">Back</button>
+        <button class="b" type="button" onclick="saveWiz5()">💾 Save & Next: Leaderboard & Rules →</button>
+      </div>
+    </div>
+  `;
+}
+
+function saveWiz5() {
+  sv();
+  updateTestInDb(E);
+  toast("Step 5 saved");
+  WIZ_STEP = 6;
+  render();
+  scrollTo(0, 0);
+}
+
+// STEP 6: Leaderboard, Disclaimer & Rules (One step at a time)
+function wizStep6() {
+  let t = E;
+  return `
+    <div class="c2 wiz-open">
+      <div class="wiz-step-header">
+        <span class="wiz-active-pill">6</span>
+        <div>
+          <h3>Leaderboard & Test Rules</h3>
+          <small class="mu">Configure rank visibility, instructions disclaimer, and question shuffling.</small>
+        </div>
+      </div>
+
+      ${sw(t.lb && !D.cfg.hide, "E.lb=!E.lb;sv();render()", "Show Leaderboard for this test", "Students see their rank and percentile compared to peers")}
+
+      ${sw(t.dis.on, "E.dis.on=!E.dis.on;sv();render()", "Show Instructions / Disclaimer", "Students must read and accept before starting")}
+      ${t.dis.on ? `
+        <div style="margin:10px 0 16px;">
+          <textarea class="in" rows="5" placeholder="Write exam instructions or disclaimer here..." oninput="E.dis.txt=this.value;sv()">${esc(t.dis.txt)}</textarea>
+          <button class="b o s" type="button" style="margin-top:6px;" onclick="E.dis.txt=D.cfg.dis;sv();render()">Use Default Template</button>
+        </div>
+      ` : ''}
+
+      ${sw(t.shufQ, "E.shufQ=!E.shufQ;sv();render()", "Shuffle Questions", "Randomize question order for each attempt")}
+      ${sw(t.shufO, "E.shufO=!E.shufO;sv();render()", "Shuffle Options", "Randomize options A/B/C/D order")}
+      ${sw(t.back !== false, "E.back=!E.back;sv();render()", "Allow Navigating Back", "Students can revisit earlier questions")}
+
+      <div style="margin-top:14px;">
+        <label class="l2">Show Answers and Explanations</label>
+        ${rr([
+          ["submit", "After student submits the test (Standard CBT)"],
+          ["inst", "Immediately after picking each question (Practice Mode)"],
+          ["never", "Never show answers"]
+        ], t.res || 'submit', "setRes")}
+      </div>
+
+      <div class="wiz-actions">
+        <button class="b o" type="button" onclick="setWizStep(5)">Back</button>
+        <button class="b" type="button" onclick="saveWiz6()">💾 Save & Next: Review & Finalize →</button>
+      </div>
+    </div>
+  `;
+}
+
+function saveWiz6() {
+  sv();
+  updateTestInDb(E);
+  toast("Step 6 saved");
+  WIZ_STEP = 7;
+  render();
+  scrollTo(0, 0);
+}
+
+// STEP 7: Review & Final Action (Publish or Make Private)
+function wizStep7() {
+  let t = E;
+  let isLive = t.status === "pub";
+  let ck = [
+    [!!t.title.trim(), "Test title configured", 1],
+    [!(t.hasExam && !t.exam), t.exam ? "Exam series: " + t.exam : "Standalone direct test", 2],
+    [t.q.length > 0, t.q.length + " questions ready", 3],
+    [!t.paid || (t.price && t.price > 0), t.paid ? ("Price set: " + inr(t.sale || t.price)) : "Free practice test", 4],
+    [true, "Timer & Marking configured", 5]
+  ];
+
+  return `
+    <div class="c2 wiz-open">
+      <div class="wiz-step-header">
+        <span class="wiz-active-pill">7</span>
+        <div>
+          <h3>Review & Finalize</h3>
+          <small class="mu">Review the test details and publish live to students or keep private.</small>
+        </div>
+      </div>
+
+      <!-- Current Status Alert -->
+      ${isLive ? `
+        <div style="background:rgba(34,197,94,0.12); border:1.5px solid #16a34a; color:#16a34a; padding:14px 18px; border-radius:14px; margin-bottom:16px; display:flex; align-items:center; gap:12px;">
+          <span style="font-size:1.4rem;">🟢</span>
+          <div style="flex:1;">
+            <b style="font-size:1.05rem;">THIS TEST IS LIVE ON STUDENT APP</b>
+            <p style="margin:2px 0 0; font-size:0.86rem; color:#166534;">Students can browse, search, and attempt this test right now.</p>
+          </div>
+          <button class="b dg s" type="button" onclick="makeTestPrivate()">🔒 Make Private / Unpublish</button>
+        </div>
+      ` : `
+        <div style="background:rgba(234,179,8,0.12); border:1.5px solid #ca8a04; color:#ca8a04; padding:14px 18px; border-radius:14px; margin-bottom:16px; display:flex; align-items:center; gap:12px;">
+          <span style="font-size:1.4rem;">🔒</span>
+          <div style="flex:1;">
+            <b style="font-size:1.05rem;">THIS TEST IS PRIVATE (DRAFT)</b>
+            <p style="margin:2px 0 0; font-size:0.86rem; color:#854d0e;">This test is completely hidden from students. It will not appear in the Student App.</p>
+          </div>
+          <button class="b s" type="button" onclick="publishTestToStudents()">🚀 Publish to Students</button>
+        </div>
+      `}
+
+      <!-- Test Summary Card -->
+      <div style="background:var(--hi); border:1px solid var(--br); border-radius:16px; padding:16px; margin-bottom:16px;">
+        <div style="display:flex; gap:16px; align-items:flex-start;">
+          ${t.banner ? `<div style="width:110px; height:70px; border-radius:10px; background:url('${t.banner}') center/cover no-repeat; flex-shrink:0;"></div>` : ''}
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3 style="margin:0;">${esc(t.title || "Untitled Test")}</h3>
+              ${t.label ? `<span class="chip">${esc(t.label)}</span>` : ''}
+            </div>
+            <p class="mu" style="margin:4px 0 8px; font-size:0.9rem;">${esc(t.desc || "No description provided.")}</p>
+            <div style="font-size:0.85rem; color:var(--ac); font-weight:600;">${esc(pth(t) || "Direct Practice Test")}</div>
+          </div>
+        </div>
+
+        <div class="g3" style="margin-top:14px; padding-top:14px; border-top:1px solid var(--br);">
+          <div><small class="mu">Questions</small><b style="display:block;">${t.q.length} Questions</b></div>
+          <div><small class="mu">Duration</small><b style="display:block;">${t.timer.on ? t.timer.min + " mins" : "Untimed"}</b></div>
+          <div><small class="mu">Marking</small><b style="display:block;">+${t.mk} / -${t.neg.on ? t.neg.v : 0}</b></div>
+          <div><small class="mu">Access</small><b style="display:block;">${t.paid ? inr(t.sale || t.price) : "Free"}</b></div>
+          <div><small class="mu">Leaderboard</small><b style="display:block;">${t.lb ? "Enabled" : "Disabled"}</b></div>
+          <div><small class="mu">Questions Mode</small><b style="display:block;">${t.res === 'inst' ? "Practice" : "CBT Standard"}</b></div>
+        </div>
+      </div>
+
+      <!-- Checklist -->
+      <div style="margin-bottom:18px;">
+        <b style="font-size:0.95rem;">Readiness Checklist</b>
+        <div style="margin-top:8px;">
+          ${ck.map(c => `
+            <div class="ck" style="padding:6px 0;">
+              <span class="ic ${c[0] ? "y" : "n"}">${ic(c[0] ? "check" : "flag")}</span>
+              <span style="flex:1;">${c[1]}</span>
+              ${!c[0] ? `<button class="b o s" type="button" onclick="setWizStep(${c[2]})">Fix</button>` : ''}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="wiz-actions" style="justify-content:space-between;">
+        <button class="b o" type="button" onclick="setWizStep(6)">Back</button>
+        <div style="display:flex; gap:10px;">
+          ${isLive ? `
+            <button class="b dg" type="button" onclick="makeTestPrivate()">🔒 Make Private / Unpublish</button>
+            <button class="b" type="button" onclick="saveLiveChanges()">💾 Save Live Changes</button>
+          ` : `
+            <button class="b o" type="button" onclick="saveAsDraftAndClose()">📁 Save Draft (Keep Private)</button>
+            <button class="b" type="button" onclick="publishTestToStudents()">🚀 Save & Publish to Student App</button>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function publishTestToStudents() {
+  let t = E;
+  if (!t.title.trim()) { toast("Please set a test title"); setWizStep(1); return; }
+  if (t.hasExam && !t.exam) { toast("Please choose an exam"); setWizStep(2); return; }
+  if (!t.q.length) { toast("Please add at least 1 question"); setWizStep(3); return; }
+  if (t.paid && (!t.price || t.price <= 0)) { toast("Please set a price for paid test"); setWizStep(4); return; }
+
+  t.status = "pub";
+  sv();
+  toast("Publishing to Student App...");
+  await updateTestInDb(t);
+  toast("🚀 Test is now LIVE and visible to students!");
+  render();
+  setTimeout(() => go("tests"), 1200);
+}
+
+async function makeTestPrivate() {
+  let t = E;
+  t.status = "draft";
+  sv();
+  toast("Making test private...");
+  await updateTestInDb(t);
+  toast("🔒 Test is now PRIVATE (Hidden from all students)!");
+  render();
+}
+
+async function saveLiveChanges() {
+  let t = E;
+  sv();
+  toast("Saving live test changes...");
+  await updateTestInDb(t);
+  toast("✅ Live test updated successfully!");
+  render();
+}
+
+function saveAsDraftAndClose() {
+  let t = E;
+  t.status = "draft";
+  sv();
+  updateTestInDb(t);
+  toast("📁 Test saved as private draft");
+  go("tests");
+}
+
 function plist(){let q=PQ.toLowerCase();return D.tests.filter(t=>t.paid&&(!PF||t.id==PF)&&(t.id.toLowerCase().includes(q)||t.title.toLowerCase().includes(q))).map(t=>{let off=t.price&&t.sale&&t.sale<t.price?Math.round((1-t.sale/t.price)*100):0,er=t.sale&&t.sale>=t.price;return `<div class="c2"><div class="rowx"><div>${idb(t.id)} <b>${esc(t.title||"Untitled")}</b></div>${off?`<span class="st2 pub">${off}% off</span>`:!t.price?'<span class="st2 pending">Set price</span>':""}</div><div class="g3" style="margin-top:6px"><div><label class="l2" for="p${t.id}">Real price (₹)</label><input id="p${t.id}" class="in" type="number" min="0" value="${t.price||""}" onchange="setP('${t.id}','price',this.value)"></div><div><label class="l2" for="s${t.id}">Discount price (₹)</label><input id="s${t.id}" class="in" type="number" min="0" value="${t.sale||""}" placeholder="None" onchange="setP('${t.id}','sale',this.value)"></div><div><label class="l2" for="e${t.id}">Sale ends</label><input id="e${t.id}" class="in" type="date" value="${t.saleEnd}" onchange="setP('${t.id}','saleEnd',this.value)"></div></div>${er?'<p class="hint bad">Discount price must be lower than the real price.</p>':""}</div>`}).join("")||'<div class="em">No paid tests match. Turn a test to Paid in its settings.</div>'}
 function pricing(){lay("pricing","Prices & coupons",`<div class="tabs"><button class="${PT=="p"?"on":""}" onclick="PT='p';render()">Prices</button><button class="${PT=="c"?"on":""}" onclick="PT='c';render()">Coupons</button></div>${PT=="p"?`${PF?`<div class="cf2" style="margin-bottom:12px">Showing only test ${esc(PF)}<button class="b o" onclick="PF='';render()">Show all</button></div>`:""}<div class="tl2"><input class="in" type="search" aria-label="Search" placeholder="Search by test ID or title" value="${esc(PQ)}" oninput="PQ=this.value;$('#pl').innerHTML=plist()"></div><div id="pl">${plist()}</div>`:coup()}`)}
 function setP(i,k,v){let t=tid(i);t[k]=k=="saleEnd"?v:Math.max(0,+v||0);sv();updateTestInDb(t);toast("Saved");render()}
