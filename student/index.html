@@ -1,0 +1,715 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>StarzanNotes Test Series</title><meta name="theme-color" content="#f6f4ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0b1210" media="(prefers-color-scheme: dark)"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#f6f4ee;--sf:#fff;--tx:#17211f;--mu:#5d6966;--br:#e3dfd3;--ac:#0f6b5c;--on:#fff;--hi:#edf3ef;--gd:#c4932f;--er:#b3392f;--sh:0 1px 2px rgba(23,33,31,.05),0 14px 32px -18px rgba(23,33,31,.28);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1210;--sf:#121b18;--tx:#e9f0ed;--mu:#92a39d;--br:#22312c;--ac:#41b8a1;--on:#04211a;--hi:#16251f;--gd:#e2b65a;--er:#ef8f86;--sh:0 1px 2px rgba(0,0,0,.3),0 14px 32px -16px rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b1210;--sf:#121b18;--tx:#e9f0ed;--mu:#92a39d;--br:#22312c;--ac:#41b8a1;--on:#04211a;--hi:#16251f;--gd:#e2b65a;--er:#ef8f86;--sh:0 1px 2px rgba(0,0,0,.3),0 14px 32px -16px rgba(0,0,0,.6);color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(700px 320px at 85% -80px,color-mix(in srgb,var(--ac) 12%,transparent),transparent),var(--bg);background-repeat:no-repeat;color:var(--tx);font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Devanagari",sans-serif;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));-webkit-font-smoothing:antialiased;font-feature-settings:"tnum"}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--sf)}
+a{color:inherit;text-decoration:none}h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;letter-spacing:-.02em;line-height:1.15;margin:0 0 10px}h1{font-size:clamp(1.9rem,6.5vw,3rem)}h2{font-size:1.35rem}h3{font-size:1.1rem;line-height:1.3}p{margin:0 0 10px}.mu,small{color:var(--mu)}small{font-size:.82rem}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}.ic{width:20px;height:20px;flex:none;vertical-align:-4px}.w{max-width:1120px;margin:0 auto;padding:0 18px}
+main,section.top{animation:up .45s both}@keyframes up{from{opacity:0;transform:translateY(10px)}}@keyframes pulse{50%{transform:scale(1.18);opacity:.7}}@keyframes ring{from{stroke-dashoffset:var(--c)}}
+.tp{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:color-mix(in srgb,var(--sf) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--br)}.tp .w{display:flex;align-items:center;gap:16px;height:62px}
+.lg{display:flex;align-items:center;gap:10px;margin-right:auto;font:700 1.15rem Fraunces,Georgia,serif}.mk{width:32px;height:32px;border-radius:10px;background:var(--ac);color:var(--on);display:grid;place-items:center}.mu2{color:var(--mu);font-weight:500}
+.bkb{display:flex;align-items:center;gap:4px;margin-right:auto;max-width:62%;padding:7px 14px 7px 8px;border:1px solid var(--br);border-radius:99px;background:var(--sf);font-weight:600;font-size:.92rem;transition:.15s}.bkb:hover{border-color:var(--ac);color:var(--ac)}.bkb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bkb .ic{width:18px;height:18px}
+.tp nav{display:none;gap:4px}.tp nav a{padding:8px 14px;border-radius:99px;font-weight:600;color:var(--mu)}.tp nav a.on{color:var(--ac);background:var(--hi)}.av{width:38px;height:38px;border-radius:12px;background:var(--ac);color:var(--on);display:grid;place-items:center;font-weight:700}
+.bt{position:fixed;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(3,1fr);background:var(--sf);border-top:1px solid var(--br);padding-bottom:env(safe-area-inset-bottom,0px)}.bt a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 8px;font-size:.72rem;font-weight:600;color:var(--mu)}.bt a.on{color:var(--ac)}.bt a.on .ic{background:var(--hi);width:44px;border-radius:99px;height:26px;padding:3px 12px}
+@media(min-width:900px){.tp nav{display:flex}.bt{display:none}body{padding-bottom:90px}.cols{grid-template-columns:minmax(0,1fr) 340px!important;grid-template-areas:"ph pc" "lst pc"!important}.pc{position:sticky;top:86px;align-self:start}.xg{grid-template-columns:minmax(0,1fr) 290px!important}.sd{display:block!important}.pb{display:none!important}}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--ac);background:var(--ac);color:var(--on);padding:10px 20px;min-height:44px;border-radius:12px;font:600 1rem Inter,sans-serif;cursor:pointer;transition:filter .15s,transform .1s,box-shadow .2s}.b:hover{filter:brightness(1.1);box-shadow:0 8px 20px -10px var(--ac)}.b:active{transform:scale(.98)}.b.o{background:var(--sf);color:var(--tx);border-color:var(--br);box-shadow:none}.b.o:hover{border-color:var(--ac);color:var(--ac);filter:none}.b:disabled{opacity:.4;cursor:not-allowed}.b.s{min-height:36px;padding:6px 16px;font-size:.92rem}.b.big{min-height:50px;padding:10px 26px}.f{width:100%}
+.in{width:100%;padding:12px 16px;border:1px solid var(--br);border-radius:12px;background:var(--sf);color:var(--tx);font:inherit}
+.eb{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--ac)}.chip{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 11px;border-radius:99px;background:var(--hi);color:var(--ac)}.chip.g{background:var(--ac);color:var(--on)}.tag{font-size:.7rem;font-weight:600;background:var(--hi);color:var(--ac);padding:1px 9px;border-radius:99px;margin-left:8px}
+.top{padding:26px 0 18px}.top h1{margin:8px 0 16px;max-width:14em}.sf{display:flex;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--br);border-radius:16px;padding:6px 6px 6px 16px;max-width:560px;box-shadow:var(--sh)}.sf input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;color:inherit;padding:8px 0}.sf .ic{color:var(--mu)}
+.car{margin-bottom:6px}.trk{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}.trk::-webkit-scrollbar{display:none}.sl{flex:0 0 100%;scroll-snap-align:start;position:relative;display:block;aspect-ratio:16/10;overflow:hidden}.sl img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 6s}.sl:hover img{transform:scale(1.04)}
+.ov2{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;gap:6px;padding:16px 18px;color:#fff;background:linear-gradient(0deg,rgba(5,22,18,.9),rgba(5,22,18,.15) 72%)}.ov2 h2{color:#fff;font-size:clamp(1.1rem,4.6vw,2rem);margin:0;max-width:18em}.ov2 p{display:none;color:#d4e6e0;margin:0;max-width:34em}.cta{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:.9rem;background:#fff;color:#0b4a3e;padding:6px 14px;border-radius:99px;margin-top:4px}@media(min-width:600px){.ov2{padding:26px 30px;gap:10px}.ov2 p{display:block}.cta{font-size:1rem;padding:8px 18px}}
+.dots{display:flex;gap:8px;align-items:center;justify-content:center;padding-top:12px}.dots button{width:8px;height:8px;border-radius:99px;border:0;background:var(--br);padding:0;cursor:pointer;transition:.3s}.dots button.on{width:26px;background:var(--ac)}.dots .pz{width:auto;height:auto;background:none;color:var(--mu);font:600 .75rem Inter,sans-serif;margin-left:10px}
+.rs{display:flex;align-items:center;gap:14px;background:var(--sf);border:1px solid var(--br);border-radius:16px;padding:14px 16px;margin-top:18px;box-shadow:var(--sh)}.rs div{flex:1}.rs b{display:block}.rs .ic{color:var(--gd);animation:pulse 1.6s infinite}
+.sec{display:flex;justify-content:space-between;align-items:flex-end;margin:34px 0 14px}.sec h2{margin:0}.sec a{color:var(--ac);font-weight:600;font-size:.92rem}
+.gr{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}.gr>*{animation:up .5s both}.gr>:nth-child(2){animation-delay:.07s}.gr>:nth-child(3){animation-delay:.14s}.gr>:nth-child(4){animation-delay:.21s}
+.cd{display:flex;flex-direction:column;padding:10px;background:var(--sf);border:1px solid var(--br);border-radius:18px;box-shadow:var(--sh);transition:.25s}.cd:hover{border-color:var(--ac);transform:translateY(-4px)}.iw{position:relative;overflow:hidden;aspect-ratio:16/10}.iw img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s}.cd:hover img{transform:scale(1.05)}.lbl{position:absolute;left:10px;top:10px;background:var(--sf);color:var(--ac);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:99px;font-weight:700}
+.ci{padding:14px 8px 6px;display:flex;flex-direction:column;flex:1}.ci h3{margin:4px 0 6px}.cl{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.9rem;flex:1}.cf{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:12px;border-top:1px solid var(--br)}.mt{display:flex;align-items:center;gap:6px;color:var(--mu);font-size:.85rem}.pr b{color:var(--ac);font-size:1.15rem}.pr s{color:var(--mu);margin-left:6px;font-size:.88rem}
+.tabs{display:flex;gap:8px;overflow-x:auto;margin:18px 0 16px;scrollbar-width:none}.tabs button{border:1px solid var(--br);background:var(--sf);color:var(--tx);padding:8px 18px;border-radius:99px;font:600 .92rem Inter,sans-serif;cursor:pointer;white-space:nowrap;transition:.15s}.tabs button.on{background:var(--ac);border-color:var(--ac);color:var(--on)}
+.cols{display:grid;gap:20px;margin-top:18px;grid-template-areas:"ph" "pc" "lst"}.one{margin-top:18px}.ph{grid-area:ph}.pc{grid-area:pc}.lst{grid-area:lst}.bn{width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;display:block;margin-bottom:16px}.hd2{padding:4px 0}.meta{display:flex;gap:18px;flex-wrap:wrap;color:var(--mu);font-size:.9rem;margin:10px 0}.meta span{display:flex;align-items:center;gap:6px}.pbar{height:6px;border-radius:99px;background:var(--hi);margin:12px 0 4px;overflow:hidden}.pbar i{display:block;height:100%;border-radius:99px;background:var(--ac);transition:width .8s}
+.pc{background:var(--sf);border:1px solid var(--br);border-radius:18px;box-shadow:var(--sh)}.pc .pi{padding:20px}.pc ul{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px;font-size:.92rem;color:var(--mu)}.pc li{display:flex;gap:8px}.pc li .ic{color:var(--ac);width:18px;height:18px}
+.fo,.tr{display:flex;align-items:center;gap:14px;background:var(--sf);border:1px solid var(--br);border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);transition:.2s}.fo:hover,.tr:hover{border-color:var(--ac);transform:translateX(3px)}.fo div,.tr div{flex:1;min-width:0}.fo b,.tr b{display:block;line-height:1.3}.fi{width:44px;height:44px;border-radius:12px;background:var(--hi);color:var(--ac);display:grid;place-items:center;flex:none}.no{font:700 1.3rem Fraunces,serif;color:var(--ac);width:38px}.sb{font-weight:700;color:var(--ac);background:var(--hi);padding:4px 12px;border-radius:99px;font-size:.9rem}.go{display:flex;align-items:center;gap:2px;color:var(--ac);font-weight:600;font-size:.9rem}.lk{color:var(--mu)}
+.em{padding:28px;text-align:center;color:var(--mu);border:1px dashed var(--br);border-radius:16px;background:var(--sf)}
+.ct{position:fixed;left:0;right:0;bottom:0;z-index:6;background:color-mix(in srgb,var(--sf) 92%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--br);padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px))}.ct .w{display:flex;align-items:center;gap:14px}.ctl{flex:1;min-width:0}.ctl b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctl s{color:var(--mu);font-weight:400}
+.ti{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.ti div{background:var(--sf);border:1px solid var(--br);border-radius:16px;padding:14px;box-shadow:var(--sh)}.ti .ic{color:var(--ac);margin-bottom:6px}.ti b{display:block;font:700 clamp(1.05rem,4.4vw,1.35rem) Fraunces,serif;white-space:nowrap}
+.cl2{list-style:none;padding:0;margin:0;display:grid;gap:10px}.cl2 li{display:flex;gap:10px}.cl2 .ic{color:var(--ac);margin-top:2px}
+.pod{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:end;margin:18px 0 14px}.pd{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;min-width:0}.pd b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pd .bk{width:100%;margin-top:8px;border-radius:14px 14px 0 0;display:grid;place-items:center;font:700 1.6rem Fraunces,serif;color:#fff}.p1 .bk{height:96px;background:var(--gd)}.p2 .bk{height:66px;background:#8d9a96}.p3 .bk{height:46px;background:#a8754a}.pd.me b{color:var(--ac)}
+.av2{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--hi);color:var(--ac);font-weight:700;flex:none}.lb{display:flex;gap:12px;align-items:center;padding:10px 14px;background:var(--sf);border:1px solid var(--br);border-radius:14px;margin-bottom:8px}.lb .rk{width:24px;font:700 1rem Fraunces,serif;color:var(--mu)}.lb .av2{width:36px;height:36px;border-radius:10px}.lb .nm{flex:1}.lb.me{background:var(--hi);border-color:var(--ac)}.lb b{font-family:Fraunces,serif}
+.xh{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--sf);border-bottom:1px solid var(--br)}.xh .w{display:flex;align-items:center;gap:10px;height:60px}.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;flex:1;min-width:0}.xh .bkb{margin-right:0;max-width:none}.ib{width:40px;height:40px;border:1px solid var(--br);border-radius:12px;background:var(--sf);color:var(--tx);display:grid;place-items:center;cursor:pointer;flex:none}
+.tmr{display:flex;align-items:center;gap:6px;font:700 1rem ui-monospace,Menlo,monospace;background:var(--hi);color:var(--ac);padding:8px 14px;border-radius:99px}.tmr.lw{color:var(--er);background:transparent;box-shadow:inset 0 0 0 1px var(--er)}.pg{height:3px;background:var(--hi)}.pg i{display:block;height:100%;background:var(--ac);transition:width .4s}
+.xg{display:grid;gap:22px;padding-top:20px;padding-bottom:110px}.sd{display:none;align-self:start;position:sticky;top:86px;background:var(--sf);border:1px solid var(--br);border-radius:18px;box-shadow:var(--sh);padding:18px}
+#qa{background:var(--sf);border:1px solid var(--br);border-radius:20px;box-shadow:var(--sh);padding:24px 20px;animation:up .3s both}.qm{display:flex;justify-content:space-between;align-items:center;color:var(--mu);font-size:.9rem;font-weight:600}.qm small{font-weight:400}.qt{font-weight:500;font-size:1.4rem;line-height:1.5;margin:16px 0 20px}
+.op{display:flex;gap:14px;align-items:center;width:100%;text-align:left;padding:14px 16px;border:1.5px solid var(--br);border-radius:14px;background:var(--sf);color:inherit;font:inherit;margin-bottom:10px;cursor:pointer;min-height:58px;transition:.18s}.op:hover{border-color:var(--ac)}.op i{font-style:normal;width:32px;height:32px;border-radius:10px;border:1px solid var(--br);display:grid;place-items:center;font-weight:700;flex:none;font-size:.85rem;transition:.18s}.op.on{border-color:var(--ac);background:var(--hi);transform:scale(1.01)}.op.on i{background:var(--ac);border-color:var(--ac);color:var(--on)}
+.xf .w{display:flex;gap:8px}.xf .b{flex:1;padding:10px 8px}.xf .b.o{flex:0 0 auto}
+.pl{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;margin:12px 0}.pn{height:42px;border:1px solid var(--br);border-radius:10px;background:var(--sf);color:var(--tx);font:inherit;cursor:pointer}.pn.vs{background:var(--hi)}.pn.an{background:var(--ac);border-color:var(--ac);color:var(--on)}.pn.rv{background:var(--gd);border-color:var(--gd);color:#1a1405}.pn.cu{outline:2px solid var(--ac);outline-offset:2px}
+.lgd{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:.8rem;color:var(--mu)}.lgd span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;border:1px solid var(--br);background:var(--k)}
+.rh2{background:linear-gradient(135deg,#0b4a3e,#0f6b5c);color:#fff;border-radius:22px;padding:24px 20px;display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-top:18px}.rh2 h2{color:#fff;margin:4px 0}.rh2 small{color:#b5d6cd}.rg{position:relative;width:132px;height:132px;flex:none}.rg svg{transform:rotate(-90deg)}.rc{animation:ring 1.3s .2s both ease-out}.rg div{position:absolute;inset:0;display:grid;place-items:center;font:700 1.8rem Fraunces,serif}
+.st{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}@media(min-width:700px){.st{grid-template-columns:repeat(3,1fr)}}.st div{background:var(--sf);border:1px solid var(--br);border-radius:16px;padding:14px 16px}.st b{display:block;font:700 1.5rem Fraunces,serif}
+.bar{height:7px;border-radius:99px;background:var(--hi);margin:4px 0 14px;overflow:hidden}.bar i{display:block;height:100%;border-radius:99px;background:var(--ac)}.ln{display:flex;justify-content:space-between;padding:4px 0}
+.rvw{background:var(--sf);border:1px solid var(--br);border-left:4px solid var(--er);border-radius:14px;padding:16px;margin-bottom:12px}.rvw.rs-ok{border-left-color:var(--ac)}.rvw.rs-un{border-left-color:var(--br)}.rh{display:flex;justify-content:space-between;margin-bottom:6px}.bd{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--er)}.rs-ok .bd{color:var(--ac)}.rs-un .bd{color:var(--mu)}
+.an2 div{padding:8px 12px;border:1px solid var(--br);border-radius:10px;margin-top:6px;font-size:.94rem}.an2 .oc{border-color:var(--ac);background:var(--hi)}.an2 .ow{border-color:var(--er);color:var(--er)}.exp{background:var(--hi);border-radius:12px;padding:10px 14px;margin-top:10px;font-size:.92rem}
+.ov{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;padding:16px;z-index:20;animation:up .2s both}.md{background:var(--sf);border:1px solid var(--br);border-radius:22px;box-shadow:0 24px 60px -20px rgba(0,0,0,.5);padding:22px;max-width:420px;width:100%;max-height:90vh;overflow:auto}.md .b{margin-top:10px}.cp{display:flex;gap:8px;margin:10px 0}.sm{font-size:.82rem;color:var(--mu);margin-top:12px}
+#t{position:fixed;left:50%;bottom:100px;transform:translate(-50%,10px);background:var(--tx);color:var(--bg);padding:10px 20px;border-radius:99px;opacity:0;pointer-events:none;transition:.2s;z-index:30}#t.sh{opacity:1;transform:translate(-50%,0)}
+footer{padding:22px 18px;text-align:center}@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.cd{padding:0;overflow:hidden;border-radius:22px}.ci{padding:16px 18px 18px}.cr{display:flex;align-items:center;gap:10px;margin-bottom:6px}.iw::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.26) 50%,transparent 65%);transform:translateX(-130%);transition:transform .9s}.cd:hover .iw::after,.sl:hover .iw::after{transform:translateX(130%)}
+.car .trk{background:var(--sf);border:1px solid var(--br);border-radius:24px;box-shadow:var(--sh)}.sl{aspect-ratio:auto;overflow:visible;display:flex;flex-direction:column}.sl .iw{overflow:hidden}.sl img{transition:none}.sl.on img{animation:kb 7s ease-out both}.cap{padding:16px 18px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:4px}.cap h2{margin:2px 0;font-size:clamp(1.25rem,5vw,1.8rem)}.cap p{margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.cta{background:var(--ac);color:var(--on);margin-top:2px;padding:9px 18px;font-size:.95rem;transition:.2s}.sl:hover .cta{padding-right:24px}
+@media(min-width:760px){.sl{display:grid;grid-template-columns:1.35fr 1fr}.cap{justify-content:center;padding:28px 32px}}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.08)}}@keyframes dp{to{background-size:100% 100%}}
+.dots button.on{background:linear-gradient(var(--ac),var(--ac)) left/0% 100% no-repeat var(--br);animation:dp 5s linear forwards}.car.ps .dots button.on{animation-play-state:paused}
+.bn{border-radius:22px}.sf:focus-within{border-color:var(--ac);box-shadow:0 0 0 4px color-mix(in srgb,var(--ac) 18%,transparent)}.chip.g{box-shadow:0 0 0 0 color-mix(in srgb,var(--ac) 40%,transparent);animation:glow 2.4s infinite}@keyframes glow{70%{box-shadow:0 0 0 8px transparent}}
+.hm{display:block}.hm .car{margin-top:4px}
+.car .trk{border-radius:0;border:0;background:none;box-shadow:var(--sh)}.sl{display:block;aspect-ratio:16/10;position:relative;overflow:hidden}.sl .iw{position:absolute;inset:0;aspect-ratio:auto}.sl img{height:100%}.sl.on img{animation:kb 7s ease-out both}@keyframes kb{from{transform:scale(1)}to{transform:scale(1.04)}}
+@media(min-width:760px){.sl{display:block}}
+@media(min-width:900px){.hm{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;align-items:center}.hm .car{order:-1;margin:0}.hm .top{padding:0}.hm .top h1{font-size:clamp(1.9rem,3vw,2.5rem)}}
+.cd,.bn,.fo,.tr{border-radius:0}.fi{border-radius:0}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+*{-webkit-tap-highlight-color:transparent}
+a,button,label.up2,label.b,.cd,.tr,.fo,.tw,.pn,.op,.rrw,.tabs button,.sw,.seg button,.stp button,.ni,.bt a,.sl{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+img{-webkit-user-drag:none;-webkit-touch-callout:none;user-select:none}
+::selection{background:color-mix(in srgb,var(--ac) 28%,transparent);color:inherit}
+button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
+@media(hover:none){.cd:hover{transform:none;border-color:var(--br)}.cd:hover img,.sl:hover img{transform:none}.cd:hover .iw::after,.sl:hover .iw::after{transform:translateX(-130%)}.fo:hover,.tr:hover,.tw:hover{transform:none;border-color:var(--br);box-shadow:var(--sh)}.op:hover,.rrw:hover{border-color:var(--br)}.op.on:hover,.rrw.on:hover{border-color:var(--ac)}.b:hover{filter:none;box-shadow:none}.b.o:hover{border-color:var(--br);color:var(--tx)}.tabs button:hover{border-color:var(--br);color:var(--tx)}.tabs button.on:hover{color:var(--on);border-color:var(--ac)}.bkb:hover{border-color:var(--br);color:inherit}.ib2:hover{border-color:var(--br);color:var(--tx)}.ib2.dg:hover{border-color:var(--br)}.up2:hover{border-color:var(--br);background:none}.ni:hover{background:none;color:var(--mu)}.ni.on:hover{background:var(--ac);color:var(--on)}.tp nav a:hover{color:var(--mu)}.tp nav a.on:hover{color:var(--ac)}}
+.cd,.tr,.fo,.tw,.rs{transition:transform .15s,border-color .2s,box-shadow .2s}
+.cd:active,.tr:active,.fo:active,.tw:active,.rs:active{transform:scale(.985)}
+.b:active,.op:active,.rrw:active,.tabs button:active,.pn:active,.bkb:active,.ib:active,.ib2:active,.seg button:active,.ni:active{transform:scale(.97)}
+.doc{max-width:720px;margin:0 auto;padding-bottom:24px}.doc h1{margin-top:28px;font-size:clamp(1.6rem,6vw,2.2rem)}.doc h3{margin:22px 0 6px}.doc p,.doc li{opacity:.92}.doc ul{padding-left:20px;margin:6px 0}.cc2{background:var(--sf);border:1px solid var(--br);border-radius:18px;padding:18px;margin-top:24px;box-shadow:var(--sh)}.cc2 .b+.b{margin-top:8px}
+.fl{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;margin-bottom:8px}.fl a{color:var(--mu);font-size:.85rem;font-weight:600}.fl a:hover{color:var(--ac)}
+</style></head><body><div id="app"></div><div id="m"></div><div id="t" role="status" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+let Q=[["Which gas do green plants absorb for photosynthesis?",["Oxygen","Carbon dioxide","Nitrogen","Hydrogen"],1,"Plants take in carbon dioxide and use it to make glucose.","Life Processes"],
+["What is the SI unit of electric current?",["Volt","Watt","Ampere","Ohm"],2,"Ampere is the SI unit of current.","Electricity"],
+["What is the pH of a neutral solution at 25°C?",["0","7","14","1"],1,"Pure water is neutral, with pH 7.","Acids and Bases"],
+["Which organ filters waste from human blood?",["Heart","Kidney","Lung","Liver"],1,"Kidneys filter blood and form urine.","Life Processes"],
+["Which mirror is used in vehicle headlights?",["Convex","Plane","Concave","Cylindrical"],2,"A concave mirror gives a parallel beam from a source at its focus.","Light"],
+["What is the chemical formula of baking soda?",["Na₂CO₃","NaHCO₃","NaCl","NaOH"],1,"Baking soda is sodium hydrogen carbonate.","Acids and Bases"],
+["Which lens corrects myopia (short-sightedness)?",["Convex","Concave","Bifocal","Cylindrical"],1,"A concave lens diverges light so the image falls on the retina.","Light"],
+["What is the SI unit of resistance?",["Ampere","Volt","Ohm","Joule"],2,"Resistance is measured in ohms.","Electricity"]];
+
+// ==================== SUPABASE INITIALIZATION ====================
+const SUPABASE_URL = "https://cdajevxsprugmawkrtgd.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkYWpldnhzcHJ1Z21hd2tydGdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5OTI1OTAsImV4cCI6MjEwODU2ODU5MH0.vJk2W4or0RvVG6zAibZnXROWUmKHE4d1R-D6neSqDgM";
+const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+let CUR_TEST_ID = null;
+let DB_LEADERBOARD = {};
+const DEFAULT_Q = JSON.parse(JSON.stringify(Q));
+
+const isUuid = (id) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+async function loadConfig() {
+  if (!sb) return;
+  try {
+    const { data: cfg, error } = await sb.from('config').select('*').eq('id', 'main').single();
+    if (cfg && !error) {
+      if (cfg.name) CFG.name = cfg.name;
+      if (cfg.tag) CFG.tag = cfg.tag;
+      if (cfg.email) CFG.email = cfg.email;
+      if (cfg.phone) CFG.phone = cfg.phone;
+      if (cfg.wa) CFG.wa = cfg.wa;
+      if (cfg.legal_privacy) CFG.legal.priv = cfg.legal_privacy;
+      if (cfg.legal_terms) CFG.legal.terms = cfg.legal_terms;
+      if (cfg.legal_about) CFG.legal.about = cfg.legal_about;
+      if (cfg.legal_refund) CFG.legal.refund = cfg.legal_refund;
+      if (cfg.legal_help) CFG.legal.help = cfg.legal_help;
+      if (cfg.maintenance) {
+        CFG.maint = true;
+        CFG.mmsg = cfg.maintenance_msg || "We are updating the app. Please check back soon.";
+      } else {
+        CFG.maint = false;
+      }
+      R();
+    }
+  } catch(e) {
+    console.warn("loadConfig error:", e);
+  }
+}
+
+async function loadBanners() {
+  if (!sb) return;
+  try {
+    const { data: bns, error } = await sb.from('banners').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+    if (bns && bns.length && !error) {
+      FE.length = 0;
+      bns.forEach((b, i) => {
+        FE.push({
+          id: b.id,
+          t: b.title,
+          d: b.subtitle || '',
+          im: b.image_url || TH(1600, 1000, i % 2 ? "#4a4a48" : "#2b3a4a", "Exam", b.title.split(" ")[0]),
+          ln: b.link ? b.link.replace(/^#/, '') : 'explore',
+          x: 'Featured',
+          lb: 'Featured',
+          p: 0,
+          s: 0
+        });
+      });
+      R();
+    }
+  } catch(e) {
+    console.warn("loadBanners error:", e);
+  }
+}
+
+async function loadSeries() {
+  if (!sb) return;
+  try {
+    const { data: dbSeries } = await sb.from('series').select('*').eq('status', 'published').order('sort_order', { ascending: true });
+    if (dbSeries && dbSeries.length) {
+      const { data: dbNodes } = await sb.from('nodes').select('*').order('sort_order', { ascending: true });
+      const nodeMap = {};
+      (dbNodes || []).forEach(n => {
+        nodeMap[n.id] = { id: n.id, n: n.name, tc: n.test_count || 0, ch: [], sid: n.series_id, par: n.parent_id };
+      });
+      Object.values(nodeMap).forEach(n => {
+        if (n.par && nodeMap[n.par]) nodeMap[n.par].ch.push(n);
+      });
+      const newSER = dbSeries.map(s => {
+        const rootCh = Object.values(nodeMap).filter(n => n.sid === s.id && !n.par);
+        return {
+          id: s.id,
+          n: s.title,
+          tc: rootCh.length ? 0 : 2,
+          ch: rootCh,
+          x: s.category || 'Board',
+          p: s.price || 0,
+          s: s.sale_price || s.price || 0,
+          w: 1600,
+          h: 1000,
+          c: s.banner_color || '#2b3a4a',
+          fp: rootCh[0]?.id || '',
+          d: s.description || '',
+          im: s.banner_url || TH(1600, 1000, s.banner_color || '#2b3a4a', s.category || 'Board', s.title.split(" ")[0]),
+          lb: s.label || (s.is_free ? 'Free' : 'Popular'),
+          ln: 'series-' + s.id
+        };
+      });
+      if (newSER.length) {
+        SER.length = 0;
+        newSER.forEach(s => SER.push(s));
+        for (const k in N) delete N[k];
+        SER.forEach(s => {
+          ix(s, null, s.id);
+          s.t = s.n;
+          s.im = s.im || TH(s.w, s.h, s.c, s.x, s.t.split(" ")[0]);
+        });
+        TOT = SER.reduce((a, s) => a + cnt(s), 0);
+        R();
+      }
+    }
+  } catch(e) {
+    console.warn("loadSeries error:", e);
+  }
+}
+
+async function prepTestQuestions(nid, k) {
+  if (!sb) return;
+  try {
+    const { data: tests } = await sb.from('tests').select('*').or('node_id.eq.' + nid + ',id.eq.' + nid + ',id.eq.' + nid + '-' + k).limit(1);
+    const tRow = tests && tests[0];
+    const testId = tRow ? tRow.id : (nid + '-' + k);
+    CUR_TEST_ID = testId;
+    const { data: dbQ } = await sb.from('questions').select('*').eq('test_id', testId).order('sort_order', { ascending: true });
+    if (dbQ && dbQ.length > 0) {
+      Q = dbQ.map(q => [
+        q.question_text,
+        Array.isArray(q.options) ? q.options : JSON.parse(q.options || '[]'),
+        q.correct_answer,
+        q.explanation || '',
+        q.topic || 'General',
+        q.id
+      ]);
+    } else {
+      Q = JSON.parse(JSON.stringify(DEFAULT_Q));
+    }
+    fetchLeaderboard(testId);
+  } catch(e) {
+    console.warn("prepTestQuestions error:", e);
+  }
+}
+
+async function fetchLeaderboard(testId) {
+  if (!sb || !testId) return;
+  try {
+    const { data: atts } = await sb.from('attempts').select('score, time_taken, users(name), user_id').eq('test_id', testId).order('score', { ascending: false }).order('time_taken', { ascending: true }).limit(20);
+    if (atts && atts.length) {
+      DB_LEADERBOARD[testId] = atts.map(a => ({
+        n: a.users?.name || 'Student',
+        s: Number(a.score),
+        t: a.time_taken,
+        me: a.user_id && S.user?.id && a.user_id === S.user.id
+      }));
+      R();
+    }
+  } catch(e) {
+    console.warn("fetchLeaderboard error:", e);
+  }
+}
+
+async function handleStudentAuth(user) {
+  if (!user) return;
+  const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Student';
+  S.user = { id: user.id, n: name, e: user.email, avatar: user.user_metadata?.avatar_url || '' };
+  sv();
+  R();
+  if (sb) {
+    try {
+      await sb.from('users').upsert({
+        id: user.id,
+        email: user.email,
+        name: name,
+        avatar: S.user.avatar || '',
+        role: 'student',
+        status: 'active',
+        last_seen: new Date().toISOString()
+      }, { onConflict: 'id' });
+    } catch(e) { console.warn("User upsert error", e); }
+    syncPurchases();
+  }
+}
+
+async function syncPurchases() {
+  if (!sb || !S.user?.id || !isUuid(S.user.id)) return;
+  try {
+    const { data: purs } = await sb.from('purchases').select('*').eq('user_id', S.user.id).eq('status', 'paid');
+    if (purs && purs.length) {
+      purs.forEach(p => {
+        if (p.series_id && !S.own.includes(p.series_id)) S.own.push(p.series_id);
+        if (!S.ord.some(o => o.id === p.id)) S.ord.push({ id: p.id, sid: p.series_id, amt: p.amount, at: new Date(p.created_at).getTime() });
+      });
+      sv();
+      R();
+    }
+  } catch(e) {
+    console.warn("syncPurchases error:", e);
+  }
+}
+
+if (sb) {
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session?.user) handleStudentAuth(session.user);
+  });
+  sb.auth.onAuthStateChange((_evt, session) => {
+    if (session?.user) handleStudentAuth(session.user);
+  });
+}
+// =================================================================
+
+const nd=(id,n,tc,ch)=>({id,n,tc:tc||0,ch:ch||[]});
+let SER=[{...nd("s1","BSEB Class 10 Full Mock Series",2,[nd("s1m","Mathematics",3),nd("s1e","English",3),nd("s1c","Science",0,[nd("s1c1","Life Processes",0,[nd("s1c1a","Photosynthesis",2),nd("s1c1b","Excretion",2)]),nd("s1c2","Electricity",3)])]),x:"Board",p:499,s:299,w:1600,h:1000,c:"#2b3a4a",fp:"s1c2",d:"Subject, chapter and topic wise tests with full explanations."},
+{...nd("s2","BPSC AEDO Prelims Mock Tests",4,[nd("s2g","General Studies",0,[nd("s2h","History",3),nd("s2p","Polity",3)])]),x:"Competitive",p:799,s:499,w:1600,h:1000,c:"#4a4a48",fp:"s2",d:"Exam-pattern mocks with negative marking."},
+{...nd("s3","CTET Paper 1 Practice",0,[nd("s3a","Child Development",4),nd("s3b","Language I",4)]),x:"Competitive",p:399,s:249,w:1600,h:1000,c:"#5b6b5e",fp:"s3a",d:"Practice sets by section."},
+{...nd("s4","Class 10 Science Free Pack",5),x:"Board",p:0,s:0,w:1600,h:1000,c:"#6b5b4a",fp:"",d:"Free tests to try the exam interface."}];
+const TH=(w,h,c,t,g)=>"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs><pattern id="p" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1" height="22" fill="#fff" fill-opacity=".09"/></pattern></defs><rect width="${w}" height="${h}" fill="${c}"/><rect width="${w}" height="${h}" fill="url(#p)"/><rect x="${w*.05}" y="${h*.07}" width="${w*.9}" height="${h*.86}" fill="none" stroke="#fff" stroke-opacity=".45"/><text x="${w*.09}" y="${h*.84}" font-family="Georgia,serif" font-size="${Math.min(w,h)*.15}" fill="#fff">${g}</text></svg>`);
+const N={},ix=(n,par,sid)=>{n.par=par;n.sid=sid;N[n.id]=n;n.ch.forEach(c=>ix(c,n.id,sid))};SER.forEach(s=>{ix(s,null,s.id);s.t=s.n;s.im=TH(s.w,s.h,s.c,s.x,s.t.split(" ")[0])});
+let LB={s1:"Bestseller",s2:"New",s3:"Popular",s4:"Free"},FE=SER.filter(s=>s.id!="s3");SER.forEach(s=>{s.lb=LB[s.id];s.ln="series-"+s.id});
+let cnt=n=>n.tc+n.ch.reduce((a,c)=>a+cnt(c),0),TOT=SER.reduce((a,s)=>a+cnt(s),0);
+const BD=[["Aarav K.",7.67,410],["Priya S.",7,380],["Rohit M.",6.34,450],["Sneha P.",6,300],["Vikash R.",5.67,420],["Anjali D.",5,390],["Md. Faiz",4.34,440],["Kiran T.",4,350]];
+const I={home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',book:'<path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',list:'<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',check:'<path d="m5 12 5 5L20 7"/>',lock:'<rect x="5" y="11" width="14" height="10"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',chev:'<path d="m9 6 6 6-6 6"/>',back:'<path d="m15 6-6 6 6 6"/>',trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 21h8M10 17h4"/>',flag:'<path d="M5 21V4h11l-1.5 4L16 12H5"/>',bolt:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',grid:'<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/>'};
+const ic=n=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
+const NV=[["home","Home","home"],["explore","Explore","search"],["learn","My learning","book"]];
+const $=q=>document.querySelector(q),A=$("#app");let S={user:null,own:[],ord:[],att:[]},T=null,tm,ci,cn=0,cp=false,CB=null,cpn=0,F={q:"",x:"All"},RF="all";
+try{S=Object.assign(S,JSON.parse(localStorage.getItem("sn3")||"{}"));T=JSON.parse(localStorage.getItem("snT3")||"null")}catch(e){}
+const sv=()=>{try{localStorage.setItem("sn3",JSON.stringify(S));localStorage.setItem("snT3",JSON.stringify(T))}catch(e){}};
+const inr=n=>"₹"+n,go=h=>{location.hash=h},mmss=s=>Math.floor(s/60)+":"+String(Math.round(s%60)).padStart(2,"0");
+const can=(n,k)=>{let s=N[n.sid];return !s.p||S.own.includes(s.id)||(n.id==s.fp&&k==1)};
+const inT=(id,root)=>{let c=N[id];while(c){if(c.id==root)return true;c=c.par?N[c.par]:null}return false};
+const att=n=>S.att.filter(a=>inT(a.nid,n.id)),dn=n=>new Set(att(n).map(a=>a.nid+"."+a.k)).size,bestOf=(nid,k)=>S.att.filter(a=>a.nid==nid&&a.k==k).sort((a,b)=>b.sc-a.sc)[0];
+function toast(m){let t=$("#t");t.textContent=m;t.classList.add("sh");setTimeout(()=>t.classList.remove("sh"),2600)}
+function M(h){$("#m").innerHTML=`<div class="ov" onclick="if(event.target==this)X()"><div class="md" role="dialog" aria-modal="true">${h}</div></div>`}function X(){$("#m").innerHTML=""}
+function shell(a,b,c,k){A.innerHTML=`${CFG.maint ? `<div style="background:#fff3cd;color:#856404;padding:12px 18px;text-align:center;font-weight:600;font-size:0.9rem;border-bottom:1px solid #ffeeba"><span style="margin-right:6px">⚠️</span><strong>Maintenance Mode:</strong> ${esc(CFG.mmsg)}</div>` : ""}<header class="tp"><div class="w">${k?`<a class="bkb" href="#${k[0]}" aria-label="Back to ${k[1]}">${ic("back")}<span>${k[1]}</span></a>`:`<a class="lg" href="#home"><span class="mk">${esc(CFG.name[0])}</span><span>${esc(CFG.name).replace("Notes",'<span class="mu2">Notes</span>')}</span></a>`}<nav>${NV.map(n=>`<a href="#${n[0]}" class="${a==n[0]?"on":""}">${n[1]}</a>`).join("")}</nav>${S.user?`<a class="av" href="#learn" aria-label="My learning">${S.user.n[0]}</a>`:'<button class="b s" onclick="signin()">Sign in</button>'}</div></header>${b}<footer><div class="fl">${Object.entries(PG).map(x=>`<a href="#page-${x[0]}">${x[1].replace(" policy","").replace(" and conditions","")}</a>`).join("")}</div><small>© ${esc(CFG.name)} · Demo preview with sample data</small></footer>${c?`<div class="ct"><div class="w">${c}</div></div>`:`<nav class="bt">${NV.map(n=>`<a href="#${n[0]}" class="${a==n[0]?"on":""}">${ic(n[2])}${n[1]}</a>`).join("")}</nav>`}`}
+const card=s=>`<a class="cd" href="#series-${s.id}"><div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${s.t} banner" loading="lazy"></div><div class="ci"><div class="cr"><span class="chip g">${s.lb}</span><span class="eb">${s.x}</span></div><h3>${s.t}</h3><p class="mu cl">${s.d}</p><div class="cf"><span class="mt">${ic("list")}${cnt(s)} tests</span><span class="pr">${s.p?`<b>${inr(s.s)}</b><s>${inr(s.p)}</s>`:"<b>Free</b>"}</span></div></div></a>`;
+const car=()=>`<div class="car" aria-roledescription="carousel"><div class="trk" id="trk">${FE.map((s,i)=>`<a class="sl${i?"":" on"}" href="#${s.ln}" aria-label="${s.t}: ${s.p?"view series":"start free"}"><div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${s.t} banner"></div></a>`).join("")}</div><div class="dots">${FE.map((_,i)=>`<button aria-label="Slide ${i+1}" class="${i?"":"on"}" onclick="sl(${i})"></button>`).join("")}<button class="pz" onclick="cp=!cp;this.textContent=cp?'Play':'Pause';this.closest('.car').classList.toggle('ps')">Pause</button></div></div>`;
+function sl(i){let t=$("#trk");t.scrollTo({left:i*t.clientWidth,behavior:"smooth"})}
+function dots(){let t=$("#trk"),n=Math.round(t.scrollLeft/t.clientWidth);if(n==cn&&t.dataset.i)return;cn=n;t.dataset.i=1;document.querySelectorAll(".sl").forEach((e,j)=>e.classList.toggle("on",j==cn));document.querySelectorAll(".dots button[aria-label^=Slide]").forEach((e,j)=>e.classList.toggle("on",j==cn));auto()}
+function auto(){clearInterval(ci);ci=setInterval(()=>{if(!cp&&!document.hidden)sl((cn+1)%FE.length)},5000)}
+function home(){let rs=T?`<a class="rs" href="#take-${T.nid}-${T.k}">${ic("clock")}<div><b>Resume your test</b><small>${N[T.nid].n}: Test ${T.k}</small></div>${ic("chev")}</a>`:"";
+shell("home",`<main class="w"><div class="hm"><section class="top"><span class="eb">StarzanNotes Test Series</span><h1>${esc(CFG.tag)}</h1><form class="sf" onsubmit="F.q=this.q.value;F.x='All';go('explore');return false">${ic("search")}<input name="q" aria-label="Search" placeholder="Search BSEB, BPSC, CTET"><button class="b">Search</button></form></section>${car()}</div>${rs}<div class="sec"><h2>Popular series</h2><a href="#explore" onclick="F.x='All';F.q=''">View all</a></div><div class="gr">${SER.filter(s=>s.p).map(card).join("")}</div><div class="sec"><h2>Free to start</h2></div><div class="gr">${SER.filter(s=>!s.p).map(card).join("")}</div></main>`);
+let t=$("#trk");t.onscroll=dots;cn=0;auto()}
+function explore(){shell("explore",`<main class="w"><h1 style="margin-top:26px">Explore</h1><input class="in" type="search" aria-label="Search series" placeholder="Search series" value="${F.q}" oninput="F.q=this.value;lst()"><div class="tabs">${["All","Board","Competitive","Free"].map(x=>`<button class="${F.x==x?"on":""}" onclick="F.x='${x}';explore()">${x}</button>`).join("")}</div><div id="ls" class="gr"></div></main>`);lst()}
+function lst(){let l=SER.filter(s=>(F.x=="All"||s.x==F.x||(F.x=="Free"&&!s.p))&&(s.t+s.x).toLowerCase().includes(F.q.toLowerCase()));$("#ls").innerHTML=l.map(card).join("")||'<div class="em">No series match your search.</div>'}
+function node(id){let n=N[id];if(!n)return go("home");let s=N[n.sid],root=!n.par,own=S.own.includes(s.id),paid=s.p&&!own,tot=cnt(n),d=dn(n),pa=root?null:N[n.par];
+let list=`${n.ch.length?`<h2 style="margin-top:8px">Browse</h2>${n.ch.map(c=>`<a class="fo" href="#node-${c.id}"><span class="fi">${ic("book")}</span><div><b>${c.n}</b><small>${cnt(c)} tests · ${dn(c)} attempted</small></div>${ic("chev")}</a>`).join("")}`:""}${n.tc?`<h2 style="margin-top:22px">Tests</h2>${Array.from({length:n.tc},(_,k)=>k+1).map(k=>{let ok=can(n,k),b=bestOf(n.id,k);return `<a class="tr" href="#test-${n.id}-${k}"><span class="no">${String(k).padStart(2,"0")}</span><div><b>Test ${k}${ok&&s.p&&!own?'<span class="tag">Free preview</span>':""}</b><small>${Q.length} questions · 8 min</small></div>${b?`<span class="sb">${b.sc}/${b.mx}</span>`:ok?`<span class="go">Start ${ic("chev")}</span>`:`<span class="lk">${ic("lock")}</span>`}</a>`}).join("")}`:""}${!n.ch.length&&!n.tc?'<div class="em">Tests will appear here soon.</div>':""}`;
+let hd=`<div class="ph">${root?`<img class="bn" src="${s.im}" width="1600" height="1000" alt="${s.t} banner">`:""}<div class="hd2"><span class="chip">${root?s.x:s.t}</span><h1 style="margin-top:8px">${root?s.t:n.n}</h1>${root?`<p class="mu">${s.d}</p>`:""}<div class="meta"><span>${ic("list")}${tot} tests</span><span>${ic("check")}${d} attempted</span></div><div class="pbar"><i style="width:${tot?d/tot*100:0}%"></i></div></div></div>`;
+let pc=root?`<aside class="pc"><div class="pi">${!s.p?"<h3>Free for everyone</h3>":own?`<h3>${ic("check")} You have access</h3>`:`<div class="pr"><b style="font-size:1.7rem">${inr(s.s)}</b><s>${inr(s.p)}</s> <small>${Math.round((1-s.s/s.p)*100)}% off</small></div>`}<ul><li>${ic("check")}Detailed explanations</li><li>${ic("check")}Topic-wise analysis</li><li>${ic("check")}Leaderboard on every test</li><li>${ic("check")}Access on any device</li></ul></div></aside>`:"";
+shell("home",`<main class="w"><div class="${root?"cols":"one"}">${hd}${pc}<div class="lst">${list}</div></div></main>`,paid?`<div class="ctl"><small>${s.t}</small><b>${inr(s.s)} <s>${inr(s.p)}</s></b></div><button class="b big" onclick="buy('${s.id}')">Unlock series</button>`:"",[root?"home":(pa.par?"node-"+pa.id:"series-"+pa.id),root?"Home":(pa.par?pa.n:"Series")])}
+function lbd(nid,k){
+  const tid = CUR_TEST_ID || (nid + '-' + k);
+  if (DB_LEADERBOARD[tid] && DB_LEADERBOARD[tid].length > 0) {
+    let L = [...DB_LEADERBOARD[tid]];
+    let be = bestOf(nid, k);
+    if (be && !L.some(l => l.me)) L.push({ n: "You", s: be.sc, t: be.tk, me: 1 });
+    return L.sort((a,b)=>b.s-a.s||a.t-b.t);
+  }
+  let h=0;
+  for(const c of nid+k)h=(h*31+c.charCodeAt(0))%97;
+  let L=BD.map((b,i)=>({n:b[0],s:Math.max(0,Math.round((b[1]-(h+i)%3*.33)*100)/100),t:b[2]+h%40}));
+  let be=bestOf(nid,k);
+  if(be)L.push({n:"You",s:be.sc,t:be.tk,me:1});
+  return L.sort((a,b)=>b.s-a.s||a.t-b.t);
+}
+function test(nid,k){ prepTestQuestions(nid, k); let n=N[nid];if(!n||k<1||k>n.tc)return go("home");let s=N[n.sid],ok=can(n,k),L=lbd(nid,k),rs=T&&T.nid==nid&&T.k==k;
+shell("home",`<main class="w"><div class="hd2" style="margin-top:20px"><span class="chip ${ok?"g":""}">${ok?"Available":"Locked"}</span> <span class="eb" style="margin-left:6px">${s.t}</span><h1 style="margin-top:10px">${n.n}: Test ${k}</h1></div>
+<div class="ti"><div>${ic("list")}<small>Questions</small><b>${Q.length}</b></div><div>${ic("clock")}<small>Duration</small><b>8 min</b></div><div>${ic("bolt")}<small>Marking</small><b>+1 / −0.33</b></div></div>
+<h3>Before you begin</h3><ul class="cl2 mu"><li>${ic("check")}Unanswered questions score zero.</li><li>${ic("check")}The timer keeps running if you refresh.</li><li>${ic("check")}Mark questions for review and return to them.</li><li>${ic("check")}The test submits automatically when time ends.</li></ul>
+<div class="sec" style="margin-bottom:6px"><h2>Leaderboard</h2><span class="chip">This test only</span></div><p class="sm" style="margin:0">Ranked by score, then by time. Names are shortened for privacy.</p>
+<div class="pod">${[1,0,2].map(i=>{let l=L[i];return l?`<div class="pd p${i+1}${l.me?" me":""}"><span class="av2">${l.n[0]}</span><b>${l.n}</b><small>${l.s} · ${mmss(l.t)}</small><div class="bk">${i+1}</div></div>`:""}).join("")}</div>
+${L.slice(3).map((l,j)=>`<div class="lb${l.me?" me":""}"><span class="rk">${j+4}</span><span class="av2">${l.n[0]}</span><span class="nm">${l.n}${l.me?" <small>(you)</small>":""}</span><span style="text-align:right"><b>${l.s}</b><br><small>${mmss(l.t)}</small></span></div>`).join("")}</main>`,
+ok?`<div class="ctl"><small>${rs?"In progress":"Ready when you are"}</small><b>${n.n}: Test ${k}</b></div><button class="b big" onclick="start('${nid}',${k})">${rs?"Resume":"Start test"} ${ic("chev")}</button>`:`<div class="ctl"><small>Unlock ${s.t}</small><b>${inr(s.s)} <s>${inr(s.p)}</s></b></div><button class="b big" onclick="buy('${n.sid}')">Unlock series</button>`,[n.par?"node-"+n.id:"series-"+n.id,n.par?n.n:"Series"])}
+function start(nid,k){if(!S.user)return signin(()=>start(nid,k));if(T&&T.nid==nid&&T.k==k)return go("take-"+nid+"-"+k);M(`<h3>Before you begin</h3><ul class="cl2 mu"><li>${ic("clock")}${Q.length} questions, 8 minutes.</li><li>${ic("bolt")}+1 for correct, −0.33 for wrong.</li><li>${ic("flag")}Keys A–D choose, arrows move, M marks.</li></ul><div class="exp" style="white-space:pre-line;margin:12px 0;max-height:34vh;overflow:auto">${esc(LEG.dis)}</div><button class="b f" onclick="begin('${nid}',${k})">I agree, start test</button><button class="b o f" onclick="X()">Not now</button>`)}
+function begin(nid,k){X();T={nid,k,testId:CUR_TEST_ID||nid,a:Q.map(_=>-1),r:Q.map(_=>0),v:Q.map(_=>0),q:0,st:Date.now(),end:Date.now()+480000,tt:Q.map(_=>0),lq:Date.now()};sv();go("take-"+nid+"-"+k)}
+function take(){if(!T)return go("home");let n=N[T.nid];A.innerHTML=`<header class="xh"><div class="w"><button class="bkb" aria-label="Leave test" onclick="if(confirm('Leave the test? Your answers are saved and the timer keeps running.'))go('test-${T.nid}-${T.k}')">${ic("back")}<span>Leave</span></button><span class="ell">${n.n}: Test ${T.k}</span><button class="ib pb" aria-label="Question palette" onclick="pal()">${ic("grid")}</button><span id="tm" class="tmr" role="timer">${ic("clock")}<span id="tt"></span></span></div><div class="pg"><i id="pgb"></i></div></header><main class="w xg"><section id="qa"></section><aside id="sd" class="sd"></aside></main><div class="ct xf"><div class="w" id="xf"></div></div>`;draw();tk();tm=setInterval(tk,1000)}
+function tk(){let r=Math.round((T.end-Date.now())/1000);if(r<=0)return fin();$("#tt").textContent=mmss(r);$("#tm").classList.toggle("lw",r<60)}
+function lap(){T.tt[T.q]+=(Date.now()-T.lq)/1000;T.lq=Date.now()}
+function plp(){return `<div class="pl">${Q.map((_,i)=>`<button class="pn${T.v[i]?" vs":""}${T.a[i]>=0?" an":""}${T.r[i]?" rv":""}${i==T.q?" cu":""}" aria-label="Question ${i+1}" onclick="X();jump(${i})">${i+1}</button>`).join("")}</div><div class="lgd"><span style="--k:var(--ac)">Answered</span><span style="--k:var(--gd)">Marked</span><span style="--k:var(--hi)">Not answered</span><span style="--k:var(--sf)">Not visited</span></div>`}
+function pal(){M(`<h3>Question palette</h3>${plp()}<button class="b f" onclick="X();conf()">Submit test</button>`)}
+function draw(){T.v[T.q]=1;let q=Q[T.q],n=Q.length,an=T.a.filter(x=>x>=0).length;$("#pgb").style.width=an/n*100+"%";
+$("#qa").innerHTML=`<div class="qm"><span>Question ${T.q+1} <small>of ${n}</small></span><span class="chip">${q[4]}</span></div><h2 class="qt">${q[0]}</h2>${q[1].map((o,i)=>`<button class="op${T.a[T.q]==i?" on":""}" aria-pressed="${T.a[T.q]==i}" onclick="pick(${i})"><i>${"ABCD"[i]}</i><span>${o}</span></button>`).join("")}`;
+$("#sd").innerHTML=`<h3>Questions</h3>${plp()}<p class="sm">${an} answered · ${n-an} not answered · ${T.r.filter(x=>x).length} marked</p><button class="b f" onclick="conf()">Submit test</button>`;
+$("#xf").innerHTML=`<button class="b o" aria-label="Previous" onclick="jump(T.q-1)" ${T.q?"":"disabled"}>${ic("back")}</button><button class="b o" onclick="T.r[T.q]^=1;sv();draw()">${ic("flag")}${T.r[T.q]?"Unmark":"Mark"}</button>${T.q<n-1?`<button class="b" onclick="jump(T.q+1)">Next ${ic("chev")}</button>`:'<button class="b" onclick="conf()">Submit</button>'}`}
+function pick(i){T.a[T.q]=T.a[T.q]==i?-1:i;sv();draw()}function jump(i){if(i<0||i>=Q.length)return;lap();T.q=i;sv();draw()}
+addEventListener("keydown",e=>{if(!T||!location.hash.startsWith("#take")||$("#m").innerHTML||/INPUT|TEXTAREA/.test(e.target.tagName))return;let k=e.key.toLowerCase();if(k.length==1&&"abcd".includes(k))pick("abcd".indexOf(k));else if(k=="arrowright")jump(T.q+1);else if(k=="arrowleft")jump(T.q-1);else if(k=="m"){T.r[T.q]^=1;sv();draw()}});
+function conf(){let an=T.a.filter(x=>x>=0).length,rv=T.r.filter(x=>x).length;M(`<h3>Submit your test?</h3><div class="ln"><span>Answered</span><b>${an}</b></div><div class="ln"><span>Not answered</span><b>${Q.length-an}</b></div><div class="ln"><span>Marked for review</span><b>${rv}</b></div><button class="b f" onclick="fin()">Yes, submit</button><button class="b o f" onclick="X()">Keep working</button>`)}
+function fin(){
+  clearInterval(tm);
+  X();
+  lap();
+  let c=0,w=0,tp={};
+  Q.forEach((q,i)=>{let a=T.a[i],t=tp[q[4]]=tp[q[4]]||[0,0];t[1]++;if(a==q[2]){c++;t[0]++}else if(a>=0)w++});
+  const attObj = {
+    nid: T.nid,
+    k: T.k,
+    a: T.a,
+    tt: T.tt,
+    c,
+    w,
+    u: Q.length-c-w,
+    sc: Math.round((c-.33*w)*100)/100,
+    mx: Q.length,
+    tk: Math.round((Date.now()-T.st)/1000),
+    tp,
+    at: Date.now(),
+    test_id: T.testId || CUR_TEST_ID || 'K7P2X'
+  };
+  S.att.push(attObj);
+  saveAttemptToDb(attObj);
+  T=null;
+  sv();
+  RF="all";
+  go("result-"+(S.att.length-1));
+}
+
+async function saveAttemptToDb(att){
+  if (!sb) return;
+  try {
+    const payload = {
+      user_id: isUuid(S.user?.id) ? S.user.id : null,
+      test_id: att.test_id || 'K7P2X',
+      answers: att.a,
+      time_per_question: att.tt,
+      correct: att.c,
+      wrong: att.w,
+      unattempted: att.u,
+      score: att.sc,
+      max_score: att.mx,
+      time_taken: att.tk,
+      topic_analysis: att.tp,
+      completed_at: new Date().toISOString()
+    };
+    await sb.from('attempts').insert(payload);
+    fetchLeaderboard(payload.test_id);
+  } catch(e) {
+    console.warn("saveAttempt error:", e);
+  }
+}
+function rev(i){let r=S.att[i];return `<div class="tabs">${[["all","All"],["ok","Correct"],["no","Incorrect"],["un","Skipped"]].map(f=>`<button class="${RF==f[0]?"on":""}" onclick="rfs('${f[0]}',${i})">${f[1]}</button>`).join("")}</div>`+(Q.map((q,k)=>{let a=r.a[k],ok=a==q[2],st=a<0?"un":ok?"ok":"no";if(RF!="all"&&RF!=st)return"";return `<div class="rvw rs-${st}"><div class="rh"><span class="bd">${st=="ok"?"Correct":st=="no"?"Incorrect":"Skipped"}</span><small>${a<0?"0":ok?"+1":"−0.33"} marks · ${mmss(r.tt[k])}</small></div><b>${k+1}. ${q[0]}</b><div class="an2">${q[1].map((o,j)=>`<div class="${j==q[2]?"oc":j==a?"ow":""}">${"ABCD"[j]}. ${o}${j==q[2]?" ✓":j==a?" ✗":""}</div>`).join("")}</div><div class="exp"><b>Explanation:</b> ${q[3]}</div><button class="b o s" style="margin-top:10px" onclick="rpt(${k})">${ic("flag")}Report an issue</button></div>`}).join("")||'<div class="em">Nothing in this filter.</div>')}
+const RPR=["The answer looks wrong","The question is unclear","Spelling or typing mistake","The explanation is wrong","Something else"];let RPS=0;
+function rpt(k,i){
+  if(i!=null)RPS=i;else RPS=0;
+  M(`<h3>Report question ${k+1}</h3>
+<p class="mu">What is wrong with it?</p>
+${RPR.map((r,j)=>`<button class="op${RPS==j?" on":""}" style="min-height:48px" onclick="rpt(${k},${j})"><i>${j+1}</i><span>${r}</span></button>`).join("")}
+<textarea id="rn" class="in" rows="3" placeholder="Tell us more (optional)" style="margin-top:6px"></textarea>
+<button class="b f" onclick="submitReportToDb(${k}, RPS, $('#rn').value)">Send report</button>
+<button class="b o f" onclick="X()">Cancel</button>`);
+}
+
+async function submitReportToDb(k, reasonIdx, note){
+  X();
+  toast('Thanks. Our team will review it.');
+  if (!sb) return;
+  try {
+    const qObj = Q[k];
+    const qId = qObj?.[5] || null;
+    await sb.from('reports').insert({
+      user_id: isUuid(S.user?.id) ? S.user.id : null,
+      user_name: S.user?.n || 'Student',
+      question_id: qId,
+      test_id: (T ? T.testId : null) || CUR_TEST_ID || 'K7P2X',
+      reason: RPR[reasonIdx] || 'The answer looks wrong',
+      note: note || '',
+      status: 'open'
+    });
+  } catch(e) {
+    console.warn("submitReport error:", e);
+  }
+}
+function rfs(f,i){RF=f;$("#rv").innerHTML=rev(i)}
+function result(i){let r=S.att[i];if(!r)return go("home");let n=N[r.nid],pc=Math.max(0,Math.round(r.sc/r.mx*1000)/10),ac=r.c+r.w?Math.round(r.c/(r.c+r.w)*100):0,rk=lbd(r.nid,r.k).findIndex(l=>l.me)+1,ts=Object.entries(r.tp).map(([k,v])=>[k,v[0],v[1]]).sort((a,b)=>a[1]/a[2]-b[1]/b[2]),C=2*Math.PI*54;
+shell("learn",`<main class="w"><div class="rh2"><div class="rg"><svg width="132" height="132" viewBox="0 0 132 132"><circle cx="66" cy="66" r="54" fill="none" stroke="#ffffff30" stroke-width="10"/><circle class="rc" style="--c:${C}" cx="66" cy="66" r="54" fill="none" stroke="#8fd8c6" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pc/100)}"/></svg><div>${pc}%</div></div><div><small>${n.n}: Test ${r.k}</small><h2>${r.sc} / ${r.mx} marks</h2><p style="margin:0;color:#cfe3dd">${pc>=75?"Excellent work.":pc>=50?"Good effort. Keep going.":"Keep practising, you will improve."} Rank ${rk||"-"} on this test (provisional).</p></div></div>
+<div class="st"><div><small>Correct</small><b>${r.c}</b></div><div><small>Incorrect (−${Math.round(r.w*33)/100})</small><b>${r.w}</b></div><div><small>Unanswered</small><b>${r.u}</b></div><div><small>Accuracy (of attempted)</small><b>${ac}%</b></div><div><small>Time taken</small><b>${mmss(r.tk)}</b></div><div><small>Attempted</small><b>${r.c+r.w}/${r.mx}</b></div></div>
+<div class="sec" style="margin-top:26px"><h2>Topic-wise performance</h2></div>${ts.map(t=>`<div class="ln"><span>${t[0]}</span><small>${t[1]}/${t[2]}</small></div><div class="bar"><i style="width:${t[1]/t[2]*100}%"></i></div>`).join("")}${ts[0]&&ts[0][1]<ts[0][2]?`<p class="exp"><b>Focus area:</b> ${ts[0][0]}. Revise this topic first.</p>`:""}
+<div class="sec"><h2>Question review</h2></div><div id="rv">${rev(i)}</div><p class="sm">Demo note: in the live app, answers and explanations stay on the server and appear only as your release rules allow.</p></main>`,`<a class="b o" href="#test-${r.nid}-${r.k}">${ic("trophy")}Leaderboard</a><button class="b big" style="flex:1" onclick="start('${r.nid}',${r.k})">Retry test</button>`,["test-"+r.nid+"-"+r.k,"Test"])}
+function learn(){if(!S.user)return shell("learn",`<main class="w"><div class="em" style="margin-top:28px"><h2>Sign in to see your learning</h2><p>Your purchases, attempts and results are saved to your Google account.</p><button class="b" onclick="signin()">Continue with Google</button></div></main>`);
+let tk2=S.att.length,av=tk2?Math.round(S.att.reduce((a,r)=>a+Math.max(0,r.sc/r.mx),0)/tk2*100):0,bs=tk2?Math.round(Math.max(...S.att.map(r=>Math.max(0,r.sc/r.mx)))*100):0;
+shell("learn",`<main class="w"><h1 style="margin-top:28px">Hi, ${S.user.n}</h1><div class="st" style="grid-template-columns:repeat(3,1fr)"><div><small>Tests taken</small><b>${tk2}</b></div><div><small>Average</small><b>${av}%</b></div><div><small>Best</small><b>${bs}%</b></div></div>
+<div class="sec"><h2>My test series</h2></div><div class="ms">${S.own.map(id=>card(N[id])).join("")||'<div class="em">No purchased series yet. <a href="#explore" style="color:var(--ac)"><b>Explore series</b></a></div>'}</div>
+<div class="sec"><h2>My attempts</h2></div>${S.att.map((r,i)=>`<a class="tr" href="#result-${i}"><span class="fi">${ic("check")}</span><div><b>${N[r.nid].n}: Test ${r.k}</b><small>${new Date(r.at).toLocaleDateString("en-IN")}</small></div><span class="sb">${r.sc}/${r.mx}</span></a>`).reverse().join("")||'<div class="em">No attempts yet. Try a free test.</div>'}
+<div class="sec"><h2>Purchase history</h2></div>${S.ord.map(o=>`<div class="tr"><div><b>${N[o.sid].t}</b><small>${new Date(o.at).toLocaleDateString("en-IN")}</small></div><b>${inr(o.amt)}</b></div>`).join("")||'<div class="em">No purchases yet.</div>'}
+<div class="sec"><h2>Help and policies</h2></div>${docs()}<p style="margin-top:22px"><button class="b o" onclick="appSignOut()">Sign out</button> <button class="b o" onclick="if(confirm('Clear all demo data?')){localStorage.clear();S={user:null,own:[],ord:[],att:[]};T=null;R()}">Reset demo</button></p></main>`)}
+function signin(cb){
+  CB=cb;
+  M(`<h3>Sign in</h3>
+<p class="mu">Sign in to sync your test progress, view purchases, and appear on leaderboards.</p>
+<button class="b f" style="margin-bottom:8px" onclick="googleSignIn()"><svg class="ic" viewBox="0 0 24 24" style="margin-right:6px"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/></svg>Continue with Google</button>
+<button class="b o f" style="margin-bottom:8px" onclick="demoSignIn()">Continue as Demo Student</button>
+<button class="b o f" onclick="X()">Cancel</button>
+<p class="sm">By continuing you agree to our <a href="#page-terms" onclick="X()" style="color:var(--ac);font-weight:600">Terms</a> and <a href="#page-priv" onclick="X()" style="color:var(--ac);font-weight:600">Privacy Policy</a>.</p>`);
+}
+
+async function googleSignIn(){
+  if (!sb) { demoSignIn(); return; }
+  try {
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin ? (window.location.origin + window.location.pathname) : window.location.href }
+    });
+    if (error) { toast(error.message); demoSignIn(); }
+  } catch(e) {
+    console.warn("Google OAuth error:", e);
+    demoSignIn();
+  }
+}
+
+function demoSignIn(){
+  S.user = { id: '00000000-0000-0000-0000-000000000001', n: 'Demo Student', e: 'student@example.com' };
+  sv();
+  X();
+  toast('Signed in (Demo Student)');
+  R();
+  CB && CB();
+}
+
+async function appSignOut(){
+  if (sb) {
+    try { await sb.auth.signOut(); } catch(e) {}
+  }
+  S.user = null;
+  sv();
+  R();
+  toast('Signed out');
+}
+function buy(id){if(!S.user)return signin(()=>buy(id));cpn=0;pay(id)}
+function pay(id){let s=N[id],d=Math.round(s.s*cpn/100),t=s.s-d;M(`<h3>Checkout</h3><p class="mu">${s.t}</p><div class="ln"><span>Price</span><span>${inr(s.s)}</span></div>${d?`<div class="ln"><span>Coupon STAR10</span><span>−${inr(d)}</span></div>`:""}<div class="ln"><b>Total</b><b>${inr(t)}</b></div><div class="cp"><input id="cc" class="in" aria-label="Coupon code" placeholder="Coupon code"><button class="b o" onclick="cpx('${id}')">Apply</button></div><button class="b f" onclick="ok('${id}',${t})">Pay ${inr(t)} (demo)</button><button class="b o f" onclick="X()">Cancel</button><p class="sm">Demo only, no real payment. Try code STAR10. In the live app, Razorpay checkout opens here (UPI, cards, net banking) and access unlocks only after the server verifies the payment.</p>`)}
+async function cpx(id){
+  let v=$("#cc").value.trim().toUpperCase();
+  if(!v)return;
+  if(v=="STAR10"){cpn=10;pay(id);toast("Coupon STAR10 applied (10% off)");return}
+  if(sb){
+    try{
+      const { data: c } = await sb.from('coupons').select('*').eq('code', v).eq('is_active', true).maybeSingle();
+      if(c){
+        cpn = c.discount_type === 'percent' ? c.discount_value : Math.min(90, Math.round(c.discount_value / (N[id]?.s || 100) * 100));
+        pay(id);
+        toast("Coupon applied (" + cpn + "% off)");
+        return;
+      }
+    } catch(e) {}
+  }
+  toast("Invalid or expired coupon");
+}
+function ok(id,t){
+  S.own.push(id);
+  S.ord.push({sid:id,amt:t,at:Date.now()});
+  sv();
+  X();
+  toast("Payment successful. Access unlocked.");
+  R();
+  if (sb) {
+    sb.from('purchases').insert({
+      user_id: isUuid(S.user?.id) ? S.user.id : null,
+      series_id: id,
+      amount: t,
+      status: 'paid',
+      razorpay_payment_id: 'pay_' + Math.random().toString(36).slice(2, 10)
+    }).then(() => {}).catch(e => console.warn("Purchase save error:", e));
+  }
+}
+const LEG={priv:`PRIVACY POLICY
+Last updated: [date]
+
+StarzanNotes ("we", "us") runs online test series at starzannotes.in. This policy explains what we collect, why we collect it, and the choices you have. By using the app you agree to it.
+
+1. What we collect
+- Account details: your name, email address and profile photo from your Google account when you sign in.
+- Activity: tests you attempt, your answers, scores, time taken, ranks, and any question you report.
+- Purchases: order ID, what you bought, amount, payment status and date. Payments are handled by Razorpay. We never see or store your card number, UPI PIN or bank login.
+- Basic technical data: device type, browser and app usage, used to keep the app working and secure.
+
+2. How we use it
+To run your account, show your results and rank, give access to what you bought, prevent cheating and misuse, answer support requests, and improve our tests. We do not sell your personal data.
+
+3. Leaderboards
+Only a shortened display name and your score appear on a test leaderboard. Your email and phone number are never shown to other students.
+
+4. Sharing
+We share data only with service providers that help us run the app (hosting and database, Google sign-in, Razorpay payments, analytics) and when the law requires it.
+
+5. Students and children
+Many of our students are under 18. If you are under 18, please use the app with the knowledge and consent of a parent or guardian. We do not show advertisements targeted at students and we do not track students' behaviour for advertising.
+
+6. Storage and security
+Data is stored on secure cloud servers with access controls and encryption in transit. No system is perfectly secure, so please protect your Google account.
+
+7. How long we keep data
+While your account is active, and afterwards only as long as needed for legal, tax and dispute purposes. You can ask us to delete your account.
+
+8. Your rights
+You can ask to see, correct or delete your data, or withdraw your consent, by writing to us. We will respond within a reasonable time as required by Indian law, including the Digital Personal Data Protection Act, 2023.
+
+9. Cookies and local storage
+We use them to keep you signed in and to remember your test progress.
+
+10. Changes
+We may update this policy. Important changes will be shown in the app.
+
+Contact and grievances: support@starzannotes.in · Grievance Officer: [name, address]`,
+terms:`TERMS AND CONDITIONS
+Last updated: [date]
+
+Welcome to StarzanNotes. By creating an account or using the app you agree to these terms.
+
+1. About the service
+We provide online mock tests, practice tests and study material for school board and competitive exams. Everything is for learning and practice only.
+
+2. Your account
+- Sign in with your own Google account. You are responsible for all activity on it.
+- Give correct information. Do not share your account or let others use what you bought.
+- If you are under 18, use the app with the consent of a parent or guardian.
+
+3. Purchases and access
+- Prices are in Indian rupees and shown before you pay. Payments are processed securely by Razorpay.
+- After a successful payment you get access to the test or series you bought, for the validity shown on its page.
+- Access is personal. It cannot be sold, shared, copied or transferred.
+
+4. Fair use
+You agree not to cheat, use bots or scripts, copy or share questions, answers or explanations, try to break or overload the app, or harass others. We may warn, suspend or ban accounts that break these rules, and in serious cases remove access without refund.
+
+5. Our content
+All questions, explanations, designs and text belong to StarzanNotes or its licensors. You may use them for your own study only. You may not republish, sell or distribute them without written permission.
+
+6. Accuracy and results
+We work hard to keep questions and answers correct, but mistakes can happen. You can report a question from your result page and we will review it. Scores, ranks and analysis are for practice and do not predict or guarantee any exam result.
+
+7. Refunds
+Please read our Refund Policy.
+
+8. Availability
+We may update, pause or change features, tests or prices. We will try to give notice of major changes.
+
+9. Limit of liability
+To the extent allowed by law, StarzanNotes is not liable for indirect or consequential loss, or for loss caused by internet, device or third-party service failures. Our total liability for any claim is limited to the amount you paid for the item concerned.
+
+10. Governing law
+These terms are governed by the laws of India. The courts at [your city], India have jurisdiction.
+
+11. Contact
+support@starzannotes.in`,
+about:`ABOUT STARZANNOTES
+
+StarzanNotes helps students practise smarter. We make clear, exam-pattern mock tests for school boards and competitive exams, with simple explanations and honest analysis, so you know exactly what to work on next.
+
+What you get
+- Subject, chapter and topic-wise tests
+- A real exam-style timer and question palette
+- Explained answers after every test
+- A leaderboard on every test
+- Free tests to try before you buy
+
+Our promise
+We keep prices fair, fix mistakes quickly (you can report any question from your result page), and respect your privacy. We never sell your data.
+
+Contact: support@starzannotes.in`,
+refund:`REFUND POLICY
+Last updated: [date]
+
+Our tests are digital products that can be used right after purchase, so refunds work like this.
+
+You can get a full refund if
+- You were charged twice for the same item.
+- Payment was taken but access was not given within 24 hours.
+- The test or series is broken and we cannot fix it within a reasonable time.
+
+Refunds are not given when
+- You have already attempted the test or most of the series.
+- You changed your mind after using it.
+- Your account was suspended for breaking our terms.
+
+How to ask
+Email support@starzannotes.in within 7 days of payment, with your registered email and order ID.
+
+How you get the money
+Approved refunds go back to the original payment method through Razorpay and usually reach you in 5 to 7 working days. Access to the refunded item ends once the refund is processed.`,
+help:`HELP AND FAQ
+
+How do I start a test?
+Open a test and tap Start. Sign in with Google first.
+
+Can I pause a test?
+No. The timer keeps running even if you close the app. Your answers are saved automatically.
+
+My payment went through but I cannot see the test.
+Wait a few minutes and refresh. If it is still missing, email us with your order ID.
+
+How do I report a wrong question?
+Open your result, go to the question review and tap Report an issue.
+
+When do I see answers and explanations?
+As set for each test: right after each question, after you submit, or after the test closes.
+
+Which languages are supported?
+Tests can be in Hindi, English or both.
+
+How do I delete my account?
+Email us from your registered address and we will delete it.
+
+Contact us
+support@starzannotes.in`,
+dis:`Please read before you start.
+- This test is for practice and learning. Your score does not predict any official exam result.
+- The timer starts when you tap Start and keeps running, even if you leave the app.
+- Do not refresh, switch apps or take help from other devices. Your answers are saved automatically.
+- Do not copy, screenshot or share the questions. Unfair use can lead to a ban.
+- If you find a mistake in a question, report it from your result page.
+By tapping Start you agree to these rules.`};
+const CFG={name:"StarzanNotes",tag:"Practise like it’s the real exam.",email:"support@starzannotes.in",phone:"",wa:"",legal:{priv:LEG.priv,terms:LEG.terms,about:LEG.about,refund:LEG.refund,help:LEG.help}};
+const PG={priv:"Privacy policy",terms:"Terms and conditions",refund:"Refund policy",about:"About us",help:"Help",contact:"Contact us"};
+const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function fmtDoc(t){let h="",ul=0,hd=/^(\d+\.\s|What you get$|Our promise$|You can get a full refund if$|Refunds are not given when$|How to ask$|How you get the money$|Contact us$|[^.]{3,60}\?$)/;t.split("\n").forEach((l,i)=>{l=l.trim();let li=l.startsWith("- ");if(ul&&!li){h+="</ul>";ul=0}if(!l)return;if(li){if(!ul){h+="<ul>";ul=1}h+="<li>"+esc(l.slice(2))+"</li>"}else if(i==0)h+="<h1>"+esc(l[0]+l.slice(1).toLowerCase())+"</h1>";else if(hd.test(l))h+="<h3>"+esc(l)+"</h3>";else h+="<p"+(/^Last updated/.test(l)?' class="mu"':"")+">"+esc(l)+"</p>"});return h+(ul?"</ul>":"")}
+function contact(){return `<div class="cc2"><h3>Contact us</h3><p class="mu">We usually reply within one or two working days.</p><a class="b f" href="mailto:${esc(CFG.email)}">Email ${esc(CFG.email)}</a>${CFG.wa?`<a class="b o f" href="https://wa.me/${CFG.wa.replace(/\D/g,"")}" target="_blank" rel="noopener">WhatsApp us</a>`:""}${CFG.phone?`<a class="b o f" href="tel:${esc(CFG.phone)}">Call ${esc(CFG.phone)}</a>`:""}</div>`}
+function pageV(k){if(!PG[k])return go("home");shell("home",`<main class="w"><article class="doc">${k=="contact"?"<h1>Contact us</h1>":fmtDoc(CFG.legal[k])}${k=="help"||k=="contact"?contact():""}</article></main>`,"",["home","Home"])}
+const docs=()=>Object.entries(PG).map(x=>`<a class="tr" href="#page-${x[0]}"><span class="fi">${ic("book")}</span><div><b>${x[1]}</b></div>${ic("chev")}</a>`).join("");
+let CUR="",HS=[],SY={},SYNC=-1;try{history.scrollRestoration="manual"}catch(e){}
+addEventListener("scroll",()=>{SY[CUR]=scrollY},{passive:true});
+function route(){let h=location.hash||"#home",i=HS.indexOf(h);if(i>=0){HS.length=i+1;SYNC=SY[h]||0}else{HS.push(h);SYNC=0}CUR=h;R()}
+function R(){clearInterval(tm);clearInterval(ci);let y=scrollY,p=(location.hash.slice(1)||"home").split("-");
+({home,explore,learn,series:()=>node(p[1]),node:()=>node(p[1]),test:()=>test(p[1],+p[2]),take,result:()=>result(+p[1]),page:()=>pageV(p[1])}[p[0]]||home)();scrollTo(0,SYNC>=0?SYNC:y);SYNC=-1}
+addEventListener("hashchange",route);route();
+// Load Supabase cloud data
+loadConfig();
+loadBanners();
+loadSeries();
+
+</script></body></html>
