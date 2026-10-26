@@ -325,8 +325,146 @@ const car=()=>`<div class="car" aria-roledescription="carousel"><div class="trk"
 function sl(i){let t=$("#trk");t.scrollTo({left:i*t.clientWidth,behavior:"smooth"})}
 function dots(){let t=$("#trk"),n=Math.round(t.scrollLeft/t.clientWidth);if(n==cn&&t.dataset.i)return;cn=n;t.dataset.i=1;document.querySelectorAll(".sl").forEach((e,j)=>e.classList.toggle("on",j==cn));document.querySelectorAll(".dots button[aria-label^=Slide]").forEach((e,j)=>e.classList.toggle("on",j==cn));auto()}
 function auto(){clearInterval(ci);ci=setInterval(()=>{if(!cp&&!document.hidden)sl((cn+1)%FE.length)},5000)}
+
+let LIVE_TESTS = [];
+let TESTS_BY_ID = {};
+
+async function loadTests() {
+  if (!sb) return;
+  try {
+    const { data: dbTests, error } = await sb.from('tests').select('*').eq('status', 'published').order('created_at', { ascending: false });
+    if (dbTests && !error) {
+      LIVE_TESTS = dbTests;
+      TESTS_BY_ID = {};
+      dbTests.forEach(t => { TESTS_BY_ID[t.id] = t; });
+      
+      const { data: qData } = await sb.from('questions').select('test_id');
+      const qMap = {};
+      (qData || []).forEach(q => { qMap[q.test_id] = (qMap[q.test_id] || 0) + 1; });
+      LIVE_TESTS.forEach(t => { t.qCount = qMap[t.id] || 0; });
+      R();
+    }
+  } catch(e) {
+    console.warn("loadTests error:", e);
+  }
+}
+
+const testCard = t => `<a class="cd" href="#test-${t.id}" style="padding:16px; border-radius:18px; display:flex; flex-direction:column; justify-content:space-between; text-decoration:none; color:inherit; background:var(--sf); border:1px solid var(--br); box-shadow:var(--sh); transition:.25s;">
+  <div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <span class="chip ${t.is_paid ? '' : 'g'}">${t.is_paid ? (t.sale_price ? inr(t.sale_price) : 'Paid') : 'Free'}</span>
+      <span class="eb">${esc(t.exam || 'Mock Test')}</span>
+    </div>
+    <h3 style="margin:4px 0 6px;">${esc(t.title || 'Untitled Test')}</h3>
+    <p class="mu cl" style="font-size:0.88rem; margin:0 0 10px;">${esc(t.subject ? (t.subject + (t.chapter ? ' · ' + t.chapter : '')) : (t.description || 'Full mock practice test'))}</p>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid var(--br);">
+    <span class="mt" style="font-size:0.85rem; color:var(--mu);">${ic("clock")} ${t.timer_minutes || 10}m · ${ic("list")} ${t.qCount || 5} Qs</span>
+    <span class="b s" style="pointer-events:none;">Start ${ic("chev")}</span>
+  </div>
+</a>`;
+
+async function viewCustomTest(id) {
+  let t = TESTS_BY_ID[id];
+  if (!t) {
+    if (sb) {
+      const { data } = await sb.from('tests').select('*').eq('id', id).single();
+      if (data) { t = data; TESTS_BY_ID[id] = data; }
+    }
+  }
+  if (!t) return go("home");
+  
+  let qCount = t.qCount || 5;
+  let timerMin = t.timer_minutes || 10;
+  let marksPos = t.marks_per_correct || 1;
+  let marksNeg = t.negative_on !== false ? (t.negative_value || 0.33) : 0;
+  let L = lbd(t.id, 1);
+  let rs = T && T.testId == t.id;
+
+  shell("home", `<main class="w">
+    <div class="hd2" style="margin-top:20px">
+      <span class="chip g">Available</span>
+      <span class="eb" style="margin-left:6px">${esc(t.exam || 'Test Series')}</span>
+      <h1 style="margin-top:10px">${esc(t.title)}</h1>
+      ${t.subject ? `<p class="mu">${esc(t.subject)}${t.chapter ? ' · ' + esc(t.chapter) : ''}${t.topic ? ' · ' + esc(t.topic) : ''}</p>` : ''}
+    </div>
+    <div class="ti">
+      <div>${ic("list")}<small>Questions</small><b>${qCount}</b></div>
+      <div>${ic("clock")}<small>Duration</small><b>${timerMin} min</b></div>
+      <div>${ic("bolt")}<small>Marking</small><b>+${marksPos} / −${marksNeg}</b></div>
+    </div>
+    <h3>Before you begin</h3>
+    <ul class="cl2 mu">
+      <li>${ic("check")}Unanswered questions score zero.</li>
+      <li>${ic("check")}The timer keeps running if you refresh.</li>
+      <li>${ic("check")}Mark questions for review and return to them anytime.</li>
+      <li>${ic("check")}Test submits automatically when time ends.</li>
+    </ul>
+    ${t.disclaimer ? `<div class="exp" style="margin:14px 0;"><b>Instructions:</b> ${esc(t.disclaimer)}</div>` : ''}
+    <div class="sec" style="margin-bottom:6px"><h2>Leaderboard</h2><span class="chip">Live Rankings</span></div>
+    <div class="pod">${[1,0,2].map(i=>{let l=L[i];return l?`<div class="pd p${i+1}${l.me?" me":""}"><span class="av2">${l.n[0]}</span><b>${l.n}</b><small>${l.s} · ${mmss(l.t)}</small><div class="bk">${i+1}</div></div>`:""}).join("")}</div>
+    ${L.slice(3).map((l,j)=>`<div class="lb${l.me?" me":""}"><span class="rk">${j+4}</span><span class="av2">${l.n[0]}</span><span class="nm">${l.n}${l.me?" <small>(you)</small>":""}</span><span style="text-align:right"><b>${l.s}</b><br><small>${mmss(l.t)}</small></span></div>`).join("")}
+  </main>`,
+  `<div class="ctl"><small>${rs ? "In progress" : "Ready when you are"}</small><b>${esc(t.title)}</b></div>
+  <button class="b big" onclick="startCustomTest('${t.id}')">${rs ? "Resume" : "Start test"} ${ic("chev")}</button>`,
+  ["home", "Home"]);
+}
+
+async function startCustomTest(id) {
+  let t = TESTS_BY_ID[id];
+  if (!t && sb) {
+    const { data } = await sb.from('tests').select('*').eq('id', id).single();
+    if (data) t = data;
+  }
+  if (!t) return go("home");
+  
+  if (!S.user) return signin(() => startCustomTest(id));
+  if (T && T.testId == id) return go("take-test-" + id);
+
+  toast("Loading questions from cloud...");
+  let customQ = null;
+  if (sb) {
+    try {
+      const { data: dbQ } = await sb.from('questions').select('*').eq('test_id', id).order('sort_order', { ascending: true });
+      if (dbQ && dbQ.length > 0) {
+        customQ = dbQ.map(q => [
+          q.question_text,
+          Array.isArray(q.options) ? q.options : JSON.parse(q.options || '[]'),
+          q.correct_answer,
+          q.explanation || 'Refer to reference notes.',
+          q.topic || t.topic || t.subject || 'General'
+        ]);
+      }
+    } catch(err) { console.warn("Failed to fetch questions:", err); }
+  }
+
+  if (customQ && customQ.length > 0) {
+    Q = customQ;
+  }
+  
+  let timerMin = t.timer_minutes || 10;
+  T = {
+    testId: t.id,
+    title: t.title,
+    nid: t.id,
+    k: 1,
+    marksPos: t.marks_per_correct || 1,
+    marksNeg: t.negative_on !== false ? (t.negative_value || 0.33) : 0,
+    a: Q.map(_ => -1),
+    r: Q.map(_ => 0),
+    v: Q.map(_ => 0),
+    q: 0,
+    st: Date.now(),
+    end: Date.now() + (timerMin * 60 * 1000),
+    tt: Q.map(_ => 0),
+    lq: Date.now()
+  };
+  sv();
+  go("take-test-" + t.id);
+}
+
 function home(){let rs=T?`<a class="rs" href="#take-${T.nid}-${T.k}">${ic("clock")}<div><b>Resume your test</b><small>${N[T.nid].n}: Test ${T.k}</small></div>${ic("chev")}</a>`:"";
-shell("home",`<main class="w"><div class="hm"><section class="top"><span class="eb">StarzanNotes Test Series</span><h1>${esc(CFG.tag)}</h1><form class="sf" onsubmit="F.q=this.q.value;F.x='All';go('explore');return false">${ic("search")}<input name="q" aria-label="Search" placeholder="Search BSEB, BPSC, CTET"><button class="b">Search</button></form></section>${car()}</div>${rs}<div class="sec"><h2>Popular series</h2><a href="#explore" onclick="F.x='All';F.q=''">View all</a></div><div class="gr">${SER.filter(s=>s.p).map(card).join("")}</div><div class="sec"><h2>Free to start</h2></div><div class="gr">${SER.filter(s=>!s.p).map(card).join("")}</div></main>`);
+shell("home",`<main class="w"><div class="hm"><section class="top"><span class="eb">StarzanNotes Test Series</span><h1>${esc(CFG.tag)}</h1><form class="sf" onsubmit="F.q=this.q.value;F.x='All';go('explore');return false">${ic("search")}<input name="q" aria-label="Search" placeholder="Search BSEB, BPSC, CTET"><button class="b">Search</button></form></section>${car()}</div>${rs}<div class="sec"><h2>Live Online Tests</h2><span class="chip g">${LIVE_TESTS.length} Available</span></div><div class="gr">${LIVE_TESTS.length ? LIVE_TESTS.map(testCard).join("") : '<div class="em">Tests added in Admin will appear here.</div>'}</div><div class="sec"><h2>Popular series</h2><a href="#explore" onclick="F.x='All';F.q=''">View all</a></div><div class="gr">${SER.filter(s=>s.p).map(card).join("")}</div><div class="sec"><h2>Free to start</h2></div><div class="gr">${SER.filter(s=>!s.p).map(card).join("")}</div></main>`);
 let t=$("#trk");t.onscroll=dots;cn=0;auto()}
 function explore(){shell("explore",`<main class="w"><h1 style="margin-top:26px">Explore</h1><input class="in" type="search" aria-label="Search series" placeholder="Search series" value="${F.q}" oninput="F.q=this.value;lst()"><div class="tabs">${["All","Board","Competitive","Free"].map(x=>`<button class="${F.x==x?"on":""}" onclick="F.x='${x}';explore()">${x}</button>`).join("")}</div><div id="ls" class="gr"></div></main>`);lst()}
 function lst(){let l=SER.filter(s=>(F.x=="All"||s.x==F.x||(F.x=="Free"&&!s.p))&&(s.t+s.x).toLowerCase().includes(F.q.toLowerCase()));$("#ls").innerHTML=l.map(card).join("")||'<div class="em">No series match your search.</div>'}
@@ -360,7 +498,7 @@ ${L.slice(3).map((l,j)=>`<div class="lb${l.me?" me":""}"><span class="rk">${j+4}
 ok?`<div class="ctl"><small>${rs?"In progress":"Ready when you are"}</small><b>${n.n}: Test ${k}</b></div><button class="b big" onclick="start('${nid}',${k})">${rs?"Resume":"Start test"} ${ic("chev")}</button>`:`<div class="ctl"><small>Unlock ${s.t}</small><b>${inr(s.s)} <s>${inr(s.p)}</s></b></div><button class="b big" onclick="buy('${n.sid}')">Unlock series</button>`,[n.par?"node-"+n.id:"series-"+n.id,n.par?n.n:"Series"])}
 function start(nid,k){if(!S.user)return signin(()=>start(nid,k));if(T&&T.nid==nid&&T.k==k)return go("take-"+nid+"-"+k);M(`<h3>Before you begin</h3><ul class="cl2 mu"><li>${ic("clock")}${Q.length} questions, 8 minutes.</li><li>${ic("bolt")}+1 for correct, −0.33 for wrong.</li><li>${ic("flag")}Keys A–D choose, arrows move, M marks.</li></ul><div class="exp" style="white-space:pre-line;margin:12px 0;max-height:34vh;overflow:auto">${esc(LEG.dis)}</div><button class="b f" onclick="begin('${nid}',${k})">I agree, start test</button><button class="b o f" onclick="X()">Not now</button>`)}
 function begin(nid,k){X();T={nid,k,testId:CUR_TEST_ID||nid,a:Q.map(_=>-1),r:Q.map(_=>0),v:Q.map(_=>0),q:0,st:Date.now(),end:Date.now()+480000,tt:Q.map(_=>0),lq:Date.now()};sv();go("take-"+nid+"-"+k)}
-function take(){if(!T)return go("home");let n=N[T.nid];A.innerHTML=`<header class="xh"><div class="w"><button class="bkb" aria-label="Leave test" onclick="if(confirm('Leave the test? Your answers are saved and the timer keeps running.'))go('test-${T.nid}-${T.k}')">${ic("back")}<span>Leave</span></button><span class="ell">${n.n}: Test ${T.k}</span><button class="ib pb" aria-label="Question palette" onclick="pal()">${ic("grid")}</button><span id="tm" class="tmr" role="timer">${ic("clock")}<span id="tt"></span></span></div><div class="pg"><i id="pgb"></i></div></header><main class="w xg"><section id="qa"></section><aside id="sd" class="sd"></aside></main><div class="ct xf"><div class="w" id="xf"></div></div>`;draw();tk();tm=setInterval(tk,1000)}
+function take(){if(!T)return go("home");let n=N[T.nid];A.innerHTML=`<header class="xh"><div class="w"><button class="bkb" aria-label="Leave test" onclick="if(confirm('Leave the test? Your answers are saved and the timer keeps running.'))go('test-${T.nid}-${T.k}')">${ic("back")}<span>Leave</span></button><span class="ell">${T.title || (n ? n.n + ": Test " + T.k : "Test")}</span><button class="ib pb" aria-label="Question palette" onclick="pal()">${ic("grid")}</button><span id="tm" class="tmr" role="timer">${ic("clock")}<span id="tt"></span></span></div><div class="pg"><i id="pgb"></i></div></header><main class="w xg"><section id="qa"></section><aside id="sd" class="sd"></aside></main><div class="ct xf"><div class="w" id="xf"></div></div>`;draw();tk();tm=setInterval(tk,1000)}
 function tk(){let r=Math.round((T.end-Date.now())/1000);if(r<=0)return fin();$("#tt").textContent=mmss(r);$("#tm").classList.toggle("lw",r<60)}
 function lap(){T.tt[T.q]+=(Date.now()-T.lq)/1000;T.lq=Date.now()}
 function plp(){return `<div class="pl">${Q.map((_,i)=>`<button class="pn${T.v[i]?" vs":""}${T.a[i]>=0?" an":""}${T.r[i]?" rv":""}${i==T.q?" cu":""}" aria-label="Question ${i+1}" onclick="X();jump(${i})">${i+1}</button>`).join("")}</div><div class="lgd"><span style="--k:var(--ac)">Answered</span><span style="--k:var(--gd)">Marked</span><span style="--k:var(--hi)">Not answered</span><span style="--k:var(--sf)">Not visited</span></div>`}
@@ -704,12 +842,56 @@ const docs=()=>Object.entries(PG).map(x=>`<a class="tr" href="#page-${x[0]}"><sp
 let CUR="",HS=[],SY={},SYNC=-1;try{history.scrollRestoration="manual"}catch(e){}
 addEventListener("scroll",()=>{SY[CUR]=scrollY},{passive:true});
 function route(){let h=location.hash||"#home",i=HS.indexOf(h);if(i>=0){HS.length=i+1;SYNC=SY[h]||0}else{HS.push(h);SYNC=0}CUR=h;R()}
-function R(){clearInterval(tm);clearInterval(ci);let y=scrollY,p=(location.hash.slice(1)||"home").split("-");
-({home,explore,learn,series:()=>node(p[1]),node:()=>node(p[1]),test:()=>test(p[1],+p[2]),take,result:()=>result(+p[1]),page:()=>pageV(p[1])}[p[0]]||home)();scrollTo(0,SYNC>=0?SYNC:y);SYNC=-1}
+function R(){
+  clearInterval(tm);clearInterval(ci);
+  let y=scrollY,p=(location.hash.slice(1)||"home").split("-");
+  
+  if (CFG.maint) {
+    A.innerHTML = `<main class="w" style="min-height:80vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 18px;">
+      <div style="width:72px; height:72px; border-radius:20px; background:var(--hi); color:var(--ac); display:grid; place-items:center; font-size:2rem; margin-bottom:20px;">
+        ${ic("clock")}
+      </div>
+      <h1 style="font-family:Fraunces,Georgia,serif; font-size:clamp(1.8rem,5vw,2.4rem); margin:0 0 12px;">Under Maintenance</h1>
+      <p class="mu" style="max-width:480px; font-size:1.05rem; line-height:1.6; margin:0 0 28px;">${esc(CFG.mmsg || 'We are currently updating StarzanNotes. Please check back shortly.')}</p>
+      <button class="b" onclick="loadConfig(); toast('Checking status...')">Refresh Page</button>
+    </main>`;
+    return;
+  }
+
+  // Handle custom test taking e.g. #take-test-DC27A
+  if (p[0] === 'take' && p[1] === 'test' && p[2]) {
+    take();
+    scrollTo(0, 0);
+    return;
+  }
+  
+  // Handle custom test overview e.g. #test-DC27A (when no second number)
+  if (p[0] === 'test' && p[1] && (!p[2] || isNaN(p[2]))) {
+    viewCustomTest(p[1]);
+    scrollTo(0, 0);
+    return;
+  }
+
+  ({
+    home,
+    explore,
+    learn,
+    series: () => node(p[1]),
+    node: () => node(p[1]),
+    test: () => test(p[1], +p[2]),
+    take,
+    result: () => result(+p[1]),
+    page: () => pageV(p[1])
+  }[p[0]] || home)();
+  
+  scrollTo(0, SYNC >= 0 ? SYNC : y);
+  SYNC = -1;
+}
 addEventListener("hashchange",route);route();
 // Load Supabase cloud data
 loadConfig();
 loadBanners();
 loadSeries();
+loadTests();
 
 </script></body></html>
