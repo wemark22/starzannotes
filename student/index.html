@@ -79,275 +79,313 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 </style></head><body><div id="app"></div><div id="m"></div><div id="t" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-let Q=[["Which gas do green plants absorb for photosynthesis?",["Oxygen","Carbon dioxide","Nitrogen","Hydrogen"],1,"Plants take in carbon dioxide and use it to make glucose.","Life Processes"],
-["What is the SI unit of electric current?",["Volt","Watt","Ampere","Ohm"],2,"Ampere is the SI unit of current.","Electricity"],
-["What is the pH of a neutral solution at 25°C?",["0","7","14","1"],1,"Pure water is neutral, with pH 7.","Acids and Bases"],
-["Which organ filters waste from human blood?",["Heart","Kidney","Lung","Liver"],1,"Kidneys filter blood and form urine.","Life Processes"],
-["Which mirror is used in vehicle headlights?",["Convex","Plane","Concave","Cylindrical"],2,"A concave mirror gives a parallel beam from a source at its focus.","Light"],
-["What is the chemical formula of baking soda?",["Na₂CO₃","NaHCO₃","NaCl","NaOH"],1,"Baking soda is sodium hydrogen carbonate.","Acids and Bases"],
-["Which lens corrects myopia (short-sightedness)?",["Convex","Concave","Bifocal","Cylindrical"],1,"A concave lens diverges light so the image falls on the retina.","Light"],
-["What is the SI unit of resistance?",["Ampere","Volt","Ohm","Joule"],2,"Resistance is measured in ohms.","Electricity"]];
-
-// ==================== SUPABASE INITIALIZATION ====================
 const SUPABASE_URL = "https://cdajevxsprugmawkrtgd.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkYWpldnhzcHJ1Z21hd2tydGdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5OTI1OTAsImV4cCI6MjEwODU2ODU5MH0.vJk2W4or0RvVG6zAibZnXROWUmKHE4d1R-D6neSqDgM";
 const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-let CUR_TEST_ID = null;
-let DB_LEADERBOARD = {};
-const DEFAULT_Q = JSON.parse(JSON.stringify(Q));
-
 const isUuid = (id) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
-async function loadConfig() {
-  if (!sb) return;
+let CFG = {
+  name: "StarzanNotes",
+  tag: "Practice smarter, score higher.",
+  maint: false,
+  mmsg: "We are updating the app. Please check back soon.",
+  email: "support@starzannotes.in",
+  phone: "",
+  wa: ""
+};
+
+const PG = {
+  priv: "Privacy policy",
+  terms: "Terms and conditions",
+  about: "About us",
+  refund: "Refund policy",
+  help: "Help"
+};
+
+const LEG = {
+  priv: "Privacy policy text...",
+  terms: "Terms and conditions text...",
+  about: "About StarzanNotes...",
+  refund: "Refund policy...",
+  help: "Help and FAQ..."
+};
+
+const I = {
+  home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  book: '<path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  list: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+  check: '<path d="m5 12 5 5L20 7"/>',
+  lock: '<rect x="5" y="11" width="14" height="10"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  chev: '<path d="m9 6 6 6-6 6"/>',
+  back: '<path d="m15 6-6 6 6 6"/>',
+  trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 21h8M10 17h4"/>',
+  flag: '<path d="M5 21V4h11l-1.5 4L16 12H5"/>',
+  bolt: '<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  grid: '<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/>'
+};
+
+const ic = n => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n] || ''}</svg>`;
+
+const TH = (w, h, c, t, g) => "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs><pattern id="p" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1" height="22" fill="#fff" fill-opacity=".09"/></pattern></defs><rect width="${w}" height="${h}" fill="${c}"/><rect width="${w}" height="${h}" fill="url(#p)"/><rect x="${w*.05}" y="${h*.07}" width="${w*.9}" height="${h*.86}" fill="none" stroke="#fff" stroke-opacity=".45"/><text x="${w*.09}" y="${h*.84}" font-family="Georgia,serif" font-size="${Math.min(w,h)*.15}" fill="#fff">${g}</text></svg>`);
+
+const $ = q => document.querySelector(q);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const inr = n => "₹" + Math.round(n || 0).toLocaleString("en-IN");
+const go = h => { location.hash = h; };
+const mmss = s => Math.floor((s || 0) / 60) + ":" + String(Math.round((s || 0) % 60)).padStart(2, "0");
+
+const NV = [["home", "Home", "home"], ["explore", "Explore", "search"], ["learn", "My learning", "book"]];
+const A = $("#app");
+
+let S = { user: null, own: [], ord: [], att: [] };
+let T = null;
+let tm, ci, cn = 0, cp = false, CB = null;
+let F = { q: "", x: "All" };
+let RF = "all";
+let CUR = "", HS = [], SY = {}, SYNC = -1;
+
+try {
+  S = Object.assign(S, JSON.parse(localStorage.getItem("sn3") || "{}"));
+  T = JSON.parse(localStorage.getItem("snT3") || "null");
+} catch(e) {}
+
+const sv = () => {
   try {
-    const { data: cfg, error } = await sb.from('config').select('*').eq('id', 'main').single();
-    if (cfg && !error) {
-      if (cfg.name) CFG.name = cfg.name;
-      if (cfg.tag) CFG.tag = cfg.tag;
-      if (cfg.email) CFG.email = cfg.email;
-      if (cfg.phone) CFG.phone = cfg.phone;
-      if (cfg.wa) CFG.wa = cfg.wa;
-      if (cfg.legal_privacy) CFG.legal.priv = cfg.legal_privacy;
-      if (cfg.legal_terms) CFG.legal.terms = cfg.legal_terms;
-      if (cfg.legal_about) CFG.legal.about = cfg.legal_about;
-      if (cfg.legal_refund) CFG.legal.refund = cfg.legal_refund;
-      if (cfg.legal_help) CFG.legal.help = cfg.legal_help;
-      if (cfg.maintenance) {
-        CFG.maint = true;
-        CFG.mmsg = cfg.maintenance_msg || "We are updating the app. Please check back soon.";
-      } else {
-        CFG.maint = false;
-      }
-      R();
-    }
-  } catch(e) {
-    console.warn("loadConfig error:", e);
-  }
+    localStorage.setItem("sn3", JSON.stringify(S));
+    localStorage.setItem("snT3", JSON.stringify(T));
+  } catch(e) {}
+};
+
+function toast(m) {
+  let t = $("#t");
+  if (!t) return;
+  t.textContent = m;
+  t.classList.add("sh");
+  clearTimeout(toast.h);
+  toast.h = setTimeout(() => t.classList.remove("sh"), 2600);
 }
 
-async function loadBanners() {
-  if (!sb) return;
-  try {
-    const { data: bns, error } = await sb.from('banners').select('*').eq('is_active', true).order('sort_order', { ascending: true });
-    if (bns && bns.length && !error) {
-      FE.length = 0;
-      bns.forEach((b, i) => {
-        FE.push({
-          id: b.id,
-          t: b.title,
-          d: b.subtitle || '',
-          im: b.image_url || TH(1600, 1000, i % 2 ? "#4a4a48" : "#2b3a4a", "Exam", b.title.split(" ")[0]),
-          ln: b.link ? b.link.replace(/^#/, '') : 'explore',
-          x: 'Featured',
-          lb: 'Featured',
-          p: 0,
-          s: 0
-        });
-      });
-      R();
-    }
-  } catch(e) {
-    console.warn("loadBanners error:", e);
-  }
+function M(h) {
+  $("#m").innerHTML = `<div class="ov" onclick="if(event.target==this)X()"><div class="md" role="dialog" aria-modal="true">${h}</div></div>`;
+}
+function X() {
+  $("#m").innerHTML = "";
 }
 
-async function loadSeries() {
-  if (!sb) return;
-  try {
-    const { data: dbSeries } = await sb.from('series').select('*').eq('status', 'published').order('sort_order', { ascending: true });
-    if (dbSeries && dbSeries.length) {
-      const { data: dbNodes } = await sb.from('nodes').select('*').order('sort_order', { ascending: true });
-      const nodeMap = {};
-      (dbNodes || []).forEach(n => {
-        nodeMap[n.id] = { id: n.id, n: n.name, tc: n.test_count || 0, ch: [], sid: n.series_id, par: n.parent_id };
-      });
-      Object.values(nodeMap).forEach(n => {
-        if (n.par && nodeMap[n.par]) nodeMap[n.par].ch.push(n);
-      });
-      const newSER = dbSeries.map(s => {
-        const rootCh = Object.values(nodeMap).filter(n => n.sid === s.id && !n.par);
-        return {
-          id: s.id,
-          n: s.title,
-          tc: rootCh.length ? 0 : 2,
-          ch: rootCh,
-          x: s.category || 'Board',
-          p: s.price || 0,
-          s: s.sale_price || s.price || 0,
-          w: 1600,
-          h: 1000,
-          c: s.banner_color || '#2b3a4a',
-          fp: rootCh[0]?.id || '',
-          d: s.description || '',
-          im: s.banner_url || TH(1600, 1000, s.banner_color || '#2b3a4a', s.category || 'Board', s.title.split(" ")[0]),
-          lb: s.label || (s.is_free ? 'Free' : 'Popular'),
-          ln: 'series-' + s.id
-        };
-      });
-      if (newSER.length) {
-        SER.length = 0;
-        newSER.forEach(s => SER.push(s));
-        for (const k in N) delete N[k];
-        SER.forEach(s => {
-          ix(s, null, s.id);
-          s.t = s.n;
-          s.im = s.im || TH(s.w, s.h, s.c, s.x, s.t.split(" ")[0]);
-        });
-        TOT = SER.reduce((a, s) => a + cnt(s), 0);
-        R();
-      }
-    }
-  } catch(e) {
-    console.warn("loadSeries error:", e);
-  }
+// Global Dynamic State (populated from Supabase)
+let SER = [];
+let N = {};
+let LIVE_TESTS = [];
+let TESTS_BY_ID = {};
+let FE = [];
+let Q = [];
+let DB_LEADERBOARDS = {};
+
+function slug(s) {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'item';
 }
 
-async function prepTestQuestions(nid, k) {
-  if (!sb) return;
-  try {
-    const { data: tests } = await sb.from('tests').select('*').or('node_id.eq.' + nid + ',id.eq.' + nid + ',id.eq.' + nid + '-' + k).limit(1);
-    const tRow = tests && tests[0];
-    const testId = tRow ? tRow.id : (nid + '-' + k);
-    CUR_TEST_ID = testId;
-    const { data: dbQ } = await sb.from('questions').select('*').eq('test_id', testId).order('sort_order', { ascending: true });
-    if (dbQ && dbQ.length > 0) {
-      Q = dbQ.map(q => [
-        q.question_text,
-        Array.isArray(q.options) ? q.options : JSON.parse(q.options || '[]'),
-        q.correct_answer,
-        q.explanation || '',
-        q.topic || 'General',
-        q.id
-      ]);
-    } else {
-      Q = JSON.parse(JSON.stringify(DEFAULT_Q));
+function buildHierarchy(tests) {
+  const seriesMap = {};
+  N = {};
+
+  tests.forEach(t => {
+    const examName = (t.exam || 'General Mock Tests').trim();
+    const sid = 'ser_' + slug(examName);
+
+    if (!seriesMap[sid]) {
+      seriesMap[sid] = {
+        id: sid,
+        sid: sid,
+        n: examName,
+        t: examName,
+        x: 'Exam Series',
+        d: t.description || (examName + ' Practice Test Series'),
+        p: t.is_paid ? (t.price || 0) : 0,
+        s: t.is_paid ? (t.sale_price || t.price || 0) : 0,
+        im: t.banner || TH(1600, 1000, "#2b3a4a", "Exam", examName.split(" ")[0]),
+        ch: [],
+        tests: [],
+        par: null,
+        lb: t.label || 'Popular',
+        ln: 'series-' + sid
+      };
+      N[sid] = seriesMap[sid];
     }
-    fetchLeaderboard(testId);
-  } catch(e) {
-    console.warn("prepTestQuestions error:", e);
-  }
+    const series = seriesMap[sid];
+    if (t.is_paid) {
+      series.p = Math.max(series.p, t.price || 0);
+      series.s = Math.max(series.s, t.sale_price || t.price || 0);
+    }
+
+    const subName = (t.subject || '').trim();
+    const chName = (t.chapter || '').trim();
+    const tpName = (t.topic || '').trim();
+
+    if (!subName) {
+      series.tests.push(t);
+      return;
+    }
+
+    const subId = sid + '_sub_' + slug(subName);
+    let subNode = N[subId];
+    if (!subNode) {
+      subNode = {
+        id: subId,
+        sid: sid,
+        n: subName,
+        par: sid,
+        ch: [],
+        tests: []
+      };
+      N[subId] = subNode;
+      series.ch.push(subNode);
+    }
+
+    if (!chName) {
+      subNode.tests.push(t);
+      return;
+    }
+
+    const chId = subId + '_ch_' + slug(chName);
+    let chNode = N[chId];
+    if (!chNode) {
+      chNode = {
+        id: chId,
+        sid: sid,
+        n: chName,
+        par: subId,
+        ch: [],
+        tests: []
+      };
+      N[chId] = chNode;
+      subNode.ch.push(chNode);
+    }
+
+    if (!tpName) {
+      chNode.tests.push(t);
+      return;
+    }
+
+    const tpId = chId + '_tp_' + slug(tpName);
+    let tpNode = N[tpId];
+    if (!tpNode) {
+      tpNode = {
+        id: tpId,
+        sid: sid,
+        n: tpName,
+        par: chId,
+        ch: [],
+        tests: []
+      };
+      N[tpId] = tpNode;
+      chNode.ch.push(tpNode);
+    }
+
+    tpNode.tests.push(t);
+  });
+
+  SER = Object.values(seriesMap);
 }
 
-async function fetchLeaderboard(testId) {
+const cnt = n => (n ? ((n.tests ? n.tests.length : 0) + (n.ch ? n.ch.reduce((a, c) => a + cnt(c), 0) : 0)) : 0);
+
+const inNode = (testId, nodeId) => {
+  let cur = N[nodeId];
+  if (!cur) return false;
+  if (cur.tests && cur.tests.some(t => t.id === testId)) return true;
+  if (cur.ch) return cur.ch.some(c => inNode(testId, c.id));
+  return false;
+};
+
+const dn = n => {
+  let at = S.att.filter(a => inNode(a.testId || a.nid, n.id));
+  return new Set(at.map(a => a.testId || a.nid)).size;
+};
+
+const bestOf = (testId) => {
+  return S.att.filter(a => (a.testId === testId || a.nid === testId)).sort((a, b) => b.sc - a.sc)[0];
+};
+
+function lbd(testId) {
+  let cached = DB_LEADERBOARDS[testId] || [];
+  let L = cached.map(b => ({ n: b.n, s: b.s, t: b.t }));
+  let be = bestOf(testId);
+  if (be) {
+    L.push({ n: S.user?.n || "You", s: be.sc, t: be.tk, me: 1 });
+  }
+  return L.sort((a, b) => b.s - a.s || a.t - b.t);
+}
+
+async function fetchLeaderboardFromDb(testId) {
   if (!sb || !testId) return;
   try {
-    const { data: atts } = await sb.from('attempts').select('score, time_taken, users(name), user_id').eq('test_id', testId).order('score', { ascending: false }).order('time_taken', { ascending: true }).limit(20);
+    const { data: atts } = await sb.from('attempts')
+      .select('score, time_taken, users(name), user_id')
+      .eq('test_id', testId)
+      .order('score', { ascending: false })
+      .order('time_taken', { ascending: true })
+      .limit(20);
     if (atts && atts.length) {
-      DB_LEADERBOARD[testId] = atts.map(a => ({
-        n: a.users?.name || 'Student',
-        s: Number(a.score),
-        t: a.time_taken,
-        me: a.user_id && S.user?.id && a.user_id === S.user.id
+      DB_LEADERBOARDS[testId] = atts.map(a => ({
+        n: a.users?.name ? (a.users.name.split(" ")[0] + " " + (a.users.name.split(" ")[1]?.[0] || "") + ".") : "Student",
+        s: Number(a.score) || 0,
+        t: Number(a.time_taken) || 0
       }));
       R();
     }
-  } catch(e) {
-    console.warn("fetchLeaderboard error:", e);
-  }
+  } catch(e) { console.warn(e); }
 }
 
-async function handleStudentAuth(user) {
-  if (!user) return;
-  const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Student';
-  S.user = { id: user.id, n: name, e: user.email, avatar: user.user_metadata?.avatar_url || '' };
-  sv();
-  R();
-  if (sb) {
-    try {
-      await sb.from('users').upsert({
-        id: user.id,
-        email: user.email,
-        name: name,
-        avatar: S.user.avatar || '',
-        role: 'student',
-        status: 'active',
-        last_seen: new Date().toISOString()
-      }, { onConflict: 'id' });
-    } catch(e) { console.warn("User upsert error", e); }
-    syncPurchases();
-  }
-}
-
-async function syncPurchases() {
-  if (!sb || !S.user?.id || !isUuid(S.user.id)) return;
-  try {
-    const { data: purs } = await sb.from('purchases').select('*').eq('user_id', S.user.id).eq('status', 'paid');
-    if (purs && purs.length) {
-      purs.forEach(p => {
-        if (p.series_id && !S.own.includes(p.series_id)) S.own.push(p.series_id);
-        if (!S.ord.some(o => o.id === p.id)) S.ord.push({ id: p.id, sid: p.series_id, amt: p.amount, at: new Date(p.created_at).getTime() });
-      });
-      sv();
-      R();
-    }
-  } catch(e) {
-    console.warn("syncPurchases error:", e);
-  }
-}
-
-if (sb) {
-  sb.auth.getSession().then(({ data: { session } }) => {
-    if (session?.user) handleStudentAuth(session.user);
-  });
-  sb.auth.onAuthStateChange((_evt, session) => {
-    if (session?.user) handleStudentAuth(session.user);
-  });
-}
-// =================================================================
-
-const nd=(id,n,tc,ch)=>({id,n,tc:tc||0,ch:ch||[]});
-let SER=[{...nd("s1","BSEB Class 10 Full Mock Series",2,[nd("s1m","Mathematics",3),nd("s1e","English",3),nd("s1c","Science",0,[nd("s1c1","Life Processes",0,[nd("s1c1a","Photosynthesis",2),nd("s1c1b","Excretion",2)]),nd("s1c2","Electricity",3)])]),x:"Board",p:499,s:299,w:1600,h:1000,c:"#2b3a4a",fp:"s1c2",d:"Subject, chapter and topic wise tests with full explanations."},
-{...nd("s2","BPSC AEDO Prelims Mock Tests",4,[nd("s2g","General Studies",0,[nd("s2h","History",3),nd("s2p","Polity",3)])]),x:"Competitive",p:799,s:499,w:1600,h:1000,c:"#4a4a48",fp:"s2",d:"Exam-pattern mocks with negative marking."},
-{...nd("s3","CTET Paper 1 Practice",0,[nd("s3a","Child Development",4),nd("s3b","Language I",4)]),x:"Competitive",p:399,s:249,w:1600,h:1000,c:"#5b6b5e",fp:"s3a",d:"Practice sets by section."},
-{...nd("s4","Class 10 Science Free Pack",5),x:"Board",p:0,s:0,w:1600,h:1000,c:"#6b5b4a",fp:"",d:"Free tests to try the exam interface."}];
-const TH=(w,h,c,t,g)=>"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs><pattern id="p" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1" height="22" fill="#fff" fill-opacity=".09"/></pattern></defs><rect width="${w}" height="${h}" fill="${c}"/><rect width="${w}" height="${h}" fill="url(#p)"/><rect x="${w*.05}" y="${h*.07}" width="${w*.9}" height="${h*.86}" fill="none" stroke="#fff" stroke-opacity=".45"/><text x="${w*.09}" y="${h*.84}" font-family="Georgia,serif" font-size="${Math.min(w,h)*.15}" fill="#fff">${g}</text></svg>`);
-const N={},ix=(n,par,sid)=>{n.par=par;n.sid=sid;N[n.id]=n;n.ch.forEach(c=>ix(c,n.id,sid))};SER.forEach(s=>{ix(s,null,s.id);s.t=s.n;s.im=TH(s.w,s.h,s.c,s.x,s.t.split(" ")[0])});
-let LB={s1:"Bestseller",s2:"New",s3:"Popular",s4:"Free"},FE=SER.filter(s=>s.id!="s3");SER.forEach(s=>{s.lb=LB[s.id];s.ln="series-"+s.id});
-let cnt=n=>n.tc+n.ch.reduce((a,c)=>a+cnt(c),0),TOT=SER.reduce((a,s)=>a+cnt(s),0);
-const BD=[["Aarav K.",7.67,410],["Priya S.",7,380],["Rohit M.",6.34,450],["Sneha P.",6,300],["Vikash R.",5.67,420],["Anjali D.",5,390],["Md. Faiz",4.34,440],["Kiran T.",4,350]];
-const I={home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',book:'<path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',list:'<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',check:'<path d="m5 12 5 5L20 7"/>',lock:'<rect x="5" y="11" width="14" height="10"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',chev:'<path d="m9 6 6 6-6 6"/>',back:'<path d="m15 6-6 6 6 6"/>',trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 21h8M10 17h4"/>',flag:'<path d="M5 21V4h11l-1.5 4L16 12H5"/>',bolt:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',x:'<path d="M6 6l12 12M18 6 6 18"/>',grid:'<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/>'};
-const ic=n=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
-const NV=[["home","Home","home"],["explore","Explore","search"],["learn","My learning","book"]];
-const $=q=>document.querySelector(q),A=$("#app");let S={user:null,own:[],ord:[],att:[]},T=null,tm,ci,cn=0,cp=false,CB=null,cpn=0,F={q:"",x:"All"},RF="all";
-try{S=Object.assign(S,JSON.parse(localStorage.getItem("sn3")||"{}"));T=JSON.parse(localStorage.getItem("snT3")||"null")}catch(e){}
-const sv=()=>{try{localStorage.setItem("sn3",JSON.stringify(S));localStorage.setItem("snT3",JSON.stringify(T))}catch(e){}};
-const inr=n=>"₹"+n,go=h=>{location.hash=h},mmss=s=>Math.floor(s/60)+":"+String(Math.round(s%60)).padStart(2,"0");
-const can=(n,k)=>{let s=N[n.sid];return !s.p||S.own.includes(s.id)||(n.id==s.fp&&k==1)};
-const inT=(id,root)=>{let c=N[id];while(c){if(c.id==root)return true;c=c.par?N[c.par]:null}return false};
-const att=n=>S.att.filter(a=>inT(a.nid,n.id)),dn=n=>new Set(att(n).map(a=>a.nid+"."+a.k)).size,bestOf=(nid,k)=>S.att.filter(a=>a.nid==nid&&a.k==k).sort((a,b)=>b.sc-a.sc)[0];
-function toast(m){let t=$("#t");t.textContent=m;t.classList.add("sh");setTimeout(()=>t.classList.remove("sh"),2600)}
-function M(h){$("#m").innerHTML=`<div class="ov" onclick="if(event.target==this)X()"><div class="md" role="dialog" aria-modal="true">${h}</div></div>`}function X(){$("#m").innerHTML=""}
-function shell(a,b,c,k){A.innerHTML=`${CFG.maint ? `<div style="background:#fff3cd;color:#856404;padding:12px 18px;text-align:center;font-weight:600;font-size:0.9rem;border-bottom:1px solid #ffeeba"><span style="margin-right:6px">⚠️</span><strong>Maintenance Mode:</strong> ${esc(CFG.mmsg)}</div>` : ""}<header class="tp"><div class="w">${k?`<a class="bkb" href="#${k[0]}" aria-label="Back to ${k[1]}">${ic("back")}<span>${k[1]}</span></a>`:`<a class="lg" href="#home"><span class="mk">${esc(CFG.name[0])}</span><span>${esc(CFG.name).replace("Notes",'<span class="mu2">Notes</span>')}</span></a>`}<nav>${NV.map(n=>`<a href="#${n[0]}" class="${a==n[0]?"on":""}">${n[1]}</a>`).join("")}</nav>${S.user?`<a class="av" href="#learn" aria-label="My learning">${S.user.n[0]}</a>`:'<button class="b s" onclick="signin()">Sign in</button>'}</div></header>${b}<footer><div class="fl">${Object.entries(PG).map(x=>`<a href="#page-${x[0]}">${x[1].replace(" policy","").replace(" and conditions","")}</a>`).join("")}</div><small>© ${esc(CFG.name)} · Demo preview with sample data</small></footer>${c?`<div class="ct"><div class="w">${c}</div></div>`:`<nav class="bt">${NV.map(n=>`<a href="#${n[0]}" class="${a==n[0]?"on":""}">${ic(n[2])}${n[1]}</a>`).join("")}</nav>`}`}
-const card=s=>`<a class="cd" href="#series-${s.id}"><div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${s.t} banner" loading="lazy"></div><div class="ci"><div class="cr"><span class="chip g">${s.lb}</span><span class="eb">${s.x}</span></div><h3>${s.t}</h3><p class="mu cl">${s.d}</p><div class="cf"><span class="mt">${ic("list")}${cnt(s)} tests</span><span class="pr">${s.p?`<b>${inr(s.s)}</b><s>${inr(s.p)}</s>`:"<b>Free</b>"}</span></div></div></a>`;
-const car=()=>`<div class="car" aria-roledescription="carousel"><div class="trk" id="trk">${FE.map((s,i)=>`<a class="sl${i?"":" on"}" href="#${s.ln}" aria-label="${s.t}: ${s.p?"view series":"start free"}"><div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${s.t} banner"></div></a>`).join("")}</div><div class="dots">${FE.map((_,i)=>`<button aria-label="Slide ${i+1}" class="${i?"":"on"}" onclick="sl(${i})"></button>`).join("")}<button class="pz" onclick="cp=!cp;this.textContent=cp?'Play':'Pause';this.closest('.car').classList.toggle('ps')">Pause</button></div></div>`;
-function sl(i){let t=$("#trk");t.scrollTo({left:i*t.clientWidth,behavior:"smooth"})}
-function dots(){let t=$("#trk"),n=Math.round(t.scrollLeft/t.clientWidth);if(n==cn&&t.dataset.i)return;cn=n;t.dataset.i=1;document.querySelectorAll(".sl").forEach((e,j)=>e.classList.toggle("on",j==cn));document.querySelectorAll(".dots button[aria-label^=Slide]").forEach((e,j)=>e.classList.toggle("on",j==cn));auto()}
-function auto(){clearInterval(ci);ci=setInterval(()=>{if(!cp&&!document.hidden)sl((cn+1)%FE.length)},5000)}
-
-let LIVE_TESTS = [];
-let TESTS_BY_ID = {};
-
-async function loadTests() {
+async function saveAttemptToDb(att) {
   if (!sb) return;
   try {
-    const { data: dbTests, error } = await sb.from('tests').select('*').eq('status', 'published').order('created_at', { ascending: false });
-    if (dbTests && !error) {
-      LIVE_TESTS = dbTests;
-      TESTS_BY_ID = {};
-      dbTests.forEach(t => { TESTS_BY_ID[t.id] = t; });
-      
-      const { data: qData } = await sb.from('questions').select('test_id');
-      const qMap = {};
-      (qData || []).forEach(q => { qMap[q.test_id] = (qMap[q.test_id] || 0) + 1; });
-      LIVE_TESTS.forEach(t => { t.qCount = qMap[t.id] || 0; });
-      R();
-    }
-  } catch(e) {
-    console.warn("loadTests error:", e);
-  }
+    const payload = {
+      user_id: isUuid(S.user?.id) ? S.user.id : null,
+      test_id: att.testId || att.nid,
+      answers: att.a,
+      time_per_question: att.tt,
+      correct: att.c,
+      wrong: att.w,
+      unattempted: att.u,
+      score: att.sc,
+      max_score: att.mx,
+      time_taken: att.tk,
+      topic_analysis: att.tp,
+      completed_at: new Date().toISOString()
+    };
+    await sb.from('attempts').insert(payload);
+    fetchLeaderboardFromDb(payload.test_id);
+  } catch(e) { console.warn(e); }
 }
+
+async function sendQuestionReport(testId, questionIndex, reason, note) {
+  if (!sb) return;
+  try {
+    await sb.from('reports').insert({
+      user_id: isUuid(S.user?.id) ? S.user.id : null,
+      user_name: S.user?.n || 'Student',
+      test_id: testId,
+      question_id: 'q_' + testId + '_' + questionIndex,
+      reason: reason || 'Answer looks wrong',
+      note: note || '',
+      status: 'open',
+      created_at: new Date().toISOString()
+    });
+    toast('Thanks! Question report sent to admin.');
+  } catch(e) { console.warn(e); }
+}
+
+// Shell & Navigation UI
+function shell(a, b, c, k) {
+  A.innerHTML = `<header class="tp"><div class="w">${k ? `<a class="bkb" href="#${k[0]}" aria-label="Back to ${k[1]}">${ic("back")}<span>${esc(k[1])}</span></a>` : `<a class="lg" href="#home"><span class="mk">${esc(CFG.name[0] || 'S')}</span><span>${esc(CFG.name)}</span></a>`}<nav>${NV.map(n => `<a href="#${n[0]}" class="${a == n[0] ? "on" : ""}">${n[1]}</a>`).join("")}</nav>${S.user ? `<a class="av" href="#learn" aria-label="My learning">${S.user.n[0]}</a>` : '<button class="b s" onclick="signin()">Sign in</button>'}</div></header>${b}<footer><div class="fl">${Object.entries(PG).map(x => `<a href="#page-${x[0]}">${x[1].replace(" policy", "").replace(" and conditions", "")}</a>`).join("")}</div><small>© ${esc(CFG.name)} · Connected with Cloud</small></footer>${c ? `<div class="ct"><div class="w">${c}</div></div>` : `<nav class="bt">${NV.map(n => `<a href="#${n[0]}" class="${a == n[0] ? "on" : ""}">${ic(n[2])}${n[1]}</a>`).join("")}</nav>`}`;
+}
+
+const card = s => `<a class="cd" href="#${s.ln}"><div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${esc(s.t)} banner" loading="lazy"></div><div class="ci"><div class="cr"><span class="chip g">${esc(s.lb)}</span><span class="eb">${esc(s.x)}</span></div><h3>${esc(s.t)}</h3><p class="mu cl">${esc(s.d)}</p><div class="cf"><span class="mt">${ic("list")}${cnt(s)} tests</span><span class="pr">${s.p ? `<b>${inr(s.s)}</b><s>${inr(s.p)}</s>` : "<b>Free</b>"}</span></div></div></a>`;
 
 const testCard = t => `<a class="cd" href="#test-${t.id}" style="padding:16px; border-radius:18px; display:flex; flex-direction:column; justify-content:space-between; text-decoration:none; color:inherit; background:var(--sf); border:1px solid var(--br); box-shadow:var(--sh); transition:.25s;">
   <div>
@@ -359,75 +397,304 @@ const testCard = t => `<a class="cd" href="#test-${t.id}" style="padding:16px; b
     <p class="mu cl" style="font-size:0.88rem; margin:0 0 10px;">${esc(t.subject ? (t.subject + (t.chapter ? ' · ' + t.chapter : '')) : (t.description || 'Full mock practice test'))}</p>
   </div>
   <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid var(--br);">
-    <span class="mt" style="font-size:0.85rem; color:var(--mu);">${ic("clock")} ${t.timer_minutes || 10}m · ${ic("list")} ${t.qCount || 5} Qs</span>
+    <span class="mt" style="font-size:0.85rem; color:var(--mu);">${ic("clock")} ${t.timer_minutes || 10}m · ${ic("list")} ${t.qCount || 0} Qs</span>
     <span class="b s" style="pointer-events:none;">Start ${ic("chev")}</span>
   </div>
 </a>`;
 
-async function viewCustomTest(id) {
-  let t = TESTS_BY_ID[id];
-  if (!t) {
-    if (sb) {
-      const { data } = await sb.from('tests').select('*').eq('id', id).single();
-      if (data) { t = data; TESTS_BY_ID[id] = data; }
-    }
+const car = () => {
+  if (!FE || !FE.length) {
+    return `<div class="c2" style="background:linear-gradient(135deg,#0b4a3e,#0f6b5c); color:#fff; border-radius:20px; padding:32px 24px; margin-bottom:18px;">
+      <span class="chip" style="background:#ffffff24; color:#fff;">Online Mock Tests</span>
+      <h2 style="color:#fff; font-size:clamp(1.4rem,4.5vw,2.2rem); margin:10px 0 6px;">${esc(CFG.tag)}</h2>
+      <p style="color:#cfe3dd; margin:0 0 16px;">Practice exam-pattern mock tests with explained solutions and real-time leaderboards.</p>
+      <a class="b" href="#explore" style="background:#fff; color:#0b4a3e; border:0;">Explore Tests ${ic("chev")}</a>
+    </div>`;
   }
+  return `<div class="car" aria-roledescription="carousel">
+    <div class="trk" id="trk">
+      ${FE.map((s, i) => `<a class="sl${i ? "" : " on"}" href="#${s.ln}" aria-label="${esc(s.t)}"><div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${esc(s.t)} banner"></div></a>`).join("")}
+    </div>
+    <div class="dots">
+      ${FE.map((_, i) => `<button aria-label="Slide ${i + 1}" class="${i ? "" : "on"}" onclick="sl(${i})"></button>`).join("")}
+      <button class="pz" onclick="cp=!cp;this.textContent=cp?'Play':'Pause';this.closest('.car').classList.toggle('ps')">Pause</button>
+    </div>
+  </div>`;
+};
+
+function sl(i) {
+  let t = $("#trk");
+  if (t) t.scrollTo({ left: i * t.clientWidth, behavior: "smooth" });
+}
+
+function dots() {
+  let t = $("#trk");
+  if (!t || !FE.length) return;
+  let n = Math.round(t.scrollLeft / t.clientWidth);
+  if (n == cn && t.dataset.i) return;
+  cn = n;
+  t.dataset.i = 1;
+  document.querySelectorAll(".sl").forEach((e, j) => e.classList.toggle("on", j == cn));
+  document.querySelectorAll(".dots button[aria-label^=Slide]").forEach((e, j) => e.classList.toggle("on", j == cn));
+  auto();
+}
+
+function auto() {
+  clearInterval(ci);
+  if (!FE.length) return;
+  ci = setInterval(() => {
+    if (!cp && !document.hidden) sl((cn + 1) % FE.length);
+  }, 5000);
+}
+
+// HOME PAGE
+function home() {
+  let rs = T ? `<a class="rs" href="#take-test-${T.testId}">${ic("clock")}<div><b>Resume your test</b><small>${esc(T.title)}</small></div>${ic("chev")}</a>` : "";
+
+  shell("home", `<main class="w">
+    <div class="hm">
+      <section class="top">
+        <span class="eb">${esc(CFG.name)}</span>
+        <h1>${esc(CFG.tag)}</h1>
+        <form class="sf" onsubmit="F.q=this.q.value;F.x='All';go('explore');return false">
+          ${ic("search")}
+          <input name="q" aria-label="Search" placeholder="Search tests or series">
+          <button class="b">Search</button>
+        </form>
+      </section>
+      ${car()}
+    </div>
+    ${rs}
+    
+    ${SER.length ? `
+      <div class="sec"><h2>Test Series</h2><a href="#explore" onclick="F.x='All';F.q=''">View all</a></div>
+      <div class="gr">${SER.map(card).join("")}</div>
+    ` : ''}
+
+    <div class="sec" style="margin-top:28px;">
+      <h2>Live Tests</h2>
+      <span class="chip g">${LIVE_TESTS.length} Available</span>
+    </div>
+    <div class="gr">
+      ${LIVE_TESTS.length ? LIVE_TESTS.map(testCard).join("") : '<div class="em">No tests published yet. Tests added in Admin will appear here.</div>'}
+    </div>
+  </main>`);
+
+  let t = $("#trk");
+  if (t) {
+    t.onscroll = dots;
+    cn = 0;
+    auto();
+  }
+}
+
+// EXPLORE PAGE
+function explore() {
+  shell("explore", `<main class="w">
+    <h1 style="margin-top:26px">Explore</h1>
+    <input class="in" type="search" aria-label="Search series" placeholder="Search tests, series or subjects" value="${esc(F.q)}" oninput="F.q=this.value;lst()">
+    <div class="tabs">${["All", "Free", "Paid"].map(x => `<button class="${F.x == x ? "on" : ""}" onclick="F.x='${x}';explore()">${x}</button>`).join("")}</div>
+    <div id="ls" class="gr"></div>
+  </main>`);
+  lst();
+}
+
+function lst() {
+  let q = F.q.toLowerCase();
+  let filteredSeries = SER.filter(s => {
+    let matchesQ = (s.t + " " + (s.d || "")).toLowerCase().includes(q);
+    let matchesType = F.x === "All" || (F.x === "Free" && !s.p) || (F.x === "Paid" && s.p);
+    return matchesQ && matchesType;
+  });
+
+  let filteredTests = LIVE_TESTS.filter(t => {
+    let matchesQ = (t.title + " " + (t.exam || "") + " " + (t.subject || "")).toLowerCase().includes(q);
+    let matchesType = F.x === "All" || (F.x === "Free" && !t.is_paid) || (F.x === "Paid" && t.is_paid);
+    return matchesQ && matchesType;
+  });
+
+  let out = "";
+  if (filteredSeries.length) {
+    out += filteredSeries.map(card).join("");
+  }
+  if (filteredTests.length) {
+    out += filteredTests.map(testCard).join("");
+  }
+  $("#ls").innerHTML = out || '<div class="em">No tests or series match your search.</div>';
+}
+
+// SERIES / NODE VIEW (Hierarchy)
+function node(id) {
+  let n = N[id];
+  if (!n) return go("home");
+  let s = N[n.sid] || n;
+  let root = !n.par;
+  let own = S.own.includes(s.id);
+  let paid = s.p && !own;
+  let tot = cnt(n);
+  let d = dn(n);
+  let pa = root ? null : N[n.par];
+
+  let list = `
+    ${n.ch && n.ch.length ? `
+      <h2 style="margin-top:8px">Browse ${root ? "Subjects" : (n.par == s.id ? "Chapters" : "Topics")}</h2>
+      ${n.ch.map(c => `
+        <a class="fo" href="#node-${c.id}">
+          <span class="fi">${ic("book")}</span>
+          <div>
+            <b>${esc(c.n)}</b>
+            <small>${cnt(c)} test${cnt(c) === 1 ? '' : 's'}</small>
+          </div>
+          ${ic("chev")}
+        </a>
+      `).join("")}
+    ` : ""}
+
+    ${n.tests && n.tests.length ? `
+      <h2 style="margin-top:22px">Tests</h2>
+      ${n.tests.map((t, idx) => {
+        let b = bestOf(t.id);
+        return `
+          <a class="tr" href="#test-${t.id}">
+            <span class="no">${String(idx + 1).padStart(2, "0")}</span>
+            <div>
+              <b>${esc(t.title || 'Test ' + (idx + 1))}</b>
+              <small>${t.qCount || 0} questions · ${t.timer_minutes || 10} min</small>
+            </div>
+            ${b ? `<span class="sb">${b.sc}/${b.mx}</span>` : `<span class="go">Start ${ic("chev")}</span>`}
+          </a>
+        `;
+      }).join("")}
+    ` : ""}
+
+    ${(!n.ch || !n.ch.length) && (!n.tests || !n.tests.length) ? `
+      <div class="em">No tests in this section yet.</div>
+    ` : ""}
+  `;
+
+  let hd = `
+    <div class="ph">
+      ${root && s.im ? `<img class="bn" src="${s.im}" width="1600" height="1000" alt="${esc(s.t)} banner">` : ""}
+      <div class="hd2">
+        <span class="chip">${esc(root ? (s.x || 'Series') : s.t)}</span>
+        <h1 style="margin-top:8px">${esc(root ? s.t : n.n)}</h1>
+        ${root && s.d ? `<p class="mu">${esc(s.d)}</p>` : ""}
+        <div class="meta">
+          <span>${ic("list")}${tot} test${tot === 1 ? '' : 's'}</span>
+          <span>${ic("check")}${d} attempted</span>
+        </div>
+        <div class="pbar"><i style="width:${tot ? (d / tot * 100) : 0}%"></i></div>
+      </div>
+    </div>
+  `;
+
+  let pc = root ? `
+    <aside class="pc">
+      <div class="pi">
+        ${!s.p ? `<h3>Free for everyone</h3>` : (own ? `<h3>${ic("check")} You have access</h3>` : `
+          <div class="pr">
+            <b style="font-size:1.7rem">${inr(s.s)}</b>
+            <s>${inr(s.p)}</s>
+            <small>${Math.round((1 - s.s / s.p) * 100)}% off</small>
+          </div>
+        `)}
+        <ul>
+          <li>${ic("check")}Detailed explanations</li>
+          <li>${ic("check")}Topic-wise analysis</li>
+          <li>${ic("check")}Leaderboard on every test</li>
+          <li>${ic("check")}Access on any device</li>
+        </ul>
+      </div>
+    </aside>
+  ` : "";
+
+  shell("home",
+    `<main class="w"><div class="${root ? "cols" : "one"}">${hd}${pc}<div class="lst">${list}</div></div></main>`,
+    paid ? `
+      <div class="ctl"><small>${esc(s.t)}</small><b>${inr(s.s)} <s>${inr(s.p)}</s></b></div>
+      <button class="b big" onclick="buy('${s.id}')">Unlock series</button>
+    ` : "",
+    [root ? "home" : (pa.par ? "node-" + pa.id : "series-" + pa.id), root ? "Home" : (pa.par ? pa.n : "Series")]
+  );
+}
+
+// TEST OVERVIEW PAGE
+function test(testId) {
+  let t = TESTS_BY_ID[testId];
   if (!t) return go("home");
-  
-  let qCount = t.qCount || 5;
+
+  fetchLeaderboardFromDb(t.id);
+
+  let qCount = t.qCount || 0;
   let timerMin = t.timer_minutes || 10;
   let marksPos = t.marks_per_correct || 1;
   let marksNeg = t.negative_on !== false ? (t.negative_value || 0.33) : 0;
-  let L = lbd(t.id, 1);
-  let rs = T && T.testId == t.id;
+  let L = lbd(t.id);
+  let rs = T && (T.testId == t.id || T.nid == t.id);
 
-  shell("home", `<main class="w">
-    <div class="hd2" style="margin-top:20px">
-      <span class="chip g">Available</span>
-      <span class="eb" style="margin-left:6px">${esc(t.exam || 'Test Series')}</span>
-      <h1 style="margin-top:10px">${esc(t.title)}</h1>
-      ${t.subject ? `<p class="mu">${esc(t.subject)}${t.chapter ? ' · ' + esc(t.chapter) : ''}${t.topic ? ' · ' + esc(t.topic) : ''}</p>` : ''}
-    </div>
-    <div class="ti">
-      <div>${ic("list")}<small>Questions</small><b>${qCount}</b></div>
-      <div>${ic("clock")}<small>Duration</small><b>${timerMin} min</b></div>
-      <div>${ic("bolt")}<small>Marking</small><b>+${marksPos} / −${marksNeg}</b></div>
-    </div>
-    <h3>Before you begin</h3>
-    <ul class="cl2 mu">
-      <li>${ic("check")}Unanswered questions score zero.</li>
-      <li>${ic("check")}The timer keeps running if you refresh.</li>
-      <li>${ic("check")}Mark questions for review and return to them anytime.</li>
-      <li>${ic("check")}Test submits automatically when time ends.</li>
-    </ul>
-    ${t.disclaimer ? `<div class="exp" style="margin:14px 0;"><b>Instructions:</b> ${esc(t.disclaimer)}</div>` : ''}
-    <div class="sec" style="margin-bottom:6px"><h2>Leaderboard</h2><span class="chip">Live Rankings</span></div>
-    <div class="pod">${[1,0,2].map(i=>{let l=L[i];return l?`<div class="pd p${i+1}${l.me?" me":""}"><span class="av2">${l.n[0]}</span><b>${l.n}</b><small>${l.s} · ${mmss(l.t)}</small><div class="bk">${i+1}</div></div>`:""}).join("")}</div>
-    ${L.slice(3).map((l,j)=>`<div class="lb${l.me?" me":""}"><span class="rk">${j+4}</span><span class="av2">${l.n[0]}</span><span class="nm">${l.n}${l.me?" <small>(you)</small>":""}</span><span style="text-align:right"><b>${l.s}</b><br><small>${mmss(l.t)}</small></span></div>`).join("")}
-  </main>`,
+  let breadcrumbs = [];
+  if (t.exam) breadcrumbs.push(t.exam);
+  if (t.subject) breadcrumbs.push(t.subject);
+  if (t.chapter) breadcrumbs.push(t.chapter);
+  if (t.topic) breadcrumbs.push(t.topic);
+
+  let parentNode = Object.values(N).find(n => n.tests && n.tests.some(item => item.id === t.id));
+  let backTarget = parentNode ? (parentNode.par ? "node-" + parentNode.id : "series-" + parentNode.id) : "home";
+  let backLabel = parentNode ? (parentNode.n || "Back") : "Home";
+
+  shell("home", `
+    <main class="w">
+      <div class="hd2" style="margin-top:20px">
+        <span class="chip g">${t.is_paid ? 'Premium' : 'Free'}</span>
+        ${breadcrumbs.length ? `<span class="eb" style="margin-left:6px">${esc(breadcrumbs.join(' · '))}</span>` : ''}
+        <h1 style="margin-top:10px">${esc(t.title || 'Practice Test')}</h1>
+        ${t.description ? `<p class="mu">${esc(t.description)}</p>` : ''}
+      </div>
+      <div class="ti">
+        <div>${ic("list")}<small>Questions</small><b>${qCount}</b></div>
+        <div>${ic("clock")}<small>Duration</small><b>${timerMin} min</b></div>
+        <div>${ic("bolt")}<small>Marking</small><b>+${marksPos} / −${marksNeg}</b></div>
+      </div>
+      <h3>Before you begin</h3>
+      <ul class="cl2 mu">
+        <li>${ic("check")}Unanswered questions score zero.</li>
+        <li>${ic("check")}The timer keeps running if you refresh.</li>
+        <li>${ic("check")}Mark questions for review and return to them anytime.</li>
+        <li>${ic("check")}Test submits automatically when time ends.</li>
+      </ul>
+      ${t.disclaimer ? `<div class="exp" style="margin:14px 0;"><b>Instructions:</b> ${esc(t.disclaimer)}</div>` : ''}
+      
+      <div class="sec" style="margin-bottom:6px"><h2>Leaderboard</h2><span class="chip">Live Rankings</span></div>
+      ${L && L.length ? `
+        <div class="pod">${[1,0,2].map(i => { let l = L[i]; return l ? `<div class="pd p${i+1}${l.me ? " me" : ""}"><span class="av2">${l.n[0]}</span><b>${esc(l.n)}</b><small>${l.s} · ${mmss(l.t)}</small><div class="bk">${i+1}</div></div>` : ""; }).join("")}</div>
+        ${L.slice(3).map((l, j) => `<div class="lb${l.me ? " me" : ""}"><span class="rk">${j+4}</span><span class="av2">${l.n[0]}</span><span class="nm">${esc(l.n)}${l.me ? " <small>(you)</small>" : ""}</span><span style="text-align:right"><b>${l.s}</b><br><small>${mmss(l.t)}</small></span></div>`).join("")}
+      ` : '<div class="em">No attempts yet. Be the first to take this test!</div>'}
+    </main>
+  `,
   `<div class="ctl"><small>${rs ? "In progress" : "Ready when you are"}</small><b>${esc(t.title)}</b></div>
-  <button class="b big" onclick="startCustomTest('${t.id}')">${rs ? "Resume" : "Start test"} ${ic("chev")}</button>`,
-  ["home", "Home"]);
+  <button class="b big" onclick="startTest('${t.id}')">${rs ? "Resume" : "Start test"} ${ic("chev")}</button>`,
+  [backTarget, backLabel]);
 }
 
-async function startCustomTest(id) {
-  let t = TESTS_BY_ID[id];
+// START TEST
+async function startTest(testId) {
+  let t = TESTS_BY_ID[testId];
   if (!t && sb) {
-    const { data } = await sb.from('tests').select('*').eq('id', id).single();
-    if (data) t = data;
+    const { data } = await sb.from('tests').select('*').eq('id', testId).single();
+    if (data) { t = data; TESTS_BY_ID[testId] = data; }
   }
   if (!t) return go("home");
-  
-  if (!S.user) return signin(() => startCustomTest(id));
-  if (T && T.testId == id) return go("take-test-" + id);
+
+  if (!S.user) return signin(() => startTest(testId));
+  if (T && (T.testId == testId || T.nid == testId)) return go("take-test-" + testId);
 
   toast("Loading questions from cloud...");
-  let customQ = null;
+  let fetchedQ = [];
   if (sb) {
     try {
-      const { data: dbQ } = await sb.from('questions').select('*').eq('test_id', id).order('sort_order', { ascending: true });
-      if (dbQ && dbQ.length > 0) {
-        customQ = dbQ.map(q => [
+      const { data: dbQ, error } = await sb.from('questions').select('*').eq('test_id', testId).order('sort_order', { ascending: true });
+      if (dbQ && dbQ.length > 0 && !error) {
+        fetchedQ = dbQ.map(q => [
           q.question_text,
           Array.isArray(q.options) ? q.options : JSON.parse(q.options || '[]'),
           q.correct_answer,
@@ -435,13 +702,15 @@ async function startCustomTest(id) {
           q.topic || t.topic || t.subject || 'General'
         ]);
       }
-    } catch(err) { console.warn("Failed to fetch questions:", err); }
+    } catch(err) { console.warn(err); }
   }
 
-  if (customQ && customQ.length > 0) {
-    Q = customQ;
+  if (!fetchedQ.length) {
+    alert('This test has no questions added yet. Please add questions from the Admin Panel first.');
+    return;
   }
-  
+
+  Q = fetchedQ;
   let timerMin = t.timer_minutes || 10;
   T = {
     testId: t.id,
@@ -463,389 +732,385 @@ async function startCustomTest(id) {
   go("take-test-" + t.id);
 }
 
-function home(){let rs=T?`<a class="rs" href="#take-${T.nid}-${T.k}">${ic("clock")}<div><b>Resume your test</b><small>${N[T.nid].n}: Test ${T.k}</small></div>${ic("chev")}</a>`:"";
-shell("home",`<main class="w"><div class="hm"><section class="top"><span class="eb">StarzanNotes Test Series</span><h1>${esc(CFG.tag)}</h1><form class="sf" onsubmit="F.q=this.q.value;F.x='All';go('explore');return false">${ic("search")}<input name="q" aria-label="Search" placeholder="Search BSEB, BPSC, CTET"><button class="b">Search</button></form></section>${car()}</div>${rs}<div class="sec"><h2>Live Online Tests</h2><span class="chip g">${LIVE_TESTS.length} Available</span></div><div class="gr">${LIVE_TESTS.length ? LIVE_TESTS.map(testCard).join("") : '<div class="em">Tests added in Admin will appear here.</div>'}</div><div class="sec"><h2>Popular series</h2><a href="#explore" onclick="F.x='All';F.q=''">View all</a></div><div class="gr">${SER.filter(s=>s.p).map(card).join("")}</div><div class="sec"><h2>Free to start</h2></div><div class="gr">${SER.filter(s=>!s.p).map(card).join("")}</div></main>`);
-let t=$("#trk");t.onscroll=dots;cn=0;auto()}
-function explore(){shell("explore",`<main class="w"><h1 style="margin-top:26px">Explore</h1><input class="in" type="search" aria-label="Search series" placeholder="Search series" value="${F.q}" oninput="F.q=this.value;lst()"><div class="tabs">${["All","Board","Competitive","Free"].map(x=>`<button class="${F.x==x?"on":""}" onclick="F.x='${x}';explore()">${x}</button>`).join("")}</div><div id="ls" class="gr"></div></main>`);lst()}
-function lst(){let l=SER.filter(s=>(F.x=="All"||s.x==F.x||(F.x=="Free"&&!s.p))&&(s.t+s.x).toLowerCase().includes(F.q.toLowerCase()));$("#ls").innerHTML=l.map(card).join("")||'<div class="em">No series match your search.</div>'}
-function node(id){let n=N[id];if(!n)return go("home");let s=N[n.sid],root=!n.par,own=S.own.includes(s.id),paid=s.p&&!own,tot=cnt(n),d=dn(n),pa=root?null:N[n.par];
-let list=`${n.ch.length?`<h2 style="margin-top:8px">Browse</h2>${n.ch.map(c=>`<a class="fo" href="#node-${c.id}"><span class="fi">${ic("book")}</span><div><b>${c.n}</b><small>${cnt(c)} tests · ${dn(c)} attempted</small></div>${ic("chev")}</a>`).join("")}`:""}${n.tc?`<h2 style="margin-top:22px">Tests</h2>${Array.from({length:n.tc},(_,k)=>k+1).map(k=>{let ok=can(n,k),b=bestOf(n.id,k);return `<a class="tr" href="#test-${n.id}-${k}"><span class="no">${String(k).padStart(2,"0")}</span><div><b>Test ${k}${ok&&s.p&&!own?'<span class="tag">Free preview</span>':""}</b><small>${Q.length} questions · 8 min</small></div>${b?`<span class="sb">${b.sc}/${b.mx}</span>`:ok?`<span class="go">Start ${ic("chev")}</span>`:`<span class="lk">${ic("lock")}</span>`}</a>`}).join("")}`:""}${!n.ch.length&&!n.tc?'<div class="em">Tests will appear here soon.</div>':""}`;
-let hd=`<div class="ph">${root?`<img class="bn" src="${s.im}" width="1600" height="1000" alt="${s.t} banner">`:""}<div class="hd2"><span class="chip">${root?s.x:s.t}</span><h1 style="margin-top:8px">${root?s.t:n.n}</h1>${root?`<p class="mu">${s.d}</p>`:""}<div class="meta"><span>${ic("list")}${tot} tests</span><span>${ic("check")}${d} attempted</span></div><div class="pbar"><i style="width:${tot?d/tot*100:0}%"></i></div></div></div>`;
-let pc=root?`<aside class="pc"><div class="pi">${!s.p?"<h3>Free for everyone</h3>":own?`<h3>${ic("check")} You have access</h3>`:`<div class="pr"><b style="font-size:1.7rem">${inr(s.s)}</b><s>${inr(s.p)}</s> <small>${Math.round((1-s.s/s.p)*100)}% off</small></div>`}<ul><li>${ic("check")}Detailed explanations</li><li>${ic("check")}Topic-wise analysis</li><li>${ic("check")}Leaderboard on every test</li><li>${ic("check")}Access on any device</li></ul></div></aside>`:"";
-shell("home",`<main class="w"><div class="${root?"cols":"one"}">${hd}${pc}<div class="lst">${list}</div></div></main>`,paid?`<div class="ctl"><small>${s.t}</small><b>${inr(s.s)} <s>${inr(s.p)}</s></b></div><button class="b big" onclick="buy('${s.id}')">Unlock series</button>`:"",[root?"home":(pa.par?"node-"+pa.id:"series-"+pa.id),root?"Home":(pa.par?pa.n:"Series")])}
-function lbd(nid,k){
-  const tid = CUR_TEST_ID || (nid + '-' + k);
-  if (DB_LEADERBOARD[tid] && DB_LEADERBOARD[tid].length > 0) {
-    let L = [...DB_LEADERBOARD[tid]];
-    let be = bestOf(nid, k);
-    if (be && !L.some(l => l.me)) L.push({ n: "You", s: be.sc, t: be.tk, me: 1 });
-    return L.sort((a,b)=>b.s-a.s||a.t-b.t);
-  }
-  let h=0;
-  for(const c of nid+k)h=(h*31+c.charCodeAt(0))%97;
-  let L=BD.map((b,i)=>({n:b[0],s:Math.max(0,Math.round((b[1]-(h+i)%3*.33)*100)/100),t:b[2]+h%40}));
-  let be=bestOf(nid,k);
-  if(be)L.push({n:"You",s:be.sc,t:be.tk,me:1});
-  return L.sort((a,b)=>b.s-a.s||a.t-b.t);
+// TEST TAKING INTERFACE
+function take() {
+  if (!T) return go("home");
+  A.innerHTML = `<header class="xh">
+    <div class="w">
+      <button class="bkb" aria-label="Leave test" onclick="if(confirm('Leave the test? Your answers are saved and the timer keeps running.'))go('test-${T.testId}')">
+        ${ic("back")}<span>Leave</span>
+      </button>
+      <span class="ell">${esc(T.title || "Test")}</span>
+      <button class="ib pb" aria-label="Question palette" onclick="pal()">${ic("grid")}</button>
+      <span id="tm" class="tmr" role="timer">${ic("clock")}<span id="tt"></span></span>
+    </div>
+    <div class="pg"><i id="pgb"></i></div>
+  </header>
+  <main class="w xg">
+    <section id="qa"></section>
+    <aside id="sd" class="sd"></aside>
+  </main>
+  <div class="ct xf"><div class="w" id="xf"></div></div>`;
+
+  draw();
+  tk();
+  clearInterval(tm);
+  tm = setInterval(tk, 1000);
 }
-function test(nid,k){ prepTestQuestions(nid, k); let n=N[nid];if(!n||k<1||k>n.tc)return go("home");let s=N[n.sid],ok=can(n,k),L=lbd(nid,k),rs=T&&T.nid==nid&&T.k==k;
-shell("home",`<main class="w"><div class="hd2" style="margin-top:20px"><span class="chip ${ok?"g":""}">${ok?"Available":"Locked"}</span> <span class="eb" style="margin-left:6px">${s.t}</span><h1 style="margin-top:10px">${n.n}: Test ${k}</h1></div>
-<div class="ti"><div>${ic("list")}<small>Questions</small><b>${Q.length}</b></div><div>${ic("clock")}<small>Duration</small><b>8 min</b></div><div>${ic("bolt")}<small>Marking</small><b>+1 / −0.33</b></div></div>
-<h3>Before you begin</h3><ul class="cl2 mu"><li>${ic("check")}Unanswered questions score zero.</li><li>${ic("check")}The timer keeps running if you refresh.</li><li>${ic("check")}Mark questions for review and return to them.</li><li>${ic("check")}The test submits automatically when time ends.</li></ul>
-<div class="sec" style="margin-bottom:6px"><h2>Leaderboard</h2><span class="chip">This test only</span></div><p class="sm" style="margin:0">Ranked by score, then by time. Names are shortened for privacy.</p>
-<div class="pod">${[1,0,2].map(i=>{let l=L[i];return l?`<div class="pd p${i+1}${l.me?" me":""}"><span class="av2">${l.n[0]}</span><b>${l.n}</b><small>${l.s} · ${mmss(l.t)}</small><div class="bk">${i+1}</div></div>`:""}).join("")}</div>
-${L.slice(3).map((l,j)=>`<div class="lb${l.me?" me":""}"><span class="rk">${j+4}</span><span class="av2">${l.n[0]}</span><span class="nm">${l.n}${l.me?" <small>(you)</small>":""}</span><span style="text-align:right"><b>${l.s}</b><br><small>${mmss(l.t)}</small></span></div>`).join("")}</main>`,
-ok?`<div class="ctl"><small>${rs?"In progress":"Ready when you are"}</small><b>${n.n}: Test ${k}</b></div><button class="b big" onclick="start('${nid}',${k})">${rs?"Resume":"Start test"} ${ic("chev")}</button>`:`<div class="ctl"><small>Unlock ${s.t}</small><b>${inr(s.s)} <s>${inr(s.p)}</s></b></div><button class="b big" onclick="buy('${n.sid}')">Unlock series</button>`,[n.par?"node-"+n.id:"series-"+n.id,n.par?n.n:"Series"])}
-function start(nid,k){if(!S.user)return signin(()=>start(nid,k));if(T&&T.nid==nid&&T.k==k)return go("take-"+nid+"-"+k);M(`<h3>Before you begin</h3><ul class="cl2 mu"><li>${ic("clock")}${Q.length} questions, 8 minutes.</li><li>${ic("bolt")}+1 for correct, −0.33 for wrong.</li><li>${ic("flag")}Keys A–D choose, arrows move, M marks.</li></ul><div class="exp" style="white-space:pre-line;margin:12px 0;max-height:34vh;overflow:auto">${esc(LEG.dis)}</div><button class="b f" onclick="begin('${nid}',${k})">I agree, start test</button><button class="b o f" onclick="X()">Not now</button>`)}
-function begin(nid,k){X();T={nid,k,testId:CUR_TEST_ID||nid,a:Q.map(_=>-1),r:Q.map(_=>0),v:Q.map(_=>0),q:0,st:Date.now(),end:Date.now()+480000,tt:Q.map(_=>0),lq:Date.now()};sv();go("take-"+nid+"-"+k)}
-function take(){if(!T)return go("home");let n=N[T.nid];A.innerHTML=`<header class="xh"><div class="w"><button class="bkb" aria-label="Leave test" onclick="if(confirm('Leave the test? Your answers are saved and the timer keeps running.'))go('test-${T.nid}-${T.k}')">${ic("back")}<span>Leave</span></button><span class="ell">${T.title || (n ? n.n + ": Test " + T.k : "Test")}</span><button class="ib pb" aria-label="Question palette" onclick="pal()">${ic("grid")}</button><span id="tm" class="tmr" role="timer">${ic("clock")}<span id="tt"></span></span></div><div class="pg"><i id="pgb"></i></div></header><main class="w xg"><section id="qa"></section><aside id="sd" class="sd"></aside></main><div class="ct xf"><div class="w" id="xf"></div></div>`;draw();tk();tm=setInterval(tk,1000)}
-function tk(){let r=Math.round((T.end-Date.now())/1000);if(r<=0)return fin();$("#tt").textContent=mmss(r);$("#tm").classList.toggle("lw",r<60)}
-function lap(){T.tt[T.q]+=(Date.now()-T.lq)/1000;T.lq=Date.now()}
-function plp(){return `<div class="pl">${Q.map((_,i)=>`<button class="pn${T.v[i]?" vs":""}${T.a[i]>=0?" an":""}${T.r[i]?" rv":""}${i==T.q?" cu":""}" aria-label="Question ${i+1}" onclick="X();jump(${i})">${i+1}</button>`).join("")}</div><div class="lgd"><span style="--k:var(--ac)">Answered</span><span style="--k:var(--gd)">Marked</span><span style="--k:var(--hi)">Not answered</span><span style="--k:var(--sf)">Not visited</span></div>`}
-function pal(){M(`<h3>Question palette</h3>${plp()}<button class="b f" onclick="X();conf()">Submit test</button>`)}
-function draw(){T.v[T.q]=1;let q=Q[T.q],n=Q.length,an=T.a.filter(x=>x>=0).length;$("#pgb").style.width=an/n*100+"%";
-$("#qa").innerHTML=`<div class="qm"><span>Question ${T.q+1} <small>of ${n}</small></span><span class="chip">${q[4]}</span></div><h2 class="qt">${q[0]}</h2>${q[1].map((o,i)=>`<button class="op${T.a[T.q]==i?" on":""}" aria-pressed="${T.a[T.q]==i}" onclick="pick(${i})"><i>${"ABCD"[i]}</i><span>${o}</span></button>`).join("")}`;
-$("#sd").innerHTML=`<h3>Questions</h3>${plp()}<p class="sm">${an} answered · ${n-an} not answered · ${T.r.filter(x=>x).length} marked</p><button class="b f" onclick="conf()">Submit test</button>`;
-$("#xf").innerHTML=`<button class="b o" aria-label="Previous" onclick="jump(T.q-1)" ${T.q?"":"disabled"}>${ic("back")}</button><button class="b o" onclick="T.r[T.q]^=1;sv();draw()">${ic("flag")}${T.r[T.q]?"Unmark":"Mark"}</button>${T.q<n-1?`<button class="b" onclick="jump(T.q+1)">Next ${ic("chev")}</button>`:'<button class="b" onclick="conf()">Submit</button>'}`}
-function pick(i){T.a[T.q]=T.a[T.q]==i?-1:i;sv();draw()}function jump(i){if(i<0||i>=Q.length)return;lap();T.q=i;sv();draw()}
-addEventListener("keydown",e=>{if(!T||!location.hash.startsWith("#take")||$("#m").innerHTML||/INPUT|TEXTAREA/.test(e.target.tagName))return;let k=e.key.toLowerCase();if(k.length==1&&"abcd".includes(k))pick("abcd".indexOf(k));else if(k=="arrowright")jump(T.q+1);else if(k=="arrowleft")jump(T.q-1);else if(k=="m"){T.r[T.q]^=1;sv();draw()}});
-function conf(){let an=T.a.filter(x=>x>=0).length,rv=T.r.filter(x=>x).length;M(`<h3>Submit your test?</h3><div class="ln"><span>Answered</span><b>${an}</b></div><div class="ln"><span>Not answered</span><b>${Q.length-an}</b></div><div class="ln"><span>Marked for review</span><b>${rv}</b></div><button class="b f" onclick="fin()">Yes, submit</button><button class="b o f" onclick="X()">Keep working</button>`)}
-function fin(){
+
+function tk() {
+  let r = Math.round((T.end - Date.now()) / 1000);
+  if (r <= 0) return fin();
+  let tt = $("#tt");
+  let tmEl = $("#tm");
+  if (tt) tt.textContent = mmss(r);
+  if (tmEl) tmEl.classList.toggle("lw", r < 60);
+}
+
+function lap() {
+  if (!T || !T.tt) return;
+  T.tt[T.q] = (T.tt[T.q] || 0) + (Date.now() - T.lq) / 1000;
+  T.lq = Date.now();
+}
+
+function plp() {
+  return `<div class="pl">${Q.map((_, i) => `<button class="pn${T.v[i] ? " vs" : ""}${T.a[i] >= 0 ? " an" : ""}${T.r[i] ? " rv" : ""}${i == T.q ? " cu" : ""}" aria-label="Question ${i + 1}" onclick="X();jump(${i})">${i + 1}</button>`).join("")}</div>
+  <div class="lgd"><span style="--k:var(--ac)">Answered</span><span style="--k:var(--gd)">Marked</span><span style="--k:var(--hi)">Not answered</span><span style="--k:var(--sf)">Not visited</span></div>`;
+}
+
+function pal() {
+  M(`<h3>Question palette</h3>${plp()}<button class="b f" onclick="X();conf()">Submit test</button>`);
+}
+
+function draw() {
+  if (!T || !Q.length) return;
+  T.v[T.q] = 1;
+  let q = Q[T.q];
+  let n = Q.length;
+  let an = T.a.filter(x => x >= 0).length;
+  let pgb = $("#pgb");
+  if (pgb) pgb.style.width = (an / n * 100) + "%";
+
+  let qa = $("#qa");
+  if (qa) {
+    qa.innerHTML = `<div class="qm"><span>Question ${T.q + 1} <small>of ${n}</small></span><span class="chip">${esc(q[4] || 'General')}</span></div>
+    <h2 class="qt">${esc(q[0])}</h2>
+    ${q[1].map((o, i) => `<button class="op${T.a[T.q] == i ? " on" : ""}" aria-pressed="${T.a[T.q] == i}" onclick="pick(${i})"><i>${"ABCD"[i]}</i><span>${esc(o)}</span></button>`).join("")}`;
+  }
+
+  let sd = $("#sd");
+  if (sd) {
+    sd.innerHTML = `<h3>Questions</h3>${plp()}<p class="sm">${an} answered · ${n - an} not answered · ${T.r.filter(x => x).length} marked</p><button class="b f" onclick="conf()">Submit test</button>`;
+  }
+
+  let xf = $("#xf");
+  if (xf) {
+    xf.innerHTML = `<button class="b o" aria-label="Previous" onclick="jump(T.q - 1)" ${T.q ? "" : "disabled"}>${ic("back")}</button>
+    <button class="b o" onclick="T.r[T.q]^=1;sv();draw()">${ic("flag")}${T.r[T.q] ? "Unmark" : "Mark"}</button>
+    ${T.q < n - 1 ? `<button class="b" onclick="jump(T.q + 1)">Next ${ic("chev")}</button>` : '<button class="b" onclick="conf()">Submit</button>'}`;
+  }
+}
+
+function pick(i) {
+  if (!T) return;
+  T.a[T.q] = T.a[T.q] == i ? -1 : i;
+  sv();
+  draw();
+}
+
+function jump(i) {
+  if (!T || i < 0 || i >= Q.length) return;
+  lap();
+  T.q = i;
+  sv();
+  draw();
+}
+
+addEventListener("keydown", e => {
+  if (!T || !location.hash.startsWith("#take") || $("#m").innerHTML || /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  let k = e.key.toLowerCase();
+  if (k.length == 1 && "abcd".includes(k)) pick("abcd".indexOf(k));
+  else if (k == "arrowright") jump(T.q + 1);
+  else if (k == "arrowleft") jump(T.q - 1);
+  else if (k == "m") { T.r[T.q] ^= 1; sv(); draw(); }
+});
+
+function conf() {
+  let an = T.a.filter(x => x >= 0).length;
+  let rv = T.r.filter(x => x).length;
+  M(`<h3>Submit your test?</h3>
+    <div class="ln"><span>Answered</span><b>${an}</b></div>
+    <div class="ln"><span>Not answered</span><b>${Q.length - an}</b></div>
+    <div class="ln"><span>Marked for review</span><b>${rv}</b></div>
+    <button class="b f" onclick="fin()">Yes, submit</button>
+    <button class="b o f" onclick="X()">Keep working</button>`);
+}
+
+function fin() {
   clearInterval(tm);
   X();
   lap();
-  let c=0,w=0,tp={};
-  Q.forEach((q,i)=>{let a=T.a[i],t=tp[q[4]]=tp[q[4]]||[0,0];t[1]++;if(a==q[2]){c++;t[0]++}else if(a>=0)w++});
-  const attObj = {
+  let c = 0, w = 0, tp = {};
+  Q.forEach((q, i) => {
+    let a = T.a[i];
+    let topName = q[4] || 'General';
+    let tObj = tp[topName] = tp[topName] || [0, 0];
+    tObj[1]++;
+    if (a == q[2]) {
+      c++;
+      tObj[0]++;
+    } else if (a >= 0) {
+      w++;
+    }
+  });
+
+  let mPos = T.marksPos || 1;
+  let mNeg = T.marksNeg || 0.33;
+  let finalScore = Math.round((c * mPos - w * mNeg) * 100) / 100;
+  let maxScore = Math.round((Q.length * mPos) * 100) / 100;
+  
+  let attObj = {
+    testId: T.testId || T.nid,
     nid: T.nid,
-    k: T.k,
+    k: 1,
+    title: T.title || (TESTS_BY_ID[T.testId]?.title || 'Practice Test'),
+    questions: Q,
     a: T.a,
     tt: T.tt,
-    c,
-    w,
-    u: Q.length-c-w,
-    sc: Math.round((c-.33*w)*100)/100,
-    mx: Q.length,
-    tk: Math.round((Date.now()-T.st)/1000),
+    c, w,
+    u: Q.length - c - w,
+    sc: finalScore,
+    mx: maxScore,
+    tk: Math.round((Date.now() - T.st) / 1000),
     tp,
-    at: Date.now(),
-    test_id: T.testId || CUR_TEST_ID || 'K7P2X'
+    marksPos: mPos,
+    marksNeg: mNeg,
+    at: Date.now()
   };
+
   S.att.push(attObj);
   saveAttemptToDb(attObj);
-  T=null;
+  T = null;
   sv();
-  RF="all";
-  go("result-"+(S.att.length-1));
+  RF = "all";
+  go("result-" + (S.att.length - 1));
 }
 
-async function saveAttemptToDb(att){
-  if (!sb) return;
-  try {
-    const payload = {
-      user_id: isUuid(S.user?.id) ? S.user.id : null,
-      test_id: att.test_id || 'K7P2X',
-      answers: att.a,
-      time_per_question: att.tt,
-      correct: att.c,
-      wrong: att.w,
-      unattempted: att.u,
-      score: att.sc,
-      max_score: att.mx,
-      time_taken: att.tk,
-      topic_analysis: att.tp,
-      completed_at: new Date().toISOString()
-    };
-    await sb.from('attempts').insert(payload);
-    fetchLeaderboard(payload.test_id);
-  } catch(e) {
-    console.warn("saveAttempt error:", e);
-  }
-}
-function rev(i){let r=S.att[i];return `<div class="tabs">${[["all","All"],["ok","Correct"],["no","Incorrect"],["un","Skipped"]].map(f=>`<button class="${RF==f[0]?"on":""}" onclick="rfs('${f[0]}',${i})">${f[1]}</button>`).join("")}</div>`+(Q.map((q,k)=>{let a=r.a[k],ok=a==q[2],st=a<0?"un":ok?"ok":"no";if(RF!="all"&&RF!=st)return"";return `<div class="rvw rs-${st}"><div class="rh"><span class="bd">${st=="ok"?"Correct":st=="no"?"Incorrect":"Skipped"}</span><small>${a<0?"0":ok?"+1":"−0.33"} marks · ${mmss(r.tt[k])}</small></div><b>${k+1}. ${q[0]}</b><div class="an2">${q[1].map((o,j)=>`<div class="${j==q[2]?"oc":j==a?"ow":""}">${"ABCD"[j]}. ${o}${j==q[2]?" ✓":j==a?" ✗":""}</div>`).join("")}</div><div class="exp"><b>Explanation:</b> ${q[3]}</div><button class="b o s" style="margin-top:10px" onclick="rpt(${k})">${ic("flag")}Report an issue</button></div>`}).join("")||'<div class="em">Nothing in this filter.</div>')}
-const RPR=["The answer looks wrong","The question is unclear","Spelling or typing mistake","The explanation is wrong","Something else"];let RPS=0;
-function rpt(k,i){
-  if(i!=null)RPS=i;else RPS=0;
-  M(`<h3>Report question ${k+1}</h3>
-<p class="mu">What is wrong with it?</p>
-${RPR.map((r,j)=>`<button class="op${RPS==j?" on":""}" style="min-height:48px" onclick="rpt(${k},${j})"><i>${j+1}</i><span>${r}</span></button>`).join("")}
-<textarea id="rn" class="in" rows="3" placeholder="Tell us more (optional)" style="margin-top:6px"></textarea>
-<button class="b f" onclick="submitReportToDb(${k}, RPS, $('#rn').value)">Send report</button>
-<button class="b o f" onclick="X()">Cancel</button>`);
+// RESULT PAGE
+function result(i) {
+  let r = S.att[i];
+  if (!r) return go("home");
+  
+  let testTitle = r.title || (TESTS_BY_ID[r.testId || r.nid]?.title || (N[r.nid] ? N[r.nid].n : 'Practice Test'));
+  let pc = Math.max(0, Math.round(r.sc / (r.mx || 1) * 1000) / 10);
+  let ac = (r.c + r.w) ? Math.round(r.c / (r.c + r.w) * 100) : 0;
+  let L = lbd(r.testId || r.nid);
+  let rk = L.findIndex(l => l.me) + 1;
+  let ts = Object.entries(r.tp || {}).map(([k, v]) => [k, v[0], v[1]]).sort((a, b) => (a[1] / a[2]) - (b[1] / b[2]));
+  let C = 2 * Math.PI * 54;
+
+  shell("learn", `
+    <main class="w">
+      <div class="rh2">
+        <div class="rg">
+          <svg width="132" height="132" viewBox="0 0 132 132">
+            <circle cx="66" cy="66" r="54" fill="none" stroke="#ffffff30" stroke-width="10"/>
+            <circle class="rc" style="--c:${C}" cx="66" cy="66" r="54" fill="none" stroke="#8fd8c6" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pc / 100)}"/>
+          </svg>
+          <div>${pc}%</div>
+        </div>
+        <div>
+          <small>${esc(testTitle)}</small>
+          <h2>${r.sc} / ${r.mx} marks</h2>
+          <p style="margin:0;color:#cfe3dd">
+            ${pc >= 75 ? "Excellent work!" : pc >= 50 ? "Good effort. Keep practising!" : "Keep practicing, you will improve!"}
+            ${rk ? ` Rank ${rk} on this test.` : ''}
+          </p>
+        </div>
+      </div>
+      <div class="st">
+        <div><small>Correct</small><b>${r.c}</b></div>
+        <div><small>Incorrect</small><b>${r.w}</b></div>
+        <div><small>Unanswered</small><b>${r.u}</b></div>
+        <div><small>Accuracy</small><b>${ac}%</b></div>
+        <div><small>Time taken</small><b>${mmss(r.tk)}</b></div>
+        <div><small>Attempted</small><b>${r.c + r.w}/${r.c + r.w + (r.u || 0)}</b></div>
+      </div>
+      ${ts.length ? `
+        <div class="sec" style="margin-top:26px"><h2>Topic breakdown</h2></div>
+        ${ts.map(t => `<div class="ln"><span>${esc(t[0])}</span><small>${t[1]}/${t[2]} correct</small></div><div class="bar"><i style="width:${Math.round(t[1]/t[2]*100)}%"></i></div>`).join("")}
+      ` : ''}
+      <div class="sec" style="margin-top:30px">
+        <h2>Review questions</h2>
+        <span class="chip">Detailed Solutions</span>
+      </div>
+      <div id="rv">${rev(i)}</div>
+    </main>
+  `,
+  `<div class="ctl"><small>Finished</small><b>${esc(testTitle)}</b></div>
+  <button class="b" onclick="go('home')">Return Home</button>`,
+  ["home", "Home"]);
 }
 
-async function submitReportToDb(k, reasonIdx, note){
-  X();
-  toast('Thanks. Our team will review it.');
-  if (!sb) return;
-  try {
-    const qObj = Q[k];
-    const qId = qObj?.[5] || null;
-    await sb.from('reports').insert({
-      user_id: isUuid(S.user?.id) ? S.user.id : null,
-      user_name: S.user?.n || 'Student',
-      question_id: qId,
-      test_id: (T ? T.testId : null) || CUR_TEST_ID || 'K7P2X',
-      reason: RPR[reasonIdx] || 'The answer looks wrong',
-      note: note || '',
-      status: 'open'
-    });
-  } catch(e) {
-    console.warn("submitReport error:", e);
-  }
-}
-function rfs(f,i){RF=f;$("#rv").innerHTML=rev(i)}
-function result(i){let r=S.att[i];if(!r)return go("home");let n=N[r.nid],pc=Math.max(0,Math.round(r.sc/r.mx*1000)/10),ac=r.c+r.w?Math.round(r.c/(r.c+r.w)*100):0,rk=lbd(r.nid,r.k).findIndex(l=>l.me)+1,ts=Object.entries(r.tp).map(([k,v])=>[k,v[0],v[1]]).sort((a,b)=>a[1]/a[2]-b[1]/b[2]),C=2*Math.PI*54;
-shell("learn",`<main class="w"><div class="rh2"><div class="rg"><svg width="132" height="132" viewBox="0 0 132 132"><circle cx="66" cy="66" r="54" fill="none" stroke="#ffffff30" stroke-width="10"/><circle class="rc" style="--c:${C}" cx="66" cy="66" r="54" fill="none" stroke="#8fd8c6" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pc/100)}"/></svg><div>${pc}%</div></div><div><small>${n.n}: Test ${r.k}</small><h2>${r.sc} / ${r.mx} marks</h2><p style="margin:0;color:#cfe3dd">${pc>=75?"Excellent work.":pc>=50?"Good effort. Keep going.":"Keep practising, you will improve."} Rank ${rk||"-"} on this test (provisional).</p></div></div>
-<div class="st"><div><small>Correct</small><b>${r.c}</b></div><div><small>Incorrect (−${Math.round(r.w*33)/100})</small><b>${r.w}</b></div><div><small>Unanswered</small><b>${r.u}</b></div><div><small>Accuracy (of attempted)</small><b>${ac}%</b></div><div><small>Time taken</small><b>${mmss(r.tk)}</b></div><div><small>Attempted</small><b>${r.c+r.w}/${r.mx}</b></div></div>
-<div class="sec" style="margin-top:26px"><h2>Topic-wise performance</h2></div>${ts.map(t=>`<div class="ln"><span>${t[0]}</span><small>${t[1]}/${t[2]}</small></div><div class="bar"><i style="width:${t[1]/t[2]*100}%"></i></div>`).join("")}${ts[0]&&ts[0][1]<ts[0][2]?`<p class="exp"><b>Focus area:</b> ${ts[0][0]}. Revise this topic first.</p>`:""}
-<div class="sec"><h2>Question review</h2></div><div id="rv">${rev(i)}</div><p class="sm">Demo note: in the live app, answers and explanations stay on the server and appear only as your release rules allow.</p></main>`,`<a class="b o" href="#test-${r.nid}-${r.k}">${ic("trophy")}Leaderboard</a><button class="b big" style="flex:1" onclick="start('${r.nid}',${r.k})">Retry test</button>`,["test-"+r.nid+"-"+r.k,"Test"])}
-function learn(){if(!S.user)return shell("learn",`<main class="w"><div class="em" style="margin-top:28px"><h2>Sign in to see your learning</h2><p>Your purchases, attempts and results are saved to your Google account.</p><button class="b" onclick="signin()">Continue with Google</button></div></main>`);
-let tk2=S.att.length,av=tk2?Math.round(S.att.reduce((a,r)=>a+Math.max(0,r.sc/r.mx),0)/tk2*100):0,bs=tk2?Math.round(Math.max(...S.att.map(r=>Math.max(0,r.sc/r.mx)))*100):0;
-shell("learn",`<main class="w"><h1 style="margin-top:28px">Hi, ${S.user.n}</h1><div class="st" style="grid-template-columns:repeat(3,1fr)"><div><small>Tests taken</small><b>${tk2}</b></div><div><small>Average</small><b>${av}%</b></div><div><small>Best</small><b>${bs}%</b></div></div>
-<div class="sec"><h2>My test series</h2></div><div class="ms">${S.own.map(id=>card(N[id])).join("")||'<div class="em">No purchased series yet. <a href="#explore" style="color:var(--ac)"><b>Explore series</b></a></div>'}</div>
-<div class="sec"><h2>My attempts</h2></div>${S.att.map((r,i)=>`<a class="tr" href="#result-${i}"><span class="fi">${ic("check")}</span><div><b>${N[r.nid].n}: Test ${r.k}</b><small>${new Date(r.at).toLocaleDateString("en-IN")}</small></div><span class="sb">${r.sc}/${r.mx}</span></a>`).reverse().join("")||'<div class="em">No attempts yet. Try a free test.</div>'}
-<div class="sec"><h2>Purchase history</h2></div>${S.ord.map(o=>`<div class="tr"><div><b>${N[o.sid].t}</b><small>${new Date(o.at).toLocaleDateString("en-IN")}</small></div><b>${inr(o.amt)}</b></div>`).join("")||'<div class="em">No purchases yet.</div>'}
-<div class="sec"><h2>Help and policies</h2></div>${docs()}<p style="margin-top:22px"><button class="b o" onclick="appSignOut()">Sign out</button> <button class="b o" onclick="if(confirm('Clear all demo data?')){localStorage.clear();S={user:null,own:[],ord:[],att:[]};T=null;R()}">Reset demo</button></p></main>`)}
-function signin(cb){
-  CB=cb;
-  M(`<h3>Sign in</h3>
-<p class="mu">Sign in to sync your test progress, view purchases, and appear on leaderboards.</p>
-<button class="b f" style="margin-bottom:8px" onclick="googleSignIn()"><svg class="ic" viewBox="0 0 24 24" style="margin-right:6px"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/></svg>Continue with Google</button>
-<button class="b o f" style="margin-bottom:8px" onclick="demoSignIn()">Continue as Demo Student</button>
-<button class="b o f" onclick="X()">Cancel</button>
-<p class="sm">By continuing you agree to our <a href="#page-terms" onclick="X()" style="color:var(--ac);font-weight:600">Terms</a> and <a href="#page-priv" onclick="X()" style="color:var(--ac);font-weight:600">Privacy Policy</a>.</p>`);
+function rev(i) {
+  let r = S.att[i];
+  if (!r) return "";
+  let qList = (r.questions && r.questions.length) ? r.questions : Q;
+  return `<div class="tabs">${[["all","All"],["ok","Correct"],["no","Incorrect"],["un","Skipped"]].map(f=>`<button class="${RF==f[0]?"on":""}" onclick="rfs('${f[0]}',${i})">${f[1]}</button>`).join("")}</div>` +
+    (qList.map((q, k) => {
+      let a = r.a[k], ok = a == q[2], st = a < 0 ? "un" : ok ? "ok" : "no";
+      if (RF != "all" && RF != st) return "";
+      return `<div class="rvw rs-${st}">
+        <div class="rh">
+          <span class="bd">${st=="ok"?"Correct":st=="no"?"Incorrect":"Skipped"}</span>
+          <small>${a < 0 ? "0" : (ok ? "+" + (r.marksPos || 1) : "−" + (r.marksNeg || 0.33))} marks · ${mmss(r.tt[k] || 0)}</small>
+        </div>
+        <b>${k + 1}. ${esc(q[0])}</b>
+        <div class="an2">${q[1].map((o, j) => `<div class="${j==q[2]?"oc":j==a?"ow":""}">${"ABCD"[j]}. ${esc(o)}${j==q[2]?" ✓":j==a?" ✗":""}</div>`).join("")}</div>
+        <div class="exp"><b>Explanation:</b> ${esc(q[3] || 'Refer to study notes.')}</div>
+        <button class="b o s" style="margin-top:10px" onclick="rpt('${r.testId || r.nid}', ${k})">${ic("flag")} Report an issue</button>
+      </div>`;
+    }).join("") || '<div class="em">Nothing in this filter.</div>');
 }
 
-async function googleSignIn(){
-  if (!sb) { demoSignIn(); return; }
-  try {
-    const { error } = await sb.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin ? (window.location.origin + window.location.pathname) : window.location.href }
-    });
-    if (error) { toast(error.message); demoSignIn(); }
-  } catch(e) {
-    console.warn("Google OAuth error:", e);
-    demoSignIn();
-  }
+function rfs(f, i) {
+  RF = f;
+  let rv = $("#rv");
+  if (rv) rv.innerHTML = rev(i);
 }
 
-function demoSignIn(){
-  S.user = { id: '00000000-0000-0000-0000-000000000001', n: 'Demo Student', e: 'student@example.com' };
-  sv();
-  X();
-  toast('Signed in (Demo Student)');
-  R();
-  CB && CB();
+const RPR = ["The answer looks wrong", "The question is unclear", "Spelling or typing mistake", "The explanation is wrong", "Something else"];
+let RPS = 0;
+
+function rpt(testId, k, i) {
+  if (i != null) RPS = i;
+  else RPS = 0;
+  M(`<h3>Report question ${k + 1}</h3>
+    <p class="mu">What is wrong with it?</p>
+    ${RPR.map((r, j) => `<button class="op${RPS == j ? " on" : ""}" style="min-height:48px" onclick="rpt('${testId}', ${k}, ${j})"><i>${j + 1}</i><span>${r}</span></button>`).join("")}
+    <textarea id="rn" class="in" rows="3" placeholder="Tell us more (optional)" style="margin-top:6px"></textarea>
+    <button class="b f" onclick="let note=$('#rn').value;X();sendQuestionReport('${testId}', ${k}, RPR[${RPS}], note);">Send report</button>
+    <button class="b o f" onclick="X()">Cancel</button>`);
 }
 
-async function appSignOut(){
+// MY LEARNING / LEARN PAGE
+function learn() {
+  shell("learn", `<main class="w">
+    <h1 style="margin-top:26px">My learning</h1>
+    ${S.user ? `
+      <div class="c2" style="display:flex; gap:16px; align-items:center; margin-bottom:20px;">
+        <span class="av" style="width:52px; height:52px; border-radius:16px; font-size:1.4rem;">${S.user.n[0]}</span>
+        <div>
+          <b>${esc(S.user.n)}</b>
+          <small class="mu" style="display:block;">${esc(S.user.e)}</small>
+        </div>
+        <button class="b o s" style="margin-left:auto;" onclick="appSignOut()">Sign out</button>
+      </div>
+    ` : `
+      <div class="c2" style="text-align:center; padding:32px 20px; margin-bottom:20px;">
+        <h3>Sign in to track progress</h3>
+        <p class="mu">Save attempts, unlock test series and view your ranking.</p>
+        <button class="b" onclick="signin()">Sign in</button>
+      </div>
+    `}
+    
+    <div class="sec"><h2>Recent test attempts</h2></div>
+    ${S.att && S.att.length ? S.att.map((a, i) => `
+      <a class="tw" href="#result-${i}">
+        <div class="bd2">
+          <b>${esc(a.title || 'Practice Test')}</b>
+          <small class="mu">${new Date(a.at).toLocaleDateString()} · ${a.c} correct, ${a.w} incorrect</small>
+        </div>
+        <div class="rt">
+          <b>${a.sc} / ${a.mx}</b>
+          <small class="chip g">${Math.round(a.sc / (a.mx || 1) * 100)}%</small>
+        </div>
+      </a>
+    `).reverse().join("") : '<div class="em">You haven’t completed any tests yet.</div>'}
+  </main>`);
+}
+
+// LEGAL / INFO PAGES
+function pageV(p) {
+  let title = PG[p] || "Information";
+  let content = CFG.legal?.[p] || LEG[p] || "No content available.";
+  shell("home", `<main class="w doc">
+    <h1>${title}</h1>
+    <div class="exp" style="white-space:pre-wrap; line-height:1.7; background:var(--sf); border:1px solid var(--br); border-radius:18px; padding:24px;">${esc(content)}</div>
+  </main>`, "", ["home", "Home"]);
+}
+
+// AUTHENTICATION
+function signin(cb) {
+  CB = cb;
+  M(`<h3>Sign in to StarzanNotes</h3>
+    <p class="mu">Choose how to sign in:</p>
+    <button class="b f" style="margin-bottom:10px" onclick="googleAuth()">Sign in with Google</button>
+    <button class="b o f" onclick="demoAuth()">Continue as Guest Student</button>
+    <button class="b o f" style="margin-top:6px" onclick="X()">Cancel</button>`);
+}
+
+async function googleAuth() {
   if (sb) {
-    try { await sb.auth.signOut(); } catch(e) {}
+    try {
+      await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + window.location.pathname }
+      });
+    } catch(err) {
+      toast("Google login redirecting...");
+    }
+  } else {
+    demoAuth();
   }
+}
+
+function demoAuth() {
+  S.user = { id: 'usr_' + Date.now(), n: 'Student', e: 'student@example.com' };
+  sv();
+  X();
+  toast("Signed in as Student");
+  R();
+  if (CB) CB();
+}
+
+function appSignOut() {
+  if (sb) { try { sb.auth.signOut(); } catch(e) {} }
   S.user = null;
   sv();
+  toast("Signed out");
   R();
-  toast('Signed out');
 }
-function buy(id){if(!S.user)return signin(()=>buy(id));cpn=0;pay(id)}
-function pay(id){let s=N[id],d=Math.round(s.s*cpn/100),t=s.s-d;M(`<h3>Checkout</h3><p class="mu">${s.t}</p><div class="ln"><span>Price</span><span>${inr(s.s)}</span></div>${d?`<div class="ln"><span>Coupon STAR10</span><span>−${inr(d)}</span></div>`:""}<div class="ln"><b>Total</b><b>${inr(t)}</b></div><div class="cp"><input id="cc" class="in" aria-label="Coupon code" placeholder="Coupon code"><button class="b o" onclick="cpx('${id}')">Apply</button></div><button class="b f" onclick="ok('${id}',${t})">Pay ${inr(t)} (demo)</button><button class="b o f" onclick="X()">Cancel</button><p class="sm">Demo only, no real payment. Try code STAR10. In the live app, Razorpay checkout opens here (UPI, cards, net banking) and access unlocks only after the server verifies the payment.</p>`)}
-async function cpx(id){
-  let v=$("#cc").value.trim().toUpperCase();
-  if(!v)return;
-  if(v=="STAR10"){cpn=10;pay(id);toast("Coupon STAR10 applied (10% off)");return}
-  if(sb){
-    try{
-      const { data: c } = await sb.from('coupons').select('*').eq('code', v).eq('is_active', true).maybeSingle();
-      if(c){
-        cpn = c.discount_type === 'percent' ? c.discount_value : Math.min(90, Math.round(c.discount_value / (N[id]?.s || 100) * 100));
-        pay(id);
-        toast("Coupon applied (" + cpn + "% off)");
-        return;
-      }
-    } catch(e) {}
+
+function buy(id) {
+  if (!S.user) return signin(() => buy(id));
+  M(`<h3>Unlock test series</h3>
+    <p class="mu">Confirm purchase with Razorpay:</p>
+    <button class="b f" onclick="S.own.push('${id}');sv();X();toast('Series unlocked!');R();">Pay now (Demo)</button>
+    <button class="b o f" onclick="X()">Cancel</button>`);
+}
+
+// ROUTER
+function route() {
+  let h = location.hash || "#home";
+  let i = HS.indexOf(h);
+  if (i >= 0) {
+    HS.length = i + 1;
+    SYNC = SY[h] || 0;
+  } else {
+    HS.push(h);
+    SYNC = 0;
   }
-  toast("Invalid or expired coupon");
-}
-function ok(id,t){
-  S.own.push(id);
-  S.ord.push({sid:id,amt:t,at:Date.now()});
-  sv();
-  X();
-  toast("Payment successful. Access unlocked.");
+  CUR = h;
   R();
-  if (sb) {
-    sb.from('purchases').insert({
-      user_id: isUuid(S.user?.id) ? S.user.id : null,
-      series_id: id,
-      amount: t,
-      status: 'paid',
-      razorpay_payment_id: 'pay_' + Math.random().toString(36).slice(2, 10)
-    }).then(() => {}).catch(e => console.warn("Purchase save error:", e));
-  }
 }
-const LEG={priv:`PRIVACY POLICY
-Last updated: [date]
 
-StarzanNotes ("we", "us") runs online test series at starzannotes.in. This policy explains what we collect, why we collect it, and the choices you have. By using the app you agree to it.
+function R() {
+  clearInterval(tm);
+  clearInterval(ci);
+  let y = scrollY;
+  let p = (location.hash.slice(1) || "home").split("-");
 
-1. What we collect
-- Account details: your name, email address and profile photo from your Google account when you sign in.
-- Activity: tests you attempt, your answers, scores, time taken, ranks, and any question you report.
-- Purchases: order ID, what you bought, amount, payment status and date. Payments are handled by Razorpay. We never see or store your card number, UPI PIN or bank login.
-- Basic technical data: device type, browser and app usage, used to keep the app working and secure.
-
-2. How we use it
-To run your account, show your results and rank, give access to what you bought, prevent cheating and misuse, answer support requests, and improve our tests. We do not sell your personal data.
-
-3. Leaderboards
-Only a shortened display name and your score appear on a test leaderboard. Your email and phone number are never shown to other students.
-
-4. Sharing
-We share data only with service providers that help us run the app (hosting and database, Google sign-in, Razorpay payments, analytics) and when the law requires it.
-
-5. Students and children
-Many of our students are under 18. If you are under 18, please use the app with the knowledge and consent of a parent or guardian. We do not show advertisements targeted at students and we do not track students' behaviour for advertising.
-
-6. Storage and security
-Data is stored on secure cloud servers with access controls and encryption in transit. No system is perfectly secure, so please protect your Google account.
-
-7. How long we keep data
-While your account is active, and afterwards only as long as needed for legal, tax and dispute purposes. You can ask us to delete your account.
-
-8. Your rights
-You can ask to see, correct or delete your data, or withdraw your consent, by writing to us. We will respond within a reasonable time as required by Indian law, including the Digital Personal Data Protection Act, 2023.
-
-9. Cookies and local storage
-We use them to keep you signed in and to remember your test progress.
-
-10. Changes
-We may update this policy. Important changes will be shown in the app.
-
-Contact and grievances: support@starzannotes.in · Grievance Officer: [name, address]`,
-terms:`TERMS AND CONDITIONS
-Last updated: [date]
-
-Welcome to StarzanNotes. By creating an account or using the app you agree to these terms.
-
-1. About the service
-We provide online mock tests, practice tests and study material for school board and competitive exams. Everything is for learning and practice only.
-
-2. Your account
-- Sign in with your own Google account. You are responsible for all activity on it.
-- Give correct information. Do not share your account or let others use what you bought.
-- If you are under 18, use the app with the consent of a parent or guardian.
-
-3. Purchases and access
-- Prices are in Indian rupees and shown before you pay. Payments are processed securely by Razorpay.
-- After a successful payment you get access to the test or series you bought, for the validity shown on its page.
-- Access is personal. It cannot be sold, shared, copied or transferred.
-
-4. Fair use
-You agree not to cheat, use bots or scripts, copy or share questions, answers or explanations, try to break or overload the app, or harass others. We may warn, suspend or ban accounts that break these rules, and in serious cases remove access without refund.
-
-5. Our content
-All questions, explanations, designs and text belong to StarzanNotes or its licensors. You may use them for your own study only. You may not republish, sell or distribute them without written permission.
-
-6. Accuracy and results
-We work hard to keep questions and answers correct, but mistakes can happen. You can report a question from your result page and we will review it. Scores, ranks and analysis are for practice and do not predict or guarantee any exam result.
-
-7. Refunds
-Please read our Refund Policy.
-
-8. Availability
-We may update, pause or change features, tests or prices. We will try to give notice of major changes.
-
-9. Limit of liability
-To the extent allowed by law, StarzanNotes is not liable for indirect or consequential loss, or for loss caused by internet, device or third-party service failures. Our total liability for any claim is limited to the amount you paid for the item concerned.
-
-10. Governing law
-These terms are governed by the laws of India. The courts at [your city], India have jurisdiction.
-
-11. Contact
-support@starzannotes.in`,
-about:`ABOUT STARZANNOTES
-
-StarzanNotes helps students practise smarter. We make clear, exam-pattern mock tests for school boards and competitive exams, with simple explanations and honest analysis, so you know exactly what to work on next.
-
-What you get
-- Subject, chapter and topic-wise tests
-- A real exam-style timer and question palette
-- Explained answers after every test
-- A leaderboard on every test
-- Free tests to try before you buy
-
-Our promise
-We keep prices fair, fix mistakes quickly (you can report any question from your result page), and respect your privacy. We never sell your data.
-
-Contact: support@starzannotes.in`,
-refund:`REFUND POLICY
-Last updated: [date]
-
-Our tests are digital products that can be used right after purchase, so refunds work like this.
-
-You can get a full refund if
-- You were charged twice for the same item.
-- Payment was taken but access was not given within 24 hours.
-- The test or series is broken and we cannot fix it within a reasonable time.
-
-Refunds are not given when
-- You have already attempted the test or most of the series.
-- You changed your mind after using it.
-- Your account was suspended for breaking our terms.
-
-How to ask
-Email support@starzannotes.in within 7 days of payment, with your registered email and order ID.
-
-How you get the money
-Approved refunds go back to the original payment method through Razorpay and usually reach you in 5 to 7 working days. Access to the refunded item ends once the refund is processed.`,
-help:`HELP AND FAQ
-
-How do I start a test?
-Open a test and tap Start. Sign in with Google first.
-
-Can I pause a test?
-No. The timer keeps running even if you close the app. Your answers are saved automatically.
-
-My payment went through but I cannot see the test.
-Wait a few minutes and refresh. If it is still missing, email us with your order ID.
-
-How do I report a wrong question?
-Open your result, go to the question review and tap Report an issue.
-
-When do I see answers and explanations?
-As set for each test: right after each question, after you submit, or after the test closes.
-
-Which languages are supported?
-Tests can be in Hindi, English or both.
-
-How do I delete my account?
-Email us from your registered address and we will delete it.
-
-Contact us
-support@starzannotes.in`,
-dis:`Please read before you start.
-- This test is for practice and learning. Your score does not predict any official exam result.
-- The timer starts when you tap Start and keeps running, even if you leave the app.
-- Do not refresh, switch apps or take help from other devices. Your answers are saved automatically.
-- Do not copy, screenshot or share the questions. Unfair use can lead to a ban.
-- If you find a mistake in a question, report it from your result page.
-By tapping Start you agree to these rules.`};
-const CFG={name:"StarzanNotes",tag:"Practise like it’s the real exam.",email:"support@starzannotes.in",phone:"",wa:"",legal:{priv:LEG.priv,terms:LEG.terms,about:LEG.about,refund:LEG.refund,help:LEG.help}};
-const PG={priv:"Privacy policy",terms:"Terms and conditions",refund:"Refund policy",about:"About us",help:"Help",contact:"Contact us"};
-const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function fmtDoc(t){let h="",ul=0,hd=/^(\d+\.\s|What you get$|Our promise$|You can get a full refund if$|Refunds are not given when$|How to ask$|How you get the money$|Contact us$|[^.]{3,60}\?$)/;t.split("\n").forEach((l,i)=>{l=l.trim();let li=l.startsWith("- ");if(ul&&!li){h+="</ul>";ul=0}if(!l)return;if(li){if(!ul){h+="<ul>";ul=1}h+="<li>"+esc(l.slice(2))+"</li>"}else if(i==0)h+="<h1>"+esc(l[0]+l.slice(1).toLowerCase())+"</h1>";else if(hd.test(l))h+="<h3>"+esc(l)+"</h3>";else h+="<p"+(/^Last updated/.test(l)?' class="mu"':"")+">"+esc(l)+"</p>"});return h+(ul?"</ul>":"")}
-function contact(){return `<div class="cc2"><h3>Contact us</h3><p class="mu">We usually reply within one or two working days.</p><a class="b f" href="mailto:${esc(CFG.email)}">Email ${esc(CFG.email)}</a>${CFG.wa?`<a class="b o f" href="https://wa.me/${CFG.wa.replace(/\D/g,"")}" target="_blank" rel="noopener">WhatsApp us</a>`:""}${CFG.phone?`<a class="b o f" href="tel:${esc(CFG.phone)}">Call ${esc(CFG.phone)}</a>`:""}</div>`}
-function pageV(k){if(!PG[k])return go("home");shell("home",`<main class="w"><article class="doc">${k=="contact"?"<h1>Contact us</h1>":fmtDoc(CFG.legal[k])}${k=="help"||k=="contact"?contact():""}</article></main>`,"",["home","Home"])}
-const docs=()=>Object.entries(PG).map(x=>`<a class="tr" href="#page-${x[0]}"><span class="fi">${ic("book")}</span><div><b>${x[1]}</b></div>${ic("chev")}</a>`).join("");
-let CUR="",HS=[],SY={},SYNC=-1;try{history.scrollRestoration="manual"}catch(e){}
-addEventListener("scroll",()=>{SY[CUR]=scrollY},{passive:true});
-function route(){let h=location.hash||"#home",i=HS.indexOf(h);if(i>=0){HS.length=i+1;SYNC=SY[h]||0}else{HS.push(h);SYNC=0}CUR=h;R()}
-function R(){
-  clearInterval(tm);clearInterval(ci);
-  let y=scrollY,p=(location.hash.slice(1)||"home").split("-");
-  
   if (CFG.maint) {
     A.innerHTML = `<main class="w" style="min-height:80vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 18px;">
       <div style="width:72px; height:72px; border-radius:20px; background:var(--hi); color:var(--ac); display:grid; place-items:center; font-size:2rem; margin-bottom:20px;">
@@ -864,10 +1129,10 @@ function R(){
     scrollTo(0, 0);
     return;
   }
-  
-  // Handle custom test overview e.g. #test-DC27A (when no second number)
-  if (p[0] === 'test' && p[1] && (!p[2] || isNaN(p[2]))) {
-    viewCustomTest(p[1]);
+
+  // Handle test overview by ID e.g. #test-DC27A
+  if (p[0] === 'test' && p[1]) {
+    test(p[1]);
     scrollTo(0, 0);
     return;
   }
@@ -878,20 +1143,82 @@ function R(){
     learn,
     series: () => node(p[1]),
     node: () => node(p[1]),
-    test: () => test(p[1], +p[2]),
-    take,
     result: () => result(+p[1]),
     page: () => pageV(p[1])
   }[p[0]] || home)();
-  
+
   scrollTo(0, SYNC >= 0 ? SYNC : y);
   SYNC = -1;
 }
-addEventListener("hashchange",route);route();
-// Load Supabase cloud data
+
+// SUPABASE DATA LOADERS
+async function loadConfig() {
+  if (!sb) return;
+  try {
+    const { data: cfg } = await sb.from('config').select('*').eq('id', 'main').maybeSingle();
+    if (cfg) {
+      if (cfg.name) CFG.name = cfg.name;
+      if (cfg.tag) CFG.tag = cfg.tag;
+      if (cfg.email) CFG.email = cfg.email;
+      if (cfg.phone) CFG.phone = cfg.phone;
+      if (cfg.wa) CFG.wa = cfg.wa;
+      CFG.maint = !!cfg.maintenance;
+      CFG.mmsg = cfg.maintenance_msg || CFG.mmsg;
+      CFG.legal = {
+        priv: cfg.legal_privacy,
+        terms: cfg.legal_terms,
+        about: cfg.legal_about,
+        refund: cfg.legal_refund,
+        help: cfg.legal_help
+      };
+      R();
+    }
+  } catch(e) { console.warn(e); }
+}
+
+async function loadBanners() {
+  if (!sb) return;
+  try {
+    const { data: bns, error } = await sb.from('banners').select('*').eq('is_active', true).order('sort_order', { ascending: true });
+    if (bns && !error) {
+      FE = bns.map(b => ({
+        id: b.id,
+        t: b.title,
+        d: b.subtitle || '',
+        im: b.image_url || TH(1600, 1000, "#2b3a4a", "Exam", b.title.split(" ")[0]),
+        ln: b.link ? b.link.replace(/^#/, '') : 'home'
+      }));
+      R();
+    }
+  } catch(e) { console.warn(e); }
+}
+
+async function loadSeriesAndTests() {
+  if (!sb) return;
+  try {
+    const { data: dbTests, error } = await sb.from('tests').select('*').eq('status', 'published').order('created_at', { ascending: false });
+    if (dbTests && !error) {
+      LIVE_TESTS = dbTests;
+      TESTS_BY_ID = {};
+      dbTests.forEach(t => { TESTS_BY_ID[t.id] = t; });
+
+      const { data: qData } = await sb.from('questions').select('test_id');
+      const qMap = {};
+      (qData || []).forEach(q => { qMap[q.test_id] = (qMap[q.test_id] || 0) + 1; });
+      LIVE_TESTS.forEach(t => { t.qCount = qMap[t.id] || 0; });
+
+      buildHierarchy(dbTests);
+      R();
+    }
+  } catch(e) { console.warn(e); }
+}
+
+addEventListener("hashchange", route);
+route();
+
+// Initialize cloud data
 loadConfig();
 loadBanners();
-loadSeries();
-loadTests();
+loadSeriesAndTests();
 
 </script></body></html>

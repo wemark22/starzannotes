@@ -232,7 +232,7 @@ async function loadAdminData() {
         status: t.status === 'published' ? 'pub' : t.status,
         sched: t.scheduled_at ? t.scheduled_at.slice(0, 16) : '',
         close: t.closes_at ? t.closes_at.slice(0, 16) : '',
-        q: qMap[t.id] || (t.id === 'K7P2X' ? QS.map(q => ({ ...q, id: 'q' + rid(), o: [...q.o] })) : []),
+        q: qMap[t.id] || [],
         sales: t.total_sales || 0,
         at: t.total_attempts || 0,
         upd: new Date(t.updated_at || t.created_at).getTime()
@@ -745,15 +745,39 @@ dis:`Please read before you start.
 - Do not copy, screenshot or share the questions. Unfair use can lead to a ban.
 - If you find a mistake in a question, report it from your result page.
 By tapping Start you agree to these rules.`};
-function seed(){let T=(id,o)=>Object.assign(blank(id),{q:QS.map(q=>({...q,id:"q"+rid(),o:[...q.o]}))},o);
-let tests=[T("K7P2X",{title:"Photosynthesis Test 1",exam:"BSEB Class 10",sub:{on:true,v:"Science"},ch:{on:true,v:"Life Processes"},tp:{on:true,v:"Photosynthesis"},paid:true,price:299,sale:199,status:"pub",sales:22,at:260}),T("B4M9Q",{title:"BPSC Prelims Full Mock 1",exam:"BPSC AEDO",paid:true,price:499,sale:399,status:"pub",sales:14,at:150}),T("A2X8R",{title:"Algebra Practice Set",exam:"BSEB Class 10",sub:{on:true,v:"Mathematics"},status:"pub",at:410}),T("T5N3H",{title:"Child Development Set 1",exam:"CTET Paper 1",sub:{on:true,v:"Child Development"},paid:true,price:249,sale:0,status:"draft"})];
-let nm=["Aarav K.","Priya S.","Rohit M.","Sneha P.","Vikash R.","Anjali D.","Md. Faiz","Kiran T."],o=[],i=0;tests.forEach(t=>{for(let k=0;k<t.sales;k++){i++;o.push({id:"O"+(1000+i),stu:nm[(i+k)%8],tid:t.id,amt:t.sale||t.price,at:Date.now()-((i*37)%30)*864e5-(i%7)*36e5,st:i%13==0?"refunded":"paid"})}});o.sort((a,b)=>b.at-a.at);
-return{exams:["BSEB Class 10","BPSC AEDO","CTET Paper 1"],tests,orders:o,coupons:[{code:"STAR10",type:"pct",val:10,min:0,max:"",exp:"",scope:"all",on:true,used:31},{code:"FLAT50",type:"flat",val:50,min:299,max:100,exp:"2026-12-31",scope:"BPSC AEDO",on:true,used:6}],
-students:nm.map((n,i)=>({id:"S"+(i+1),n,e:n.split(" ")[0].toLowerCase()+"@example.com",st:i==5?"Warned":i==7?"Banned":"Active",at:3+i*4,buy:i%4,last:i+1,h:i==7?[{at:Date.now()-5e8,a:"Banned",r:"Cheating",by:"You"}]:[]})),
-staff:[{id:"owner",n:"You",e:"owner@starzannotes.in",r:"Owner",p:PM.map(p=>p[0])},{id:"st1",n:"Riya",e:"riya@example.com",r:"Test creator",p:["tests"]}],
-banners:[{id:1,img:ph("#2b3a4a","BSEB"),alt:"BSEB Class 10 mock series",link:"K7P2X",on:true,from:"",to:""},{id:2,img:ph("#4a4a48","BPSC"),alt:"BPSC AEDO prelims mocks",link:"B4M9Q",on:true,from:"",to:""}],
-cfg:{name:"StarzanNotes Tests",tag:"Practise like it’s the real exam.",logo:"",email:"support@starzannotes.in",phone:"",wa:"",hide:false,signup:true,maint:false,mmsg:"We are updating. Back soon.",mk:1,neg:.33,dis:LEG.dis,legal:{priv:LEG.priv,terms:LEG.terms,about:LEG.about,refund:LEG.refund,help:LEG.help},rz:"",rzm:"test",rzs:"",rzw:""}}}
-const K="snA1";let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}if(!D||!D.tests)D=seed();migrate();
+function seed(){
+  return {
+    exams: [],
+    tests: [],
+    orders: [],
+    coupons: [],
+    students: [],
+    banners: [],
+    staff: [],
+    reports: [],
+    cfg: {
+      name: "StarzanNotes",
+      tag: "Practice smarter, score higher.",
+      logo: "",
+      email: "support@starzannotes.in",
+      phone: "",
+      wa: "",
+      hide: false,
+      signup: true,
+      maint: false,
+      mmsg: "We are updating the app. Please check back soon.",
+      mk: 1,
+      neg: 0.33,
+      dis: "",
+      rz: "",
+      rzm: "test",
+      rzs: "",
+      rzw: "",
+      legal: { priv: "", terms: "", about: "", refund: "", help: "" }
+    }
+  };
+}
+const K="snA1";let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}if(!D||!D.tests)D=seed();else{D.tests=(D.tests||[]).filter(t=>!["K7P2X","B4M9Q","A2X8R","T5N3H"].includes(t.id));}migrate();
 let AS="owner",NO=0,E=null,ST=0,QM="manual",QE=-1,QF=null,QX="all",NX=0,TQ="",TF="all",CF="",PT="p",PQ="",CP=null,CPI=-1,SQ="",SF="all",SX="",XS="",SN=null,BNF=null,LG="priv",BK={fmt:"txt",raw:"",res:null},BM="",PF="",RT="open",RX="",RS={},RSN="Cheating or sharing answers",BQ="",BT="test",KP=0;
 const perms=()=>AS=="owner"?PM.map(p=>p[0]):(D.staff.find(s=>s.id==AS)||{p:[]}).p,can=k=>perms().includes(k),tid=i=>D.tests.find(t=>t.id==i);
 function toast(m){let t=$("#t");t.textContent=m;t.classList.add("sh");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("sh"),2400)}
@@ -985,7 +1009,7 @@ function rpan(k,f){let s=RS[k];return `<div class="c2" style="background:var(--h
 function applyR(){let k=RX,s=RS[k],f=fq(k);if(!f)return;let q=f.q,txt="Answer key confirmed";if(s.act=="rescore"){q.a=s.ans;delete q.drop;delete q.credit;txt="Answer changed to "+LT[s.ans]+". "+f.t.at+" attempts re-scored"}else if(s.act=="credit"){q.credit=true;txt="Full marks given to everyone"}else if(s.act=="drop"){q.drop=true;txt="Removed from scoring"}D.reports.forEach(r=>{if(r.qid==k&&r.st=="open"){r.st=s.act=="dismiss"?"dismissed":"resolved";r.res=txt}});resolveReportInDb(k, s.act, txt);RX="";sv();toast(txt);render()}
 function reports(){let L=D.reports.filter(r=>RT=="open"?r.st=="open":r.st!="open"),g={};L.forEach(r=>(g[r.qid]=g[r.qid]||[]).push(r));let ks=Object.keys(g).sort((a,b)=>g[b].length-g[a].length);
 lay("reports","Question reports",`<p class="mu" style="margin-top:-8px">Students tap “Report an issue” while reviewing a result. Check each one and decide what to do.</p><div class="tabs"><button class="${RT=="open"?"on":""}" onclick="RT='open';RX='';render()">Open (${D.reports.filter(r=>r.st=="open").length})</button><button class="${RT!="open"?"on":""}" onclick="RT='done';RX='';render()">Resolved</button></div>${ks.map(k=>{let f=fq(k),rs=g[k];if(!f)return"";let cn={};rs.forEach(r=>cn[r.reason]=(cn[r.reason]||0)+1);return `<div class="c2"><div class="rowx"><div>${idb(f.t.id)} <b>${esc(f.t.title)}</b></div><span class="st2 pending">${rs.length} report${rs.length>1?"s":""}</span></div><p style="margin:12px 0 6px"><b>Q${f.i+1}.</b> ${esc(f.q.t)}</p><small class="mu">Answer key: <b>${LT[f.q.a]}</b>. ${esc(f.q.o[f.q.a])}</small><div class="tabs wrap" style="margin:10px 0 4px">${Object.entries(cn).map(c=>`<span class="chip">${esc(c[0])} × ${c[1]}</span>`).join("")}</div>${rs.filter(r=>r.note).slice(0,3).map(r=>`<div class="hint">“${esc(r.note)}” · ${esc(r.stu)}</div>`).join("")}${RT=="open"?(RX==k?rpan(k,f):`<button class="b" style="margin-top:12px" onclick="RX='${k}';RS['${k}']={act:'dismiss',ans:${f.q.a},notify:true};render()">Review</button>`):`<div class="hint okc">Resolved: ${esc(rs[0].res||"")}</div>`}</div>`}).join("")||'<div class="em">Nothing here. Student reports will appear in this list.</div>'}`)}
-function seedRep(){let t=D.tests.find(x=>x.id=="K7P2X")||D.tests.find(x=>x.q.length>1);if(!t||t.q.length<2)return[];let m=(q,r,n,s,h)=>({id:"R"+rid(),tid:t.id,qid:q.id,reason:r,note:n,stu:s,at:Date.now()-h*36e5,st:"open"});return[m(t.q[0],"Answer looks wrong","I think the answer should be oxygen at night","Priya S.",5),m(t.q[0],"Answer looks wrong","","Rohit M.",9),m(t.q[0],"Question is unclear","Which stage of photosynthesis?","Sneha P.",20),m(t.q[1],"Spelling or typing mistake","Option B has a typo","Aarav K.",30)]}
+function seedRep(){return [];}
 function migrate(){D.cfg.legal=Object.assign({priv:"",terms:"",about:"",refund:"",help:""},D.cfg.legal||{});["priv","terms","about","refund","help"].forEach(k=>{if(!D.cfg.legal[k])D.cfg.legal[k]=LEG[k]});let od=s=>(s||"").startsWith("This test is for practice.");if(!D.cfg.dis||od(D.cfg.dis))D.cfg.dis=LEG.dis;delete D.cfg.fb;D.cfg.rzm=D.cfg.rzm||"test";D.cfg.rzs=D.cfg.rzs||"";D.cfg.rzw=D.cfg.rzw||"";D.tests.forEach(t=>{t.q.forEach((q,i)=>{if(!q.id)q.id="q"+rid()+i;delete q.rv});if(t.dis&&od(t.dis.txt))t.dis.txt=LEG.dis});if(!Array.isArray(D.reports))D.reports=seedRep()}
 function render(){let y=scrollY;render0();if(Math.abs(scrollY-y)>1)scrollTo(0,y)}
 function render0(){let p=(location.hash.slice(1)||"dash").split("-"),k=({edit:"tests",reports:"tests"})[p[0]]||p[0];if(!can(k)){let f=NAV.find(n=>can(n[3]));if(f&&location.hash!="#"+f[0])return go(f[0]);if(!f)return lay("","No access",'<div class="em">This role has no access yet.</div>')}
