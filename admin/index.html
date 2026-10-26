@@ -788,8 +788,17 @@ function dupT(i){let t=JSON.parse(JSON.stringify(tid(i)));t.id=uid();t.title+=" 
 function delT(i){D.tests=D.tests.filter(t=>t.id!=i);sv();deleteTestFromDb(i);toast("Test deleted")}
 const STP=["Basics","Questions","Settings","Review"];
 function sug(k,f){return [...new Set(D.tests.filter(t=>t.exam==E.exam&&f(t)).map(t=>t[k].v).filter(Boolean))]}
+
+async function saveCurrentTestToCloud() {
+  if (!E) return;
+  toast("Saving test & questions to Supabase...");
+  await updateTestInDb(E);
+  toast("✅ Test \"" + (E.title || E.id) + "\" saved to Cloud!");
+  render();
+}
+
 function edit(i){let t=tid(i);if(!t)return go("tests");E=t;let b=[bas,qs,set,rev][ST]();
-lay("tests",esc(t.title)||"New test",`<div class="rowx" style="margin:-8px 0 14px"><a class="bkb" style="margin:0" href="#tests">${ic("back")}<span>Tests</span></a><span>${idb(t.id)} <span class="st2 ${t.status}">${{draft:"Draft",pub:"Live",sched:"Scheduled",pending:"Awaiting approval"}[t.status]}</span></span></div><div class="stp">${STP.map((s,n)=>`<button class="${ST==n?"on":""}${n<ST?" dn":""}" onclick="stp(${n})"><span>${n<ST?ic("check"):n+1}</span>${s}</button>`).join("")}</div>${b}
+lay("tests",esc(t.title)||"New test",`<div class="rowx" style="margin:-8px 0 14px"><a class="bkb" style="margin:0" href="#tests">${ic("back")}<span>Tests</span></a><button class="b s" style="margin-left:auto" onclick="saveCurrentTestToCloud()">${ic("check")} Save to Cloud</button><span>${idb(t.id)} <span class="st2 ${t.status}">${{draft:"Draft",pub:"Live",sched:"Scheduled",pending:"Awaiting approval"}[t.status]}</span></span></div><div class="stp">${STP.map((s,n)=>`<button class="${ST==n?"on":""}${n<ST?" dn":""}" onclick="stp(${n})"><span>${n<ST?ic("check"):n+1}</span>${s}</button>`).join("")}</div>${b}
 <div class="sbar"><span class="sp"><i></i><span id="svt">Draft saved ${hm()}</span></span>${ST>0?`<button class="b o" onclick="stp(ST-1)">Back</button>`:""}${ST<3?`<button class="b" onclick="stp(ST+1)">Next</button>`:`<button class="b" onclick="pubT()">${can("publish")?(t.sched?"Schedule":"Publish"):"Send for approval"}</button>`}</div>`)}
 function stp(n){ST=n;QE=-1;QF=null;render();scrollTo(0,0)}
 function bas(){let t=E,ex=D.exams;return `<div class="c2"><h3>Exam and where it appears</h3><p class="mu">Choose the exam, then turn on only the levels you need.</p><div class="tabs" style="margin-top:12px">${ex.map(x=>`<button class="${t.exam==x?"on":""}" onclick="E.exam='${esc(x).replace(/'/g,"\\'")}';sv();render()">${esc(x)}</button>`).join("")}<button onclick="NX=!NX;render()">${ic("plus")}New exam</button></div>${NX?`<div class="cp"><input id="nx" class="in" placeholder="Exam name, e.g. SSC CGL" aria-label="New exam name"><button class="b" onclick="addEx()">Add</button></div>`:""}
@@ -802,7 +811,32 @@ ${sw(t.tp.on,"togL('tp')","Topic","Needs a chapter",!t.ch.on)}${t.tp.on?`<input 
 function pp(){let e=$("#pp");if(e)e.textContent=(pth(E)||"Choose an exam")+" › "+(E.title||"This test")}
 function togL(k){E[k].on=!E[k].on;if(!E[k].on){if(k=="sub"){E.ch.on=false;E.tp.on=false}if(k=="ch")E.tp.on=false}sv();render()}
 function addEx(){let v=$("#nx").value.trim();if(!v)return;if(!D.exams.some(x=>x.toLowerCase()==v.toLowerCase()))D.exams.push(v);E.exam=D.exams.find(x=>x.toLowerCase()==v.toLowerCase());NX=0;sv();render()}
-function upImg(inp,w,cb){let f=inp.files[0];if(!f)return;if(f.size>4e5){BM="That file is "+Math.round(f.size/1000)+" KB. Please use one under 400 KB.";return render()}let r=new FileReader();r.onload=()=>{let im=new Image();im.onload=()=>{let q=im.width/im.height;BM=Math.abs(q-1.6)<.03?"Perfect 16:10 ("+im.width+" × "+im.height+").":"Ratio is "+im.width+" × "+im.height+". It will be cropped to 16:10 from the center.";if(w=="E")E.banner=r.result;else BNF.img=r.result;sv();render()};im.src=r.result};r.readAsDataURL(f)}
+function upImg(inp,w,cb){let f=inp.files[0];if(!f)return;
+let r=new FileReader();
+r.onload=()=>{
+  let im=new Image();
+  im.onload=()=>{
+    try {
+      let canvas=document.createElement('canvas');
+      let maxW=1200,maxH=750;
+      let width=im.width,height=im.height;
+      if(width>maxW){height=Math.round(height*maxW/width);width=maxW;}
+      if(height>maxH){width=Math.round(width*maxH/height);height=maxH;}
+      canvas.width=width;canvas.height=height;
+      let ctx=canvas.getContext('2d');
+      ctx.drawImage(im,0,0,width,height);
+      let compressed=canvas.toDataURL('image/jpeg',0.82);
+      if(w=="E")E.banner=compressed;else BNF.img=compressed;
+      BM="Image ready ("+width+" × "+height+", optimized)";
+      sv();render();
+    } catch(err) {
+      if(w=="E")E.banner=r.result;else BNF.img=r.result;
+      sv();render();
+    }
+  };
+  im.src=r.result;
+};
+r.readAsDataURL(f);}
 function qs(){let t=E,rv=t.q.filter(q=>rpc(q.id)).length,l=t.q.map((q,i)=>[q,i]).filter(x=>QX=="all"||rpc(x[0].id));
 return `<div class="seg wide ${QM=="bulk"?"r":""}" style="margin-bottom:14px"><button class="${QM=="manual"?"on":""}" onclick="QM='manual';render()">${ic("edit")}Add manually</button><button class="${QM=="bulk"?"on":""}" onclick="QM='bulk';render()">${ic("upload")}Bulk upload</button></div>${QM=="bulk"?bulk():`<div class="c2"><div class="rowx"><div><h3>Questions (${t.q.length})</h3><small class="mu">Tap edit to change a question.</small></div><button class="b" onclick="QE=-2;QF={t:'',o:['','','',''],a:0,e:''};render()">${ic("plus")}Add question</button></div>${QE==-2?qf():""}
 <div class="tabs" style="margin-top:12px"><button class="${QX=="all"?"on":""}" onclick="QX='all';render()">All (${t.q.length})</button><button class="${QX=="rp"?"on":""}" onclick="QX='rp';render()">${ic("flag")}Reported (${rv})</button></div>${l.map(x=>QE==x[1]?qf():qrow(x[0],x[1])).join("")||'<div class="em">No questions here yet. Add one, or use Bulk upload.</div>'}</div>`}`}
@@ -876,12 +910,56 @@ function act(i,a){let s=D.students.find(x=>x.id==i);s.h.unshift({at:Date.now(),a
 function blist(){let q=BQ.toLowerCase();return D.tests.filter(t=>t.status=="pub"&&(t.id.toLowerCase().includes(q)||t.title.toLowerCase().includes(q)||t.exam.toLowerCase().includes(q))).slice(0,6).map(t=>`<button class="rrw${BNF.link==t.id?" on":""}" onclick="BNF.link='${t.id}';render()"><i></i><span><b>${esc(t.title)}</b><small class="mu">${t.id} · ${esc(pth(t))}</small></span></button>`).join("")||'<div class="hint">No live test matches.</div>'}
 function banners(){let n=BNF;lay("banners","Home banners",`<div class="rowx" style="margin-bottom:12px"><small class="mu">Shown in the home carousel in this order. Tap a banner to open its link.</small><button class="b" onclick="BNF={img:'',alt:'',link:'',url:'',on:true,from:'',to:''};BT='test';BQ='';BM='';render()">${ic("plus")}New banner</button></div>${n?`<div class="c2"><h3>New banner</h3><div class="pvw" style="${n.img?`background-image:url('${n.img}')`:""}">${n.img?"":"16:10 preview"}</div><label class="up2">${ic("upload")}<b>Upload banner</b><br><small>1600 × 1000 px (16:10) · JPG or WebP · under 400 KB · no text baked in</small><input type="file" accept="image/*" onchange="upImg(this,'B')"></label><div class="hint">${esc(BM)}</div><label class="l2" for="ba">Alt text (describe the banner)</label><input id="ba" class="in" value="${esc(n.alt)}" oninput="BNF.alt=this.value">
 <label class="l2">Where should it open?</label><div class="seg wide ${BT=="url"?"r":""}"><button class="${BT=="test"?"on":""}" onclick="BT='test';render()">A test</button><button class="${BT=="url"?"on":""}" onclick="BT='url';render()">A web link</button></div>${BT=="test"?`<input class="in" type="search" aria-label="Search live tests" placeholder="Search by test ID, title or exam" value="${esc(BQ)}" oninput="BQ=this.value;$('#bl').innerHTML=blist()" style="margin-top:10px"><div class="rrg" id="bl">${blist()}</div><p class="hint">${n.link?"Selected test: <b>"+n.link+"</b>. ":"Pick one test. "}Showing up to 6 live tests. Search to find others.</p>`:`<input class="in" type="url" aria-label="Web link" placeholder="https://" value="${esc(n.url)}" oninput="BNF.url=this.value" style="margin-top:10px">`}
-<div class="g2"><div><label class="l2" for="bf">Show from</label><input id="bf" class="in" type="date" oninput="BNF.from=this.value"></div><div><label class="l2" for="bo">Hide after</label><input id="bo" class="in" type="date" oninput="BNF.to=this.value"></div></div><div class="rowx" style="margin-top:12px"><span class="hint bad" id="ber"></span><span><button class="b o" onclick="BNF=null;render()">Cancel</button> <button class="b" onclick="saveB()">Add banner</button></span></div></div>`:""}${D.banners.map((b,i)=>`<div class="tw"><div class="pvw" style="width:92px;margin:0;background-image:url('${b.img}');flex:none"></div><div class="bd2"><b>${esc(b.alt)}</b><small class="mu">Opens ${b.link?(tid(b.link)?esc(tid(b.link).title)+" ("+b.link+")":b.link):esc(b.url||"")}${b.from?" · from "+b.from:""}${b.to?" · until "+b.to:""}</small>${cf("db"+i,"Delete this banner?","deleteBannerFromDb(D.banners["+i+"].id);D.banners.splice("+i+",1);sv()")}</div><button class="ib2" aria-label="Move up" ${i?"":"disabled"} onclick="mvB(${i},-1)">${ic("up")}</button><button class="ib2" aria-label="Move down" onclick="mvB(${i},1)">${ic("down")}</button><button class="sw${b.on?" on":""}" role="switch" aria-checked="${b.on}" aria-label="Active" onclick="D.banners[${i}].on=!D.banners[${i}].on;sv();render()"><i></i></button><button class="ib2 dg" aria-label="Delete" onclick="CF='db${i}';render()">${ic("trash")}</button></div>`).join("")||'<div class="em">No banners yet.</div>'}`)}
-function saveB(){let b=BNF,er=!b.img?"Upload a banner image.":!b.alt.trim()?"Add alt text.":BT=="test"&&!b.link?"Choose a test.":BT=="url"&&!/^https?:\/\/\S+/.test(b.url)?"Enter a full web link starting with https://":"";if(er){$("#ber").textContent=er;return}if(BT=="test")b.url="";else b.link="";b.id=Date.now();D.banners.push(b);insertBannerToDb(b);BNF=null;BM="";sv();toast("Banner added");render()}
+<div class="g2"><div><label class="l2" for="bf">Show from</label><input id="bf" class="in" type="date" oninput="BNF.from=this.value"></div><div><label class="l2" for="bo">Hide after</label><input id="bo" class="in" type="date" oninput="BNF.to=this.value"></div></div><div class="rowx" style="margin-top:12px"><span class="hint bad" id="ber"></span><span><button class="b o" onclick="BNF=null;render()">Cancel</button> <button class="b" onclick="saveB()">Add banner</button></span></div></div>`:""}${D.banners.map((b,i)=>`<div class="tw"><div class="pvw" style="width:92px;margin:0;background-image:url('${b.img}');flex:none"></div><div class="bd2"><b>${esc(b.alt)}</b><small class="mu">Opens ${b.link?(tid(b.link)?esc(tid(b.link).title)+" ("+b.link+")":b.link):esc(b.url||"")}${b.from?" · from "+b.from:""}${b.to?" · until "+b.to:""}</small>${cf("db"+i,"Delete this banner?","deleteBannerFromDb(D.banners["+i+"].id);D.banners.splice("+i+",1);sv()")}</div><button class="ib2" aria-label="Move up" ${i?"":"disabled"} onclick="mvB(${i},-1)">${ic("up")}</button><button class="ib2" aria-label="Move down" onclick="mvB(${i},1)">${ic("down")}</button><button class="sw${b.on?" on":""}" role="switch" aria-checked="${b.on}" aria-label="Active" onclick="togBanner(${i})"><i></i></button><button class="ib2 dg" aria-label="Delete" onclick="CF='db${i}';render()">${ic("trash")}</button></div>`).join("")||'<div class="em">No banners yet.</div>'}`)}
+async function saveB(){
+  let b=BNF;
+  let er=!b.img?"Upload a banner image.":!b.alt.trim()?"Add alt text.":"";
+  if(er){$("#ber").textContent=er;return}
+  if(BT=="test"&&!b.link)b.link=D.tests[0]?.id?("test-"+D.tests[0].id):"explore";
+  b.id="b_"+Date.now();
+  b.on=true;
+  D.banners.push(b);
+  BNF=null;BM="";sv();
+  toast("Banner uploading to Cloud...");
+  render();
+  await insertBannerToDb(b);
+  toast("✅ Banner published to Student App!");
+  render();
+}
+
+async function togBanner(i) {
+  if (!D.banners[i]) return;
+  D.banners[i].on = !D.banners[i].on;
+  sv();
+  render();
+  if (sb && D.banners[i].id) {
+    try {
+      await sb.from('banners').update({ is_active: D.banners[i].on }).eq('id', D.banners[i].id);
+      toast(D.banners[i].on ? "Banner visible in Student App" : "Banner hidden in Student App");
+    } catch(e) { console.warn(e); }
+  }
+}
+
 function mvB(i,d){let a=D.banners,j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];sv();render()}
 function staff(){let n=SN;lay("staff","Staff",`<div class="rowx" style="margin-bottom:12px"><small class="mu">Give people only the access they need. Use “Preview as role” in the menu to see what they see.</small><button class="b" onclick="SN={n:'',e:'',role:'creator',p:[...RL.creator.p]};render()">${ic("plus")}Add staff</button></div>${n?`<div class="c2"><h3>New staff member</h3><div class="g2"><div><label class="l2" for="sn">Name</label><input id="sn" class="in" value="${esc(n.n)}" oninput="SN.n=this.value"></div><div><label class="l2" for="se">Google email</label><input id="se" class="in" type="email" value="${esc(n.e)}" oninput="SN.e=this.value"></div></div><label class="l2">Role</label>${chips(Object.entries(RL).map(r=>[r[0],r[1].n]),n.role,"setRole")}${PM.map(p=>sw(SN.p.includes(p[0]),"togP('SN','"+p[0]+"')",p[1])).join("")}<div class="rowx" style="margin-top:12px"><span class="hint bad" id="ser"></span><span><button class="b o" onclick="SN=null;render()">Cancel</button> <button class="b" onclick="saveS()">Add</button></span></div></div>`:""}${D.staff.map((s,i)=>`<div class="c2" style="padding:14px"><div class="rowx" style="cursor:pointer" onclick="XS=XS=='${s.id}'?'':'${s.id}';render()"><div style="display:flex;gap:12px;align-items:center"><span class="av2">${esc(s.n[0])}</span><div><b>${esc(s.n)}</b><small class="mu" style="display:block">${esc(s.e)}</small></div></div><span class="st2 ${s.id=="owner"?"pub":""}">${s.r}</span></div><div class="hint">${s.p.length==PM.length?"Full access":s.p.map(k=>PM.find(p=>p[0]==k)[1]).join(" · ")||"No access"}</div>${XS==s.id&&s.id!="owner"?PM.map(p=>sw(s.p.includes(p[0]),"togP('D.staff["+i+"]','"+p[0]+"')",p[1])).join("")+cf("ds"+i,"Remove "+esc(s.n)+"?","deleteStaffFromDb(D.staff["+i+"].id, D.staff["+i+"].e);D.staff.splice("+i+",1);XS=''")+(CF!="ds"+i?`<button class="b dg s" style="margin-top:10px" onclick="CF='ds${i}';render()">Remove staff</button>`:""):""}</div>`).join("")}<p class="hint">In the live app, staff sign in with their own Google account. Permissions are enforced on the server, not just hidden in the menu.</p>`)}
 function togP(o,k){let a=eval(o).p,i=a.indexOf(k);i<0?a.push(k):a.splice(i,1);if(o!="SN")sv();render()}
 function saveS(){let s=SN,er=!s.n.trim()?"Enter a name.":!/\S+@\S+\.\S+/.test(s.e)?"Enter a valid email.":D.staff.some(x=>x.e==s.e)?"That email is already added.":"";if(er){$("#ser").textContent=er;return}D.staff.push({id:"st"+Date.now(),n:s.n.trim(),e:s.e.trim(),r:RL[s.role].n,p:s.p});SN=null;sv();toast("Staff added");render()}
+
+async function togMaint() {
+  D.cfg.maint = !D.cfg.maint;
+  sv();
+  render();
+  if (sb) {
+    try {
+      await sb.from('config').update({
+        maintenance: D.cfg.maint,
+        maintenance_msg: D.cfg.mmsg || 'We are updating the app. Please check back soon.'
+      }).eq('id', 'main');
+      toast(D.cfg.maint ? "🚨 Maintenance Mode ON (Students blocked)" : "✅ Maintenance Mode OFF (Students live)");
+    } catch(e) { console.warn(e); }
+  }
+}
+
 function settings(){let c=D.cfg,f=(k,l,ty)=>`<label class="l2" for="c${k}">${l}</label><input id="c${k}" class="in" type="${ty||"text"}" value="${esc(c[k])}" oninput="D.cfg.${k}=this.value;sv()">`;
 lay("settings","Settings",`<div class="c2"><h3>App identity</h3>${f("name","App name")}${f("tag","Tagline")}<label class="l2">Logo</label><div style="display:flex;gap:14px;align-items:center">${c.logo?`<img src="${c.logo}" alt="Logo" style="width:64px;height:64px;object-fit:cover;border-radius:16px">`:'<span class="mk" style="width:64px;height:64px;border-radius:16px;font-size:1.6rem">S</span>'}<label class="b o" style="cursor:pointer">${ic("upload")}Upload logo<input type="file" accept="image/*" hidden onchange="upLogo(this)"></label></div></div>
 <div class="c2"><h3>Contact</h3>${f("email","Support email","email")}${f("phone","Phone","tel")}${f("wa","WhatsApp number","tel")}</div>
