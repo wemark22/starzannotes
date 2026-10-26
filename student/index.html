@@ -76,6 +76,9 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 .b:active,.op:active,.rrw:active,.tabs button:active,.pn:active,.bkb:active,.ib:active,.ib2:active,.seg button:active,.ni:active{transform:scale(.97)}
 .doc{max-width:720px;margin:0 auto;padding-bottom:24px}.doc h1{margin-top:28px;font-size:clamp(1.6rem,6vw,2.2rem)}.doc h3{margin:22px 0 6px}.doc p,.doc li{opacity:.92}.doc ul{padding-left:20px;margin:6px 0}.cc2{background:var(--sf);border:1px solid var(--br);border-radius:18px;padding:18px;margin-top:24px;box-shadow:var(--sh)}.cc2 .b+.b{margin-top:8px}
 .fl{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;margin-bottom:8px}.fl a{color:var(--mu);font-size:.85rem;font-weight:600}.fl a:hover{color:var(--ac)}
+
+.idc { font-family: monospace; background: var(--sf); border: 1px solid var(--br); padding: 3px 8px; border-radius: 6px; font-size: .85rem; display: inline-flex; align-items: center; gap: 4px; color: var(--mu); }
+.ms { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
 </style></head><body><div id="app"></div><div id="m"></div><div id="t" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -92,7 +95,8 @@ let CFG = {
   mmsg: "We are updating the app. Please check back soon.",
   email: "support@starzannotes.in",
   phone: "",
-  wa: ""
+  wa: "",
+  legal: { priv: "", terms: "", about: "", refund: "", help: "" }
 };
 
 const PG = {
@@ -100,15 +104,15 @@ const PG = {
   terms: "Terms and conditions",
   about: "About us",
   refund: "Refund policy",
-  help: "Help"
+  help: "Help & FAQ"
 };
 
 const LEG = {
-  priv: "Privacy policy text...",
-  terms: "Terms and conditions text...",
-  about: "About StarzanNotes...",
-  refund: "Refund policy...",
-  help: "Help and FAQ..."
+  priv: "Privacy Policy\n\nLast updated: 2026\n\nStarzanNotes values your privacy. We collect your name and email to track test attempts and purchases. We do not sell your personal data to third parties.",
+  terms: "Terms and Conditions\n\nLast updated: 2026\n\n1. Acceptance of terms\nBy using StarzanNotes, you agree to these terms.\n\n2. Test usage\nTests and questions are for personal study only. Copying or redistribution is strictly prohibited.",
+  about: "About StarzanNotes\n\nStarzanNotes is a modern CBT online practice platform providing exam-pattern test series with detailed solutions and real-time rank analytics.",
+  refund: "Refund Policy\n\nWhat you get\n- Immediate access to full test series\n\nYou can get a full refund if\n- You contact us within 24 hours of purchase if content was inaccessible.\n\nContact us\n- Email support@starzannotes.in",
+  help: "Help & FAQ\n\nHow do I start a test?\n- Select a Test Series, navigate to a subject/chapter, and tap Start Test.\n\nDoes the timer stop if I close the app?\n- No, the exam timer runs continuously."
 };
 
 const I = {
@@ -125,7 +129,8 @@ const I = {
   flag: '<path d="M5 21V4h11l-1.5 4L16 12H5"/>',
   bolt: '<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',
   x: '<path d="M6 6l12 12M18 6 6 18"/>',
-  grid: '<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/>'
+  grid: '<rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>'
 };
 
 const ic = n => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n] || ''}</svg>`;
@@ -166,38 +171,69 @@ function toast(m) {
   t.textContent = m;
   t.classList.add("sh");
   clearTimeout(toast.h);
-  toast.h = setTimeout(() => t.classList.remove("sh"), 2600);
+  toast.h = setTimeout(() => t.classList.remove("sh"), 2400);
 }
 
-function M(h) {
-  $("#m").innerHTML = `<div class="ov" onclick="if(event.target==this)X()"><div class="md" role="dialog" aria-modal="true">${h}</div></div>`;
-}
-function X() {
-  $("#m").innerHTML = "";
+function shareLink(hash, title) {
+  const url = window.location.origin + window.location.pathname + '#' + hash;
+  if (navigator.share) {
+    navigator.share({
+      title: title + ' - ' + CFG.name,
+      text: 'Practice ' + title + ' on ' + CFG.name + '!',
+      url: url
+    }).catch(() => {});
+  } else {
+    try {
+      navigator.clipboard.writeText(url).then(() => {
+        toast('Link copied! Share it with your friends.');
+      }).catch(() => { prompt('Copy this link:', url); });
+    } catch(e) { prompt('Copy this link:', url); }
+  }
 }
 
-// Global Dynamic State (populated from Supabase)
-let SER = [];
-let N = {};
+function openBanner(link) {
+  if (!link || link === 'home') {
+    go('explore');
+    return;
+  }
+  if (link.startsWith('http://') || link.startsWith('https://')) {
+    window.open(link, '_blank');
+    return;
+  }
+  let target = link.replace(/^#/, '');
+  if (TESTS_BY_ID[target]) {
+    go('test-' + target);
+    return;
+  }
+  if (N[target]) {
+    go(N[target].par ? ('node-' + target) : ('series-' + target));
+    return;
+  }
+  go(target);
+}
+
+// Global data stores
 let LIVE_TESTS = [];
 let TESTS_BY_ID = {};
+let SER = [];
+let N = {};
 let FE = [];
-let Q = [];
 let DB_LEADERBOARDS = {};
+let Q = [];
 
-function slug(s) {
-  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'item';
-}
+const slug = (str) => String(str || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 
+// DYNAMIC HIERARCHY BUILDER
 function buildHierarchy(tests) {
   const seriesMap = {};
   N = {};
 
   tests.forEach(t => {
-    const examName = (t.exam || 'General Mock Tests').trim();
+    const examName = (t.exam || 'General Practice Tests').trim();
     const sid = 'ser_' + slug(examName);
 
     if (!seriesMap[sid]) {
+      let customLabel = t.label && t.label !== 'None' ? t.label : (t.is_paid ? 'Popular' : 'Free');
       seriesMap[sid] = {
         id: sid,
         sid: sid,
@@ -211,7 +247,7 @@ function buildHierarchy(tests) {
         ch: [],
         tests: [],
         par: null,
-        lb: t.label || 'Popular',
+        lb: customLabel,
         ln: 'series-' + sid
       };
       N[sid] = seriesMap[sid];
@@ -221,16 +257,21 @@ function buildHierarchy(tests) {
       series.p = Math.max(series.p, t.price || 0);
       series.s = Math.max(series.s, t.sale_price || t.price || 0);
     }
+    if (t.label && t.label !== 'None') {
+      series.lb = t.label;
+    }
 
     const subName = (t.subject || '').trim();
     const chName = (t.chapter || '').trim();
     const tpName = (t.topic || '').trim();
 
+    // Level 1: Direct test under series (No subject)
     if (!subName) {
       series.tests.push(t);
       return;
     }
 
+    // Level 2: Subject folder
     const subId = sid + '_sub_' + slug(subName);
     let subNode = N[subId];
     if (!subNode) {
@@ -246,11 +287,13 @@ function buildHierarchy(tests) {
       series.ch.push(subNode);
     }
 
+    // Direct test under subject (No chapter)
     if (!chName) {
       subNode.tests.push(t);
       return;
     }
 
+    // Level 3: Chapter folder
     const chId = subId + '_ch_' + slug(chName);
     let chNode = N[chId];
     if (!chNode) {
@@ -266,11 +309,13 @@ function buildHierarchy(tests) {
       subNode.ch.push(chNode);
     }
 
+    // Direct test under chapter (No topic)
     if (!tpName) {
       chNode.tests.push(t);
       return;
     }
 
+    // Level 4: Topic folder
     const tpId = chId + '_tp_' + slug(tpName);
     let tpNode = N[tpId];
     if (!tpNode) {
@@ -380,25 +425,53 @@ async function sendQuestionReport(testId, questionIndex, reason, note) {
   } catch(e) { console.warn(e); }
 }
 
-// Shell & Navigation UI
-function shell(a, b, c, k) {
-  A.innerHTML = `<header class="tp"><div class="w">${k ? `<a class="bkb" href="#${k[0]}" aria-label="Back to ${k[1]}">${ic("back")}<span>${esc(k[1])}</span></a>` : `<a class="lg" href="#home"><span class="mk">${esc(CFG.name[0] || 'S')}</span><span>${esc(CFG.name)}</span></a>`}<nav>${NV.map(n => `<a href="#${n[0]}" class="${a == n[0] ? "on" : ""}">${n[1]}</a>`).join("")}</nav>${S.user ? `<a class="av" href="#learn" aria-label="My learning">${S.user.n[0]}</a>` : '<button class="b s" onclick="signin()">Sign in</button>'}</div></header>${b}<footer><div class="fl">${Object.entries(PG).map(x => `<a href="#page-${x[0]}">${x[1].replace(" policy", "").replace(" and conditions", "")}</a>`).join("")}</div><small>© ${esc(CFG.name)} · Connected with Cloud</small></footer>${c ? `<div class="ct"><div class="w">${c}</div></div>` : `<nav class="bt">${NV.map(n => `<a href="#${n[0]}" class="${a == n[0] ? "on" : ""}">${ic(n[2])}${n[1]}</a>`).join("")}</nav>`}`;
+async function syncUserWithDb(user) {
+  if (!sb || !user || !user.e) return;
+  try {
+    const { data: existing } = await sb.from('users').select('*').eq('email', user.e).maybeSingle();
+    if (existing) {
+      user.id = existing.id;
+      user.status = existing.status || 'active';
+      user.ban_reason = existing.ban_reason || '';
+      await sb.from('users').update({ last_seen: new Date().toISOString() }).eq('id', existing.id);
+    } else {
+      const { data: inserted } = await sb.from('users').insert({
+        name: user.n || 'Student',
+        email: user.e,
+        status: 'active',
+        last_seen: new Date().toISOString()
+      }).select().maybeSingle();
+      if (inserted) {
+        user.id = inserted.id;
+        user.status = 'active';
+      }
+    }
+    sv();
+    R();
+  } catch(e) { console.warn('syncUserWithDb error:', e); }
 }
 
-const card = s => `<a class="cd" href="#${s.ln}"><div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${esc(s.t)} banner" loading="lazy"></div><div class="ci"><div class="cr"><span class="chip g">${esc(s.lb)}</span><span class="eb">${esc(s.x)}</span></div><h3>${esc(s.t)}</h3><p class="mu cl">${esc(s.d)}</p><div class="cf"><span class="mt">${ic("list")}${cnt(s)} tests</span><span class="pr">${s.p ? `<b>${inr(s.s)}</b><s>${inr(s.p)}</s>` : "<b>Free</b>"}</span></div></div></a>`;
+// Shell & Navigation UI
+function shell(a, b, c, k) {
+  A.innerHTML = `<header class="tp"><div class="w">${k ? `<a class="bkb" href="#${k[0]}" aria-label="Back to ${k[1]}">${ic("back")}<span>${esc(k[1])}</span></a>` : `<a class="lg" href="#home"><span class="mk">${esc(CFG.name[0] || 'S')}</span><span>${esc(CFG.name)}</span></a>`}${k ? "" : `<div class="ri"><a class="ib" href="#explore" aria-label="Explore tests">${ic("search")}</a><a class="ib" href="#learn" aria-label="My learning">${ic("book")}</a></div>`}</div></header>
+  ${b}
+  ${c ? `<div class="ct"><div class="w">${c}</div></div>` : ""}
+  ${k ? "" : `<nav class="nv" aria-label="Main">${NV.map(n => `<a class="${a == n[0] ? "on" : ""}" href="#${n[0]}" aria-label="${n[1]}">${ic(n[2])}${n[1]}</a>`).join("")}</nav>`}`;
+}
 
-const testCard = t => `<a class="cd" href="#test-${t.id}" style="padding:16px; border-radius:18px; display:flex; flex-direction:column; justify-content:space-between; text-decoration:none; color:inherit; background:var(--sf); border:1px solid var(--br); box-shadow:var(--sh); transition:.25s;">
-  <div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-      <span class="chip ${t.is_paid ? '' : 'g'}">${t.is_paid ? (t.sale_price ? inr(t.sale_price) : 'Paid') : 'Free'}</span>
-      <span class="eb">${esc(t.exam || 'Mock Test')}</span>
+const card = s => `<a class="cd" href="#${s.ln}">
+  <div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${esc(s.t)} banner" loading="lazy"></div>
+  <div class="ci">
+    <div class="cr">
+      ${s.lb && s.lb !== 'None' ? `<span class="chip ${s.lb.toLowerCase() == 'free' ? 'g' : ''}">${esc(s.lb)}</span>` : ''}
+      <span class="eb">${esc(s.x)}</span>
     </div>
-    <h3 style="margin:4px 0 6px;">${esc(t.title || 'Untitled Test')}</h3>
-    <p class="mu cl" style="font-size:0.88rem; margin:0 0 10px;">${esc(t.subject ? (t.subject + (t.chapter ? ' · ' + t.chapter : '')) : (t.description || 'Full mock practice test'))}</p>
-  </div>
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid var(--br);">
-    <span class="mt" style="font-size:0.85rem; color:var(--mu);">${ic("clock")} ${t.timer_minutes || 10}m · ${ic("list")} ${t.qCount || 0} Qs</span>
-    <span class="b s" style="pointer-events:none;">Start ${ic("chev")}</span>
+    <h3>${esc(s.t)}</h3>
+    <p class="mu cl">${esc(s.d)}</p>
+    <div class="cf">
+      <span class="mt">${ic("list")}${cnt(s)} test${cnt(s) === 1 ? '' : 's'}</span>
+      <span class="pr">${s.p ? `<b>${inr(s.s)}</b><s>${inr(s.p)}</s>` : "<b>Free</b>"}</span>
+    </div>
   </div>
 </a>`;
 
@@ -408,12 +481,12 @@ const car = () => {
       <span class="chip" style="background:#ffffff24; color:#fff;">Online Mock Tests</span>
       <h2 style="color:#fff; font-size:clamp(1.4rem,4.5vw,2.2rem); margin:10px 0 6px;">${esc(CFG.tag)}</h2>
       <p style="color:#cfe3dd; margin:0 0 16px;">Practice exam-pattern mock tests with explained solutions and real-time leaderboards.</p>
-      <a class="b" href="#explore" style="background:#fff; color:#0b4a3e; border:0;">Explore Tests ${ic("chev")}</a>
+      <a class="b" href="#explore" style="background:#fff; color:#0b4a3e; border:0;">Explore Series ${ic("chev")}</a>
     </div>`;
   }
   return `<div class="car" aria-roledescription="carousel">
     <div class="trk" id="trk">
-      ${FE.map((s, i) => `<a class="sl${i ? "" : " on"}" href="#${s.ln}" aria-label="${esc(s.t)}"><div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${esc(s.t)} banner"></div></a>`).join("")}
+      ${FE.map((s, i) => `<div class="sl${i ? "" : " on"}" style="cursor:pointer;" onclick="openBanner('${esc(s.ln)}')" aria-label="${esc(s.t)}"><div class="iw"><img src="${s.im}" width="1600" height="1000" alt="${esc(s.t)} banner"></div></div>`).join("")}
     </div>
     <div class="dots">
       ${FE.map((_, i) => `<button aria-label="Slide ${i + 1}" class="${i ? "" : "on"}" onclick="sl(${i})"></button>`).join("")}
@@ -424,32 +497,38 @@ const car = () => {
 
 function sl(i) {
   let t = $("#trk");
-  if (t) t.scrollTo({ left: i * t.clientWidth, behavior: "smooth" });
+  if (!t) return;
+  cn = i;
+  t.scrollTo({ left: i * t.clientWidth, behavior: "smooth" });
+  dots();
 }
 
 function dots() {
   let t = $("#trk");
-  if (!t || !FE.length) return;
-  let n = Math.round(t.scrollLeft / t.clientWidth);
-  if (n == cn && t.dataset.i) return;
-  cn = n;
-  t.dataset.i = 1;
-  document.querySelectorAll(".sl").forEach((e, j) => e.classList.toggle("on", j == cn));
-  document.querySelectorAll(".dots button[aria-label^=Slide]").forEach((e, j) => e.classList.toggle("on", j == cn));
-  auto();
+  if (!t) return;
+  let i = Math.round(t.scrollLeft / t.clientWidth);
+  cn = i;
+  document.querySelectorAll(".dots button:not(.pz)").forEach((b, k) => b.classList.toggle("on", k == i));
+  document.querySelectorAll(".sl").forEach((s, k) => s.classList.toggle("on", k == i));
 }
 
 function auto() {
   clearInterval(ci);
-  if (!FE.length) return;
   ci = setInterval(() => {
-    if (!cp && !document.hidden) sl((cn + 1) % FE.length);
-  }, 5000);
+    if (cp) return;
+    let t = $("#trk");
+    if (!t) return;
+    let n = FE.length;
+    if (n < 2) return;
+    cn = (cn + 1) % n;
+    sl(cn);
+  }, 4800);
 }
 
 // HOME PAGE
 function home() {
   let rs = T ? `<a class="rs" href="#take-test-${T.testId}">${ic("clock")}<div><b>Resume your test</b><small>${esc(T.title)}</small></div>${ic("chev")}</a>` : "";
+  let standaloneTests = LIVE_TESTS.filter(t => !t.exam || t.exam.trim() === '');
 
   shell("home", `<main class="w">
     <div class="hm">
@@ -458,7 +537,7 @@ function home() {
         <h1>${esc(CFG.tag)}</h1>
         <form class="sf" onsubmit="F.q=this.q.value;F.x='All';go('explore');return false">
           ${ic("search")}
-          <input name="q" aria-label="Search" placeholder="Search tests or series">
+          <input name="q" aria-label="Search" placeholder="Search test series or exam">
           <button class="b">Search</button>
         </form>
       </section>
@@ -466,18 +545,31 @@ function home() {
     </div>
     ${rs}
     
-    ${SER.length ? `
-      <div class="sec"><h2>Test Series</h2><a href="#explore" onclick="F.x='All';F.q=''">View all</a></div>
-      <div class="gr">${SER.map(card).join("")}</div>
-    ` : ''}
-
-    <div class="sec" style="margin-top:28px;">
-      <h2>Live Tests</h2>
-      <span class="chip g">${LIVE_TESTS.length} Available</span>
-    </div>
+    <div class="sec"><h2>Test Series</h2><a href="#explore" onclick="F.x='All';F.q=''">View all</a></div>
     <div class="gr">
-      ${LIVE_TESTS.length ? LIVE_TESTS.map(testCard).join("") : '<div class="em">No tests published yet. Tests added in Admin will appear here.</div>'}
+      ${SER.length ? SER.map(card).join("") : '<div class="em">Test series will appear here once published from the Admin Panel.</div>'}
     </div>
+
+    ${standaloneTests.length ? `
+      <div class="sec" style="margin-top:28px;">
+        <h2>Individual Tests</h2>
+        <span class="chip g">${standaloneTests.length} Available</span>
+      </div>
+      <div class="gr">
+        ${standaloneTests.map(t => `<a class="cd" href="#test-${t.id}" style="padding:16px; border-radius:18px; text-decoration:none; color:inherit; background:var(--sf); border:1px solid var(--br); box-shadow:var(--sh);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span class="idc">${ic("lock")}ID: ${t.id}</span>
+            <span class="chip ${t.is_paid ? '' : 'g'}">${t.is_paid ? (t.sale_price ? inr(t.sale_price) : 'Paid') : 'Free'}</span>
+          </div>
+          <h3>${esc(t.title || 'Untitled Test')}</h3>
+          <p class="mu" style="font-size:0.88rem; margin:6px 0 12px;">${esc(t.description || '')}</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; color:var(--mu);">
+            <span>${ic("list")} ${t.qCount || 0} questions</span>
+            <span>${ic("clock")} ${t.timer_minutes || 10} min</span>
+          </div>
+        </a>`).join("")}
+      </div>
+    ` : ''}
   </main>`);
 
   let t = $("#trk");
@@ -491,8 +583,8 @@ function home() {
 // EXPLORE PAGE
 function explore() {
   shell("explore", `<main class="w">
-    <h1 style="margin-top:26px">Explore</h1>
-    <input class="in" type="search" aria-label="Search series" placeholder="Search tests, series or subjects" value="${esc(F.q)}" oninput="F.q=this.value;lst()">
+    <h1 style="margin-top:26px">Explore Test Series</h1>
+    <input class="in" type="search" aria-label="Search series" placeholder="Search by exam, subject or Test ID..." value="${esc(F.q)}" oninput="F.q=this.value;lst()">
     <div class="tabs">${["All", "Free", "Paid"].map(x => `<button class="${F.x == x ? "on" : ""}" onclick="F.x='${x}';explore()">${x}</button>`).join("")}</div>
     <div id="ls" class="gr"></div>
   </main>`);
@@ -500,30 +592,25 @@ function explore() {
 }
 
 function lst() {
-  let q = F.q.toLowerCase();
+  let q = F.q.toLowerCase().trim();
   let filteredSeries = SER.filter(s => {
-    let matchesQ = (s.t + " " + (s.d || "")).toLowerCase().includes(q);
+    let matchesQ = (s.t + " " + (s.d || "") + " " + s.ch.map(c => c.n).join(" ")).toLowerCase().includes(q) ||
+                   s.tests.some(t => t.id.toLowerCase().includes(q) || t.title.toLowerCase().includes(q)) ||
+                   s.ch.some(c => c.tests.some(t => t.id.toLowerCase().includes(q) || t.title.toLowerCase().includes(q)));
     let matchesType = F.x === "All" || (F.x === "Free" && !s.p) || (F.x === "Paid" && s.p);
     return matchesQ && matchesType;
   });
 
-  let filteredTests = LIVE_TESTS.filter(t => {
-    let matchesQ = (t.title + " " + (t.exam || "") + " " + (t.subject || "")).toLowerCase().includes(q);
-    let matchesType = F.x === "All" || (F.x === "Free" && !t.is_paid) || (F.x === "Paid" && t.is_paid);
-    return matchesQ && matchesType;
-  });
-
-  let out = "";
+  let el = $("#ls");
+  if (!el) return;
   if (filteredSeries.length) {
-    out += filteredSeries.map(card).join("");
+    el.innerHTML = filteredSeries.map(card).join("");
+  } else {
+    el.innerHTML = '<div class="em" style="grid-column:1/-1;">No test series match your search criteria.</div>';
   }
-  if (filteredTests.length) {
-    out += filteredTests.map(testCard).join("");
-  }
-  $("#ls").innerHTML = out || '<div class="em">No tests or series match your search.</div>';
 }
 
-// SERIES / NODE VIEW (Hierarchy)
+// HIERARCHY NODE VIEW (Series / Subject / Chapter / Topic)
 function node(id) {
   let n = N[id];
   if (!n) return go("home");
@@ -554,21 +641,22 @@ function node(id) {
       <h2 style="margin-top:22px">Tests</h2>
       ${n.tests.map((t, idx) => {
         let b = bestOf(t.id);
+        let isTestLocked = (s.p || t.is_paid) && !own;
         return `
           <a class="tr" href="#test-${t.id}">
             <span class="no">${String(idx + 1).padStart(2, "0")}</span>
             <div>
               <b>${esc(t.title || 'Test ' + (idx + 1))}</b>
-              <small>${t.qCount || 0} questions · ${t.timer_minutes || 10} min</small>
+              <small><span class="idc" style="padding:1px 5px; font-size:0.75rem;">${t.id}</span> · ${t.qCount || 0} questions · ${t.timer_minutes || 10} min</small>
             </div>
-            ${b ? `<span class="sb">${b.sc}/${b.mx}</span>` : `<span class="go">Start ${ic("chev")}</span>`}
+            ${b ? `<span class="sb">${b.sc}/${b.mx}</span>` : (isTestLocked ? `<span class="lk">${ic("lock")}</span>` : `<span class="go">Start ${ic("chev")}</span>`)}
           </a>
         `;
       }).join("")}
     ` : ""}
 
     ${(!n.ch || !n.ch.length) && (!n.tests || !n.tests.length) ? `
-      <div class="em">No tests in this section yet.</div>
+      <div class="em">Tests will appear here once added in the Admin Panel.</div>
     ` : ""}
   `;
 
@@ -576,7 +664,10 @@ function node(id) {
     <div class="ph">
       ${root && s.im ? `<img class="bn" src="${s.im}" width="1600" height="1000" alt="${esc(s.t)} banner">` : ""}
       <div class="hd2">
-        <span class="chip">${esc(root ? (s.x || 'Series') : s.t)}</span>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="chip ${s.lb && s.lb.toLowerCase() == 'free' ? 'g' : ''}">${esc(root ? (s.lb || s.x || 'Series') : s.t)}</span>
+          <button class="b o s" style="padding:5px 12px; font-size:0.85rem;" onclick="shareLink('series-${s.id}', '${esc(s.t)}')">${ic("share")} Share</button>
+        </div>
         <h1 style="margin-top:8px">${esc(root ? s.t : n.n)}</h1>
         ${root && s.d ? `<p class="mu">${esc(s.d)}</p>` : ""}
         <div class="meta">
@@ -594,15 +685,14 @@ function node(id) {
         ${!s.p ? `<h3>Free for everyone</h3>` : (own ? `<h3>${ic("check")} You have access</h3>` : `
           <div class="pr">
             <b style="font-size:1.7rem">${inr(s.s)}</b>
-            <s>${inr(s.p)}</s>
-            <small>${Math.round((1 - s.s / s.p) * 100)}% off</small>
+            ${s.p > s.s ? `<s>${inr(s.p)}</s><small>${Math.round((1 - s.s / s.p) * 100)}% off</small>` : ''}
           </div>
         `)}
         <ul>
-          <li>${ic("check")}Detailed explanations</li>
-          <li>${ic("check")}Topic-wise analysis</li>
-          <li>${ic("check")}Leaderboard on every test</li>
-          <li>${ic("check")}Access on any device</li>
+          <li>${ic("check")}Detailed explanations for every question</li>
+          <li>${ic("check")}Topic-wise performance analysis</li>
+          <li>${ic("check")}Live Leaderboard rankings</li>
+          <li>${ic("check")}Unlimited re-attempts</li>
         </ul>
       </div>
     </aside>
@@ -611,8 +701,8 @@ function node(id) {
   shell("home",
     `<main class="w"><div class="${root ? "cols" : "one"}">${hd}${pc}<div class="lst">${list}</div></div></main>`,
     paid ? `
-      <div class="ctl"><small>${esc(s.t)}</small><b>${inr(s.s)} <s>${inr(s.p)}</s></b></div>
-      <button class="b big" onclick="buy('${s.id}')">Unlock series</button>
+      <div class="ctl"><small>${esc(s.t)}</small><b>${inr(s.s)} ${s.p > s.s ? `<s>${inr(s.p)}</s>` : ''}</b></div>
+      <button class="b big" onclick="buy('${s.id}')">Unlock full series</button>
     ` : "",
     [root ? "home" : (pa.par ? "node-" + pa.id : "series-" + pa.id), root ? "Home" : (pa.par ? pa.n : "Series")]
   );
@@ -632,6 +722,10 @@ function test(testId) {
   let L = lbd(t.id);
   let rs = T && (T.testId == t.id || T.nid == t.id);
 
+  let parentSeries = Object.values(N).find(n => !n.par && (n.tests?.some(x => x.id === testId) || (n.ch && inNode(testId, n.id))));
+  let isPaid = (t.is_paid && t.price > 0) || (parentSeries && parentSeries.p > 0);
+  let isOwned = (parentSeries && S.own.includes(parentSeries.id)) || S.own.includes(t.id);
+
   let breadcrumbs = [];
   if (t.exam) breadcrumbs.push(t.exam);
   if (t.subject) breadcrumbs.push(t.subject);
@@ -645,9 +739,16 @@ function test(testId) {
   shell("home", `
     <main class="w">
       <div class="hd2" style="margin-top:20px">
-        <span class="chip g">${t.is_paid ? 'Premium' : 'Free'}</span>
-        ${breadcrumbs.length ? `<span class="eb" style="margin-left:6px">${esc(breadcrumbs.join(' · '))}</span>` : ''}
-        <h1 style="margin-top:10px">${esc(t.title || 'Practice Test')}</h1>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="idc" title="Test ID">${ic("lock")}ID: ${t.id}</span>
+            <span class="chip ${isPaid ? '' : 'g'}">${isPaid ? (isOwned ? 'Unlocked' : 'Premium') : 'Free'}</span>
+            ${t.label && t.label !== 'None' ? `<span class="chip ${t.label.toLowerCase() == 'free' ? 'g' : ''}">${esc(t.label)}</span>` : ''}
+          </div>
+          <button class="b o s" style="padding:4px 10px; font-size:0.82rem;" onclick="shareLink('test-${t.id}', '${esc(t.title)}')">${ic("share")} Share</button>
+        </div>
+        ${breadcrumbs.length ? `<div class="eb" style="margin-bottom:6px">${esc(breadcrumbs.join(' › '))}</div>` : ''}
+        <h1 style="margin-top:4px">${esc(t.title || 'Practice Test')}</h1>
         ${t.description ? `<p class="mu">${esc(t.description)}</p>` : ''}
       </div>
       <div class="ti">
@@ -658,9 +759,9 @@ function test(testId) {
       <h3>Before you begin</h3>
       <ul class="cl2 mu">
         <li>${ic("check")}Unanswered questions score zero.</li>
-        <li>${ic("check")}The timer keeps running if you refresh.</li>
+        <li>${ic("check")}The timer keeps running if you switch apps or refresh.</li>
         <li>${ic("check")}Mark questions for review and return to them anytime.</li>
-        <li>${ic("check")}Test submits automatically when time ends.</li>
+        <li>${ic("check")}Test submits automatically when duration ends.</li>
       </ul>
       ${t.disclaimer ? `<div class="exp" style="margin:14px 0;"><b>Instructions:</b> ${esc(t.disclaimer)}</div>` : ''}
       
@@ -671,8 +772,13 @@ function test(testId) {
       ` : '<div class="em">No attempts yet. Be the first to take this test!</div>'}
     </main>
   `,
-  `<div class="ctl"><small>${rs ? "In progress" : "Ready when you are"}</small><b>${esc(t.title)}</b></div>
-  <button class="b big" onclick="startTest('${t.id}')">${rs ? "Resume" : "Start test"} ${ic("chev")}</button>`,
+  isPaid && !isOwned ? `
+    <div class="ctl"><small>Premium Series</small><b>${esc(parentSeries?.t || t.title)}</b></div>
+    <button class="b big" onclick="buy('${parentSeries?.id || t.id}')">Unlock to Access (${inr(parentSeries?.s || t.price)})</button>
+  ` : `
+    <div class="ctl"><small>${rs ? "In progress" : "Ready when you are"}</small><b>${esc(t.title)}</b></div>
+    <button class="b big" onclick="startTest('${t.id}')">${rs ? "Resume" : "Start test"} ${ic("chev")}</button>
+  `,
   [backTarget, backLabel]);
 }
 
@@ -686,6 +792,31 @@ async function startTest(testId) {
   if (!t) return go("home");
 
   if (!S.user) return signin(() => startTest(testId));
+
+  // Check account status
+  if (S.user.status === 'banned' || S.user.status === 'suspended') {
+    alert("Your account is currently " + S.user.status.toUpperCase() + ".\nReason: " + (S.user.ban_reason || 'Policy violation. Contact support.'));
+    return;
+  }
+
+  // Check if series/test is paid and requires purchase
+  let parentSeries = Object.values(N).find(n => !n.par && (n.tests?.some(x => x.id === testId) || (n.ch && inNode(testId, n.id))));
+  let isPaid = (t.is_paid && t.price > 0) || (parentSeries && parentSeries.p > 0);
+  let isOwned = (parentSeries && S.own.includes(parentSeries.id)) || S.own.includes(t.id);
+
+  if (isPaid && !isOwned) {
+    let target = parentSeries || t;
+    M(`<h3>Unlock Premium Series</h3>
+      <p class="mu"><b>${esc(target.t || target.title)}</b> is part of a premium package. Unlock it now to take tests, view solutions, and compete on the leaderboard.</p>
+      <div class="pr" style="margin:16px 0; font-size:1.5rem;">
+        <b>${inr(target.s || target.price)}</b>
+        ${(target.p || target.price) > (target.s || target.price) ? `<s>${inr(target.p)}</s>` : ''}
+      </div>
+      <button class="b f" onclick="buy('${target.id || t.id}')">Unlock Now</button>
+      <button class="b o f" style="margin-top:8px" onclick="X()">Cancel</button>`);
+    return;
+  }
+
   if (T && (T.testId == testId || T.nid == testId)) return go("take-test-" + testId);
 
   toast("Loading questions from cloud...");
@@ -740,7 +871,7 @@ function take() {
       <button class="bkb" aria-label="Leave test" onclick="if(confirm('Leave the test? Your answers are saved and the timer keeps running.'))go('test-${T.testId}')">
         ${ic("back")}<span>Leave</span>
       </button>
-      <span class="ell">${esc(T.title || "Test")}</span>
+      <span class="ell"><span class="idc" style="padding:1px 6px; font-size:0.75rem; margin-right:6px;">${T.testId}</span> ${esc(T.title || "Test")}</span>
       <button class="ib pb" aria-label="Question palette" onclick="pal()">${ic("grid")}</button>
       <span id="tm" class="tmr" role="timer">${ic("clock")}<span id="tt"></span></span>
     </div>
@@ -755,95 +886,129 @@ function take() {
   draw();
   tk();
   clearInterval(tm);
-  tm = setInterval(tk, 1000);
+  tm = setInterval(tk, 500);
 }
 
 function tk() {
-  let r = Math.round((T.end - Date.now()) / 1000);
-  if (r <= 0) return fin();
-  let tt = $("#tt");
-  let tmEl = $("#tm");
-  if (tt) tt.textContent = mmss(r);
-  if (tmEl) tmEl.classList.toggle("lw", r < 60);
+  if (!T) return;
+  let rem = Math.max(0, Math.round((T.end - Date.now()) / 1000));
+  let e = $("#tt"), p = $("#tm");
+  if (e) e.textContent = mmss(rem);
+  if (p) p.classList.toggle("warn", rem < 120);
+  if (rem <= 0) fin();
 }
 
 function lap() {
-  if (!T || !T.tt) return;
-  T.tt[T.q] = (T.tt[T.q] || 0) + (Date.now() - T.lq) / 1000;
-  T.lq = Date.now();
-}
-
-function plp() {
-  return `<div class="pl">${Q.map((_, i) => `<button class="pn${T.v[i] ? " vs" : ""}${T.a[i] >= 0 ? " an" : ""}${T.r[i] ? " rv" : ""}${i == T.q ? " cu" : ""}" aria-label="Question ${i + 1}" onclick="X();jump(${i})">${i + 1}</button>`).join("")}</div>
-  <div class="lgd"><span style="--k:var(--ac)">Answered</span><span style="--k:var(--gd)">Marked</span><span style="--k:var(--hi)">Not answered</span><span style="--k:var(--sf)">Not visited</span></div>`;
-}
-
-function pal() {
-  M(`<h3>Question palette</h3>${plp()}<button class="b f" onclick="X();conf()">Submit test</button>`);
+  if (!T || !Q.length) return;
+  let now = Date.now();
+  let dt = Math.round((now - T.lq) / 1000);
+  if (T.q >= 0 && T.q < T.tt.length) T.tt[T.q] = (T.tt[T.q] || 0) + dt;
+  T.lq = now;
 }
 
 function draw() {
   if (!T || !Q.length) return;
+  let q = Q[T.q], a = T.a[T.q], rv = T.r[T.q];
   T.v[T.q] = 1;
-  let q = Q[T.q];
-  let n = Q.length;
-  let an = T.a.filter(x => x >= 0).length;
-  let pgb = $("#pgb");
-  if (pgb) pgb.style.width = (an / n * 100) + "%";
 
   let qa = $("#qa");
   if (qa) {
-    qa.innerHTML = `<div class="qm"><span>Question ${T.q + 1} <small>of ${n}</small></span><span class="chip">${esc(q[4] || 'General')}</span></div>
-    <h2 class="qt">${esc(q[0])}</h2>
-    ${q[1].map((o, i) => `<button class="op${T.a[T.q] == i ? " on" : ""}" aria-pressed="${T.a[T.q] == i}" onclick="pick(${i})"><i>${"ABCD"[i]}</i><span>${esc(o)}</span></button>`).join("")}`;
-  }
-
-  let sd = $("#sd");
-  if (sd) {
-    sd.innerHTML = `<h3>Questions</h3>${plp()}<p class="sm">${an} answered · ${n - an} not answered · ${T.r.filter(x => x).length} marked</p><button class="b f" onclick="conf()">Submit test</button>`;
+    qa.innerHTML = `<div class="qh">
+      <div>
+        <span class="qn">Question ${T.q + 1} of ${Q.length}</span>
+        ${q[4] ? `<span class="eb" style="margin-left:8px">${esc(q[4])}</span>` : ""}
+      </div>
+      <button class="rf${rv ? " on" : ""}" onclick="togR()">${ic("flag")} ${rv ? "Marked for review" : "Mark for review"}</button>
+    </div>
+    <div class="qt">${esc(q[0])}</div>
+    <div class="op" role="radiogroup">${q[1].map((o, i) => `<button class="rw${a == i ? " on" : ""}" role="radio" aria-checked="${a == i}" onclick="ans(${i})"><i></i><span><b>${"ABCD"[i]}.</b> ${esc(o)}</span></button>`).join("")}</div>`;
   }
 
   let xf = $("#xf");
   if (xf) {
-    xf.innerHTML = `<button class="b o" aria-label="Previous" onclick="jump(T.q - 1)" ${T.q ? "" : "disabled"}>${ic("back")}</button>
-    <button class="b o" onclick="T.r[T.q]^=1;sv();draw()">${ic("flag")}${T.r[T.q] ? "Unmark" : "Mark"}</button>
-    ${T.q < n - 1 ? `<button class="b" onclick="jump(T.q + 1)">Next ${ic("chev")}</button>` : '<button class="b" onclick="conf()">Submit</button>'}`;
+    xf.innerHTML = `<button class="b o" onclick="clr()">Clear answer</button>
+      <span class="sp">
+        <button class="b o" ${T.q == 0 ? "disabled" : ""} onclick="move(-1)">${ic("back")} Previous</button>
+        ${T.q == Q.length - 1 ? `<button class="b" onclick="subD()">Submit test</button>` : `<button class="b" onclick="move(1)">Next ${ic("chev")}</button>`}
+      </span>`;
   }
+
+  let pgb = $("#pgb");
+  if (pgb) pgb.style.width = Math.round((T.q + 1) / Q.length * 100) + "%";
+
+  let sd = $("#sd");
+  if (sd) sd.innerHTML = palBody();
 }
 
-function pick(i) {
-  if (!T) return;
-  T.a[T.q] = T.a[T.q] == i ? -1 : i;
+function palBody() {
+  if (!T) return "";
+  let an = T.a.filter(x => x >= 0).length, rv = T.r.filter(x => x).length;
+  return `<div class="ph2">
+    <div><b>Question palette</b><small class="mu">${an} answered · ${rv} marked</small></div>
+    <button class="ib" aria-label="Close palette" onclick="pal(0)">${ic("x")}</button>
+  </div>
+  <div class="plg">${Q.map((_, i) => {
+    let a = T.a[i] >= 0, r = T.r[i], v = T.v[i], c = T.q == i ? "cur " : "";
+    let k = r && a ? "mka" : r ? "mk" : a ? "ans" : v ? "vis" : "unv";
+    return `<button class="pb ${c}${k}" onclick="jump(${i})">${i + 1}</button>`;
+  }).join("")}</div>
+  <button class="b f" style="margin-top:16px" onclick="subD()">Submit test</button>`;
+}
+
+function pal(o) {
+  let s = $("#sd");
+  if (!s) return;
+  s.classList.toggle("open", o !== undefined ? o : !s.classList.contains("open"));
+  if (s.classList.contains("open")) s.innerHTML = palBody();
+}
+
+function ans(i) {
+  lap();
+  T.a[T.q] = i;
   sv();
   draw();
 }
 
+function clr() {
+  lap();
+  T.a[T.q] = -1;
+  sv();
+  draw();
+}
+
+function togR() {
+  T.r[T.q] = !T.r[T.q];
+  sv();
+  draw();
+}
+
+function move(d) {
+  jump(T.q + d);
+}
+
 function jump(i) {
-  if (!T || i < 0 || i >= Q.length) return;
+  if (i < 0 || i >= Q.length) return;
   lap();
   T.q = i;
   sv();
   draw();
+  pal(0);
 }
 
-addEventListener("keydown", e => {
-  if (!T || !location.hash.startsWith("#take") || $("#m").innerHTML || /INPUT|TEXTAREA/.test(e.target.tagName)) return;
-  let k = e.key.toLowerCase();
-  if (k.length == 1 && "abcd".includes(k)) pick("abcd".indexOf(k));
-  else if (k == "arrowright") jump(T.q + 1);
-  else if (k == "arrowleft") jump(T.q - 1);
-  else if (k == "m") { T.r[T.q] ^= 1; sv(); draw(); }
-});
-
-function conf() {
-  let an = T.a.filter(x => x >= 0).length;
-  let rv = T.r.filter(x => x).length;
+function subD() {
+  lap();
+  let a = T.a.filter(x => x >= 0).length;
+  let u = Q.length - a;
+  let r = T.r.filter(x => x).length;
   M(`<h3>Submit your test?</h3>
-    <div class="ln"><span>Answered</span><b>${an}</b></div>
-    <div class="ln"><span>Not answered</span><b>${Q.length - an}</b></div>
-    <div class="ln"><span>Marked for review</span><b>${rv}</b></div>
-    <button class="b f" onclick="fin()">Yes, submit</button>
-    <button class="b o f" onclick="X()">Keep working</button>`);
+    <ul class="cl2 mu" style="margin:14px 0 20px;">
+      <li>${ic("check")}${a} answered</li>
+      <li>${ic("check")}${u} unanswered</li>
+      <li>${ic("flag")}${r} marked for review</li>
+    </ul>
+    <p class="mu" style="font-size:0.9rem;">Once submitted, your final score and detailed solutions will be shown.</p>
+    <button class="b f" onclick="fin()">Submit now</button>
+    <button class="b o f" style="margin-top:8px" onclick="X()">Keep answering</button>`);
 }
 
 function fin() {
@@ -920,7 +1085,10 @@ function result(i) {
           <div>${pc}%</div>
         </div>
         <div>
-          <small>${esc(testTitle)}</small>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="idc">${ic("lock")}ID: ${r.testId || r.nid}</span>
+            <small style="color:#cfe3dd;">${esc(testTitle)}</small>
+          </div>
           <h2>${r.sc} / ${r.mx} marks</h2>
           <p style="margin:0;color:#cfe3dd">
             ${pc >= 75 ? "Excellent work!" : pc >= 50 ? "Good effort. Keep practising!" : "Keep practicing, you will improve!"}
@@ -968,86 +1136,158 @@ function rev(i) {
         <b>${k + 1}. ${esc(q[0])}</b>
         <div class="an2">${q[1].map((o, j) => `<div class="${j==q[2]?"oc":j==a?"ow":""}">${"ABCD"[j]}. ${esc(o)}${j==q[2]?" ✓":j==a?" ✗":""}</div>`).join("")}</div>
         <div class="exp"><b>Explanation:</b> ${esc(q[3] || 'Refer to study notes.')}</div>
-        <button class="b o s" style="margin-top:10px" onclick="rpt('${r.testId || r.nid}', ${k})">${ic("flag")} Report an issue</button>
+        <button class="b o s" style="margin-top:10px; font-size:0.8rem;" onclick="promptReport('${r.testId || r.nid}', ${k})">${ic("flag")} Report an issue with this question</button>
       </div>`;
-    }).join("") || '<div class="em">Nothing in this filter.</div>');
+    }).join(""));
 }
 
 function rfs(f, i) {
   RF = f;
-  let rv = $("#rv");
-  if (rv) rv.innerHTML = rev(i);
+  let el = $("#rv");
+  if (el) el.innerHTML = rev(i);
 }
 
-const RPR = ["The answer looks wrong", "The question is unclear", "Spelling or typing mistake", "The explanation is wrong", "Something else"];
-let RPS = 0;
-
-function rpt(testId, k, i) {
-  if (i != null) RPS = i;
-  else RPS = 0;
-  M(`<h3>Report question ${k + 1}</h3>
-    <p class="mu">What is wrong with it?</p>
-    ${RPR.map((r, j) => `<button class="op${RPS == j ? " on" : ""}" style="min-height:48px" onclick="rpt('${testId}', ${k}, ${j})"><i>${j + 1}</i><span>${r}</span></button>`).join("")}
-    <textarea id="rn" class="in" rows="3" placeholder="Tell us more (optional)" style="margin-top:6px"></textarea>
-    <button class="b f" onclick="let note=$('#rn').value;X();sendQuestionReport('${testId}', ${k}, RPR[${RPS}], note);">Send report</button>
-    <button class="b o f" onclick="X()">Cancel</button>`);
+function promptReport(testId, qIdx) {
+  let reason = prompt("What is the issue with question " + (qIdx + 1) + "? (e.g. wrong answer, typo)", "Wrong answer or options");
+  if (reason) {
+    sendQuestionReport(testId, qIdx, reason, '');
+  }
 }
 
-// MY LEARNING / LEARN PAGE
+// MY LEARNING PAGE
 function learn() {
+  if (!S.user) {
+    return shell("learn", `<main class="w">
+      <div class="em" style="margin-top:32px; padding:40px 20px; background:var(--sf); border:1px solid var(--br); border-radius:20px;">
+        <h2>Sign in to track your learning</h2>
+        <p class="mu" style="max-width:440px; margin:8px auto 20px;">Your test attempts, leaderboard scores, and unlocked series are synchronized with your account.</p>
+        <button class="b" onclick="signin()">Sign in to StarzanNotes</button>
+      </div>
+      <div class="sec" style="margin-top:36px;"><h2>Help and policies</h2></div>
+      ${docs()}
+    </main>`);
+  }
+
+  let tk2 = S.att.length;
+  let av = tk2 ? Math.round(S.att.reduce((a, r) => a + Math.max(0, r.sc / (r.mx || 1)), 0) / tk2 * 100) : 0;
+  let bs = tk2 ? Math.round(Math.max(...S.att.map(r => Math.max(0, r.sc / (r.mx || 1)))) * 100) : 0;
+
   shell("learn", `<main class="w">
-    <h1 style="margin-top:26px">My learning</h1>
-    ${S.user ? `
-      <div class="c2" style="display:flex; gap:16px; align-items:center; margin-bottom:20px;">
-        <span class="av" style="width:52px; height:52px; border-radius:16px; font-size:1.4rem;">${S.user.n[0]}</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:28px;">
+      <div>
+        <h1 style="margin:0;">Hi, ${esc(S.user.n)}</h1>
+        <small class="mu">${esc(S.user.e)}</small>
+      </div>
+      <button class="b o s" onclick="appSignOut()">Sign out</button>
+    </div>
+
+    ${S.user.status === 'warned' ? `
+      <div class="hint bad" style="margin:16px 0; padding:12px 16px; border-radius:12px; border:1px solid #e53e3e;">
+        ⚠️ <b>Warning Notice:</b> Your account was flagged by the administrator: ${esc(S.user.ban_reason || 'Please adhere to fair testing rules.')}
+      </div>
+    ` : ''}
+
+    <div class="st" style="grid-template-columns:repeat(3,1fr); margin:20px 0;">
+      <div><small>Tests taken</small><b>${tk2}</b></div>
+      <div><small>Average</small><b>${av}%</b></div>
+      <div><small>Best score</small><b>${bs}%</b></div>
+    </div>
+
+    <div class="sec"><h2>My test series</h2></div>
+    <div class="ms">
+      ${S.own.length ? S.own.map(id => N[id] ? card(N[id]) : '').filter(Boolean).join('') : '<div class="em" style="grid-column:1/-1;">No purchased series yet. <a href="#explore" style="color:var(--ac); text-decoration:underline;"><b>Explore Series</b></a></div>'}
+    </div>
+
+    <div class="sec"><h2>My attempts</h2></div>
+    ${S.att.length ? S.att.map((r, i) => `
+      <a class="tr" href="#result-${i}">
+        <span class="fi">${ic("check")}</span>
         <div>
-          <b>${esc(S.user.n)}</b>
-          <small class="mu" style="display:block;">${esc(S.user.e)}</small>
+          <b>${esc(r.title || 'Practice Test')}</b>
+          <small><span class="idc" style="padding:1px 5px; font-size:0.75rem;">${r.testId || r.nid}</span> · ${new Date(r.at).toLocaleDateString("en-IN")} · ${r.c} correct · ${r.w} wrong</small>
         </div>
-        <button class="b o s" style="margin-left:auto;" onclick="appSignOut()">Sign out</button>
-      </div>
-    ` : `
-      <div class="c2" style="text-align:center; padding:32px 20px; margin-bottom:20px;">
-        <h3>Sign in to track progress</h3>
-        <p class="mu">Save attempts, unlock test series and view your ranking.</p>
-        <button class="b" onclick="signin()">Sign in</button>
-      </div>
-    `}
-    
-    <div class="sec"><h2>Recent test attempts</h2></div>
-    ${S.att && S.att.length ? S.att.map((a, i) => `
-      <a class="tw" href="#result-${i}">
-        <div class="bd2">
-          <b>${esc(a.title || 'Practice Test')}</b>
-          <small class="mu">${new Date(a.at).toLocaleDateString()} · ${a.c} correct, ${a.w} incorrect</small>
-        </div>
-        <div class="rt">
-          <b>${a.sc} / ${a.mx}</b>
-          <small class="chip g">${Math.round(a.sc / (a.mx || 1) * 100)}%</small>
-        </div>
+        <span class="sb">${r.sc}/${r.mx}</span>
       </a>
-    `).reverse().join("") : '<div class="em">You haven’t completed any tests yet.</div>'}
+    `).reverse().join("") : '<div class="em">No attempts yet. Practice a test to see results here.</div>'}
+
+    <div class="sec" style="margin-top:28px;"><h2>Help and policies</h2></div>
+    ${docs()}
   </main>`);
 }
 
-// LEGAL / INFO PAGES
-function pageV(p) {
-  let title = PG[p] || "Information";
-  let content = CFG.legal?.[p] || LEG[p] || "No content available.";
-  shell("home", `<main class="w doc">
-    <h1>${title}</h1>
-    <div class="exp" style="white-space:pre-wrap; line-height:1.7; background:var(--sf); border:1px solid var(--br); border-radius:18px; padding:24px;">${esc(content)}</div>
-  </main>`, "", ["home", "Home"]);
+function docs() {
+  return Object.entries(PG).map(x => `<a class="tr" href="#page-${x[0]}"><span class="fi">${ic("book")}</span><div><b>${x[1]}</b></div>${ic("chev")}</a>`).join("");
 }
 
-// AUTHENTICATION
+function pageV(k) {
+  if (!PG[k]) return go("home");
+  let content = CFG.legal && CFG.legal[k] ? CFG.legal[k] : LEG[k];
+  shell("home", `<main class="w"><article class="doc" style="padding:28px 0;">${fmtDoc(content)}</article></main>`, "", ["home", "Home"]);
+}
+
+function fmtDoc(t) {
+  let h = "", ul = 0, hd = /^(\d+\.\s|What you get$|Our promise$|You can get a full refund if$|Refunds are not given when$|How to ask$|How you get the money$|Contact us$|[^.]{3,60}\?$)/;
+  t.split("\n").forEach((l, i) => {
+    l = l.trim();
+    let li = l.startsWith("- ");
+    if (ul && !li) { h += "</ul>"; ul = 0; }
+    if (!l) return;
+    if (li) {
+      if (!ul) { h += "<ul>"; ul = 1; }
+      h += "<li>" + esc(l.slice(2)) + "</li>";
+    } else if (i == 0) h += "<h1>" + esc(l) + "</h1>";
+    else if (hd.test(l)) h += "<h3>" + esc(l) + "</h3>";
+    else h += "<p" + (/^Last updated/.test(l) ? ' class="mu"' : "") + ">" + esc(l) + "</p>";
+  });
+  return h + (ul ? "</ul>" : "");
+}
+
+// AUTH & MODALS
+function M(h) {
+  let m = $("#m");
+  if (!m) {
+    m = document.createElement("div");
+    m.id = "m";
+    m.className = "ov";
+    document.body.appendChild(m);
+  }
+  m.innerHTML = `<div class="md" role="dialog" aria-modal="true">${h}</div>`;
+  m.classList.add("sh");
+}
+
+function X() {
+  let m = $("#m");
+  if (m) m.classList.remove("sh");
+}
+
 function signin(cb) {
   CB = cb;
   M(`<h3>Sign in to StarzanNotes</h3>
-    <p class="mu">Choose how to sign in:</p>
-    <button class="b f" style="margin-bottom:10px" onclick="googleAuth()">Sign in with Google</button>
-    <button class="b o f" onclick="demoAuth()">Continue as Guest Student</button>
-    <button class="b o f" style="margin-top:6px" onclick="X()">Cancel</button>`);
+    <p class="mu">Save attempts, track rankings and unlock test series.</p>
+    <label class="l2" for="stu_name">Your Name</label>
+    <input id="stu_name" class="in" placeholder="e.g. Rahul Sharma" style="margin-bottom:12px;">
+    <label class="l2" for="stu_email">Your Email</label>
+    <input id="stu_email" class="in" type="email" placeholder="e.g. rahul@gmail.com" style="margin-bottom:16px;">
+    <button class="b f" style="margin-bottom:10px" onclick="submitStudentLogin()">Continue</button>
+    <button class="b o f" style="margin-bottom:8px" onclick="googleAuth()">Sign in with Google</button>
+    <button class="b o f" onclick="X()">Cancel</button>`);
+}
+
+async function submitStudentLogin() {
+  let name = ($("#stu_name")?.value || "").trim();
+  let email = ($("#stu_email")?.value || "").trim();
+  if (!email || !email.includes('@')) {
+    alert("Please enter a valid email address.");
+    return;
+  }
+  S.user = { id: 'usr_' + Date.now(), n: name || email.split('@')[0], e: email };
+  sv();
+  X();
+  toast("Signing in...");
+  await syncUserWithDb(S.user);
+  toast("Welcome, " + S.user.n + "!");
+  R();
+  if (CB) CB();
 }
 
 async function googleAuth() {
@@ -1061,17 +1301,8 @@ async function googleAuth() {
       toast("Google login redirecting...");
     }
   } else {
-    demoAuth();
+    submitStudentLogin();
   }
-}
-
-function demoAuth() {
-  S.user = { id: 'usr_' + Date.now(), n: 'Student', e: 'student@example.com' };
-  sv();
-  X();
-  toast("Signed in as Student");
-  R();
-  if (CB) CB();
 }
 
 function appSignOut() {
@@ -1082,12 +1313,39 @@ function appSignOut() {
   R();
 }
 
-function buy(id) {
+async function buy(id) {
   if (!S.user) return signin(() => buy(id));
-  M(`<h3>Unlock test series</h3>
-    <p class="mu">Confirm purchase with Razorpay:</p>
-    <button class="b f" onclick="S.own.push('${id}');sv();X();toast('Series unlocked!');R();">Pay now (Demo)</button>
-    <button class="b o f" onclick="X()">Cancel</button>`);
+  let nodeItem = N[id] || TESTS_BY_ID[id];
+  let title = nodeItem?.t || nodeItem?.title || 'Test Series';
+  let price = nodeItem?.s || nodeItem?.price || 299;
+
+  M(`<h3>Unlock ${esc(title)}</h3>
+    <p class="mu">Complete payment to get instant access to all tests & explanations.</p>
+    <div class="pr" style="margin:16px 0; font-size:1.6rem;"><b>${inr(price)}</b></div>
+    <button class="b f" onclick="confirmPurchase('${id}', ${price}, '${esc(title)}')">Pay ${inr(price)} (Demo)</button>
+    <button class="b o f" style="margin-top:8px" onclick="X()">Cancel</button>`);
+}
+
+async function confirmPurchase(id, amt, title) {
+  if (!S.own.includes(id)) S.own.push(id);
+  S.ord = S.ord || [];
+  S.ord.push({ sid: id, title: title, amt: amt, at: Date.now() });
+  sv();
+  X();
+  toast("🎉 Series unlocked successfully!");
+  if (sb && S.user) {
+    try {
+      await sb.from('purchases').insert({
+        user_id: isUuid(S.user.id) ? S.user.id : null,
+        series_id: id,
+        amount: amt,
+        status: 'paid',
+        payment_method: 'demo',
+        created_at: new Date().toISOString()
+      });
+    } catch(e) { console.warn(e); }
+  }
+  R();
 }
 
 // ROUTER
@@ -1148,29 +1406,31 @@ function R() {
   }[p[0]] || home)();
 
   scrollTo(0, SYNC >= 0 ? SYNC : y);
-  SYNC = -1;
 }
 
-// SUPABASE DATA LOADERS
+// DATA LOADERS FROM SUPABASE
 async function loadConfig() {
   if (!sb) return;
   try {
     const { data: cfg } = await sb.from('config').select('*').eq('id', 'main').maybeSingle();
     if (cfg) {
-      if (cfg.name) CFG.name = cfg.name;
-      if (cfg.tag) CFG.tag = cfg.tag;
-      if (cfg.email) CFG.email = cfg.email;
-      if (cfg.phone) CFG.phone = cfg.phone;
-      if (cfg.wa) CFG.wa = cfg.wa;
-      CFG.maint = !!cfg.maintenance;
-      CFG.mmsg = cfg.maintenance_msg || CFG.mmsg;
-      CFG.legal = {
-        priv: cfg.legal_privacy,
-        terms: cfg.legal_terms,
-        about: cfg.legal_about,
-        refund: cfg.legal_refund,
-        help: cfg.legal_help
+      CFG = {
+        name: cfg.name || CFG.name,
+        tag: cfg.tag || CFG.tag,
+        maint: !!cfg.maintenance,
+        mmsg: cfg.maintenance_msg || CFG.mmsg,
+        email: cfg.email || CFG.email,
+        phone: cfg.phone || CFG.phone,
+        wa: cfg.wa || CFG.wa,
+        legal: {
+          priv: cfg.legal_privacy || LEG.priv,
+          terms: cfg.legal_terms || LEG.terms,
+          about: cfg.legal_about || LEG.about,
+          refund: cfg.legal_refund || LEG.refund,
+          help: cfg.legal_help || LEG.help
+        }
       };
+      document.title = CFG.name + " - Test Series";
       R();
     }
   } catch(e) { console.warn(e); }
@@ -1185,8 +1445,8 @@ async function loadBanners() {
         id: b.id,
         t: b.title,
         d: b.subtitle || '',
-        im: b.image_url || TH(1600, 1000, "#2b3a4a", "Exam", b.title.split(" ")[0]),
-        ln: b.link ? b.link.replace(/^#/, '') : 'home'
+        im: b.image_url || TH(1600, 1000, "#2b3a4a", "Exam", (b.title || "Banner").split(" ")[0]),
+        ln: b.link ? b.link.replace(/^#/, '') : 'explore'
       }));
       R();
     }
@@ -1220,5 +1480,5 @@ route();
 loadConfig();
 loadBanners();
 loadSeriesAndTests();
-
+if (S.user) syncUserWithDb(S.user);
 </script></body></html>

@@ -245,90 +245,78 @@ async function loadAdminData() {
 
     // 3. Load banners
     const { data: banners } = await sb.from('banners').select('*').order('sort_order', { ascending: true });
-    if (banners && banners.length > 0) {
-      D.banners = banners.map(b => ({
-        id: b.id,
-        img: b.image_url || ph("#2b3a4a", b.title.split(" ")[0]),
-        alt: b.title,
-        link: b.link || '',
-        on: b.is_active !== false,
-        from: '',
-        to: ''
-      }));
-    }
+    D.banners = (banners || []).map(b => ({
+      id: b.id,
+      img: b.image_url || ph("#2b3a4a", (b.title || "Banner").split(" ")[0]),
+      alt: b.title,
+      link: b.link || '',
+      on: b.is_active !== false,
+      from: '',
+      to: ''
+    }));
 
     // 4. Load students
     const { data: users } = await sb.from('users').select('*').order('created_at', { ascending: false });
-    if (users && users.length > 0) {
-      D.students = users.map(u => ({
-        id: u.id,
-        n: u.name || 'Student',
-        e: u.email,
-        st: u.status === 'banned' ? 'Banned' : u.status === 'warned' ? 'Warned' : u.status === 'suspended' ? 'Suspended' : 'Active',
-        at: 0,
-        buy: 0,
-        last: Math.max(1, Math.round((Date.now() - new Date(u.last_seen || u.created_at).getTime()) / 864e5)),
-        h: u.ban_reason ? [{ at: Date.now(), a: u.status, r: u.ban_reason, by: 'Admin' }] : []
-      }));
-    }
+    D.students = (users || []).map(u => ({
+      id: u.id,
+      n: u.name || 'Student',
+      e: u.email,
+      st: u.status === 'banned' ? 'Banned' : u.status === 'warned' ? 'Warned' : u.status === 'suspended' ? 'Suspended' : 'Active',
+      at: 0,
+      buy: 0,
+      last: Math.max(1, Math.round((Date.now() - new Date(u.last_seen || u.created_at).getTime()) / 864e5)),
+      h: u.ban_reason ? [{ at: Date.now(), a: u.status, r: u.ban_reason, by: 'Admin' }] : []
+    }));
 
     // 5. Load staff
     const { data: staff } = await sb.from('staff').select('*').order('created_at', { ascending: true });
-    if (staff && staff.length > 0) {
-      D.staff = staff.map(s => ({
-        id: s.id,
-        n: s.name,
-        e: s.email,
-        r: s.role,
-        p: Array.isArray(s.permissions) ? s.permissions : JSON.parse(s.permissions || '[]')
-      }));
-    }
+    D.staff = (staff || []).map(s => ({
+      id: s.id,
+      n: s.name,
+      e: s.email,
+      r: s.role,
+      p: Array.isArray(s.permissions) ? s.permissions : JSON.parse(s.permissions || '[]')
+    }));
 
     // 6. Load reports
     const { data: reports } = await sb.from('reports').select('*').order('created_at', { ascending: false });
-    if (reports && reports.length > 0) {
-      D.reports = reports.map(r => ({
-        id: r.id,
-        tid: r.test_id,
-        qid: r.question_id,
-        reason: r.reason,
-        note: r.note || '',
-        stu: r.user_name || 'Student',
-        at: new Date(r.created_at).getTime(),
-        st: r.status,
-        res: r.resolution || ''
-      }));
-    }
+    D.reports = (reports || []).map(r => ({
+      id: r.id,
+      tid: r.test_id,
+      qid: r.question_id,
+      reason: r.reason,
+      note: r.note || '',
+      stu: r.user_name || 'Student',
+      at: new Date(r.created_at).getTime(),
+      st: r.status,
+      res: r.resolution || ''
+    }));
 
     // 7. Load coupons
     const { data: coupons } = await sb.from('coupons').select('*').order('created_at', { ascending: false });
-    if (coupons && coupons.length > 0) {
-      D.coupons = coupons.map(c => ({
-        id: c.id,
-        code: c.code,
-        type: c.discount_type === 'percent' ? 'pct' : 'flat',
-        val: c.discount_value,
-        min: 0,
-        max: c.max_uses,
-        exp: c.valid_until ? c.valid_until.slice(0, 10) : '',
-        scope: 'all',
-        on: c.is_active !== false,
-        used: c.used_count || 0
-      }));
-    }
+    D.coupons = (coupons || []).map(c => ({
+      id: c.id,
+      code: c.code,
+      type: c.discount_type === 'percent' ? 'pct' : 'flat',
+      val: c.discount_value,
+      min: 0,
+      max: c.max_uses,
+      exp: c.valid_until ? c.valid_until.slice(0, 10) : '',
+      scope: 'all',
+      on: c.is_active !== false,
+      used: c.used_count || 0
+    }));
 
     // 8. Load purchases
     const { data: purchases } = await sb.from('purchases').select('*, users(name)').order('created_at', { ascending: false });
-    if (purchases && purchases.length > 0) {
-      D.orders = purchases.map(p => ({
-        id: p.id,
-        stu: p.users?.name || 'Student',
-        tid: p.series_id || '',
-        amt: p.amount,
-        at: new Date(p.created_at).getTime(),
-        st: p.status === 'paid' ? 'paid' : p.status === 'refunded' ? 'refunded' : 'pending'
-      }));
-    }
+    D.orders = (purchases || []).map(p => ({
+      id: p.id,
+      stu: p.users?.name || 'Student',
+      tid: p.series_id || '',
+      amt: p.amount,
+      at: new Date(p.created_at).getTime(),
+      st: p.status === 'paid' ? 'paid' : p.status === 'refunded' ? 'refunded' : 'pending'
+    }));
 
     // 9. Load attempts stats
     const { data: attempts } = await sb.from('attempts').select('id, test_id');
@@ -777,7 +765,7 @@ function seed(){
     }
   };
 }
-const K="snA1";let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}if(!D||!D.tests)D=seed();else{D.tests=(D.tests||[]).filter(t=>!["K7P2X","B4M9Q","A2X8R","T5N3H"].includes(t.id));}migrate();
+const K="snA2";let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}if(!D||!D.tests)D=seed();else{D.tests=(D.tests||[]).filter(t=>!["K7P2X","B4M9Q","A2X8R","T5N3H"].includes(t.id));}migrate();
 let AS="owner",NO=0,E=null,ST=0,QM="manual",QE=-1,QF=null,QX="all",NX=0,TQ="",TF="all",CF="",PT="p",PQ="",CP=null,CPI=-1,SQ="",SF="all",SX="",XS="",SN=null,BNF=null,LG="priv",BK={fmt:"txt",raw:"",res:null},BM="",PF="",RT="open",RX="",RS={},RSN="Cheating or sharing answers",BQ="",BT="test",KP=0;
 const perms=()=>AS=="owner"?PM.map(p=>p[0]):(D.staff.find(s=>s.id==AS)||{p:[]}).p,can=k=>perms().includes(k),tid=i=>D.tests.find(t=>t.id==i);
 function toast(m){let t=$("#t");t.textContent=m;t.classList.add("sh");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("sh"),2400)}
@@ -829,11 +817,22 @@ function bas(){let t=E,ex=D.exams;return `<div class="c2"><h3>Exam and where it 
 ${sw(t.sub.on,"togL('sub')","Subject","Add a subject level")}${t.sub.on?`<input list="ds" class="in" aria-label="Subject name" placeholder="Subject name, e.g. Science" value="${esc(t.sub.v)}" oninput="E.sub.v=this.value;sv();pp()"><datalist id="ds">${sug("sub",x=>x.sub.on).map(x=>`<option value="${esc(x)}">`).join("")}</datalist>`:""}
 ${sw(t.ch.on,"togL('ch')","Chapter","Needs a subject",!t.sub.on)}${t.ch.on?`<input list="dc" class="in" aria-label="Chapter name" placeholder="Chapter name" value="${esc(t.ch.v)}" oninput="E.ch.v=this.value;sv();pp()"><datalist id="dc">${sug("ch",x=>x.ch.on&&x.sub.v==t.sub.v).map(x=>`<option value="${esc(x)}">`).join("")}</datalist>`:""}
 ${sw(t.tp.on,"togL('tp')","Topic","Needs a chapter",!t.ch.on)}${t.tp.on?`<input list="dt" class="in" aria-label="Topic name" placeholder="Topic name" value="${esc(t.tp.v)}" oninput="E.tp.v=this.value;sv();pp()"><datalist id="dt">${sug("tp",x=>x.tp.on&&x.ch.v==t.ch.v).map(x=>`<option value="${esc(x)}">`).join("")}</datalist>`:""}
+<div class="hint" style="margin-top:12px;background:var(--sf);padding:10px 14px;border-radius:10px;border:1px solid var(--br);line-height:1.5;">💡 <b>Multi-Subject Series:</b> You can create tests across different Subjects, Chapters, and Topics under this same Exam. The Student App automatically organizes them into clean interactive folders!</div>
 <div class="pth"><small>Students will find it here</small><span id="pp">${esc(pth(t)||"Choose an exam")} › ${esc(t.title||"This test")}</span></div></div>
 <div class="c2"><h3>Title and banner</h3><label class="l2" for="ti">Test title</label><input id="ti" class="in" value="${esc(t.title)}" placeholder="e.g. Photosynthesis Test 1" oninput="E.title=this.value;sv();pp()"><label class="l2" for="de">Short description</label><textarea id="de" class="in" maxlength="140" placeholder="One line shown on the card" oninput="E.desc=this.value;sv()">${esc(t.desc)}</textarea><label class="l2">Card label</label>${chips([["","None"],["New","New"],["Popular","Popular"],["Bestseller","Bestseller"],["Free","Free"]],t.label,"setLb")}
 <label class="l2">Banner image</label><div class="pvw" id="pvw" style="${t.banner?`background-image:url('${t.banner}')`:""}">${t.banner?"":"16:10 preview"}</div><label class="up2">${ic("upload")}<div><b>Upload banner</b></div><small>1600 × 1000 px (16:10) · JPG or WebP · under 400 KB · no text baked into the image · keep key content 20 px from the edges</small><input type="file" accept="image/*" onchange="upImg(this,'${"E"}')"></label><div class="hint" id="bm">${esc(BM)}</div></div>`}
 function pp(){let e=$("#pp");if(e)e.textContent=(pth(E)||"Choose an exam")+" › "+(E.title||"This test")}
-function togL(k){E[k].on=!E[k].on;if(!E[k].on){if(k=="sub"){E.ch.on=false;E.tp.on=false}if(k=="ch")E.tp.on=false}sv();render()}
+function togL(k){
+  E[k].on = !E[k].on;
+  if (!E[k].on) {
+    E[k].v = "";
+    if (k == "sub") { E.ch.on = false; E.ch.v = ""; E.tp.on = false; E.tp.v = ""; }
+    if (k == "ch") { E.tp.on = false; E.tp.v = ""; }
+  }
+  sv();
+  updateTestInDb(E);
+  render();
+}
 function addEx(){let v=$("#nx").value.trim();if(!v)return;if(!D.exams.some(x=>x.toLowerCase()==v.toLowerCase()))D.exams.push(v);E.exam=D.exams.find(x=>x.toLowerCase()==v.toLowerCase());NX=0;sv();render()}
 function upImg(inp,w,cb){let f=inp.files[0];if(!f)return;
 let r=new FileReader();
@@ -939,8 +938,12 @@ async function saveB(){
   let b=BNF;
   let er=!b.img?"Upload a banner image.":!b.alt.trim()?"Add alt text.":"";
   if(er){$("#ber").textContent=er;return}
-  if(BT=="test"&&!b.link)b.link=D.tests[0]?.id?("test-"+D.tests[0].id):"explore";
-  b.id="b_"+Date.now();
+  if (BT == "url") {
+    b.link = b.url || "";
+  } else if (BT == "test" && !b.link) {
+    b.link = D.tests[0]?.id ? D.tests[0].id : "explore";
+  }
+  b.id = "b_" + Date.now();
   b.on=true;
   D.banners.push(b);
   BNF=null;BM="";sv();
@@ -993,7 +996,7 @@ lay("settings","Settings",`<div class="c2"><h3>App identity</h3>${f("name","App 
 <div style="margin-bottom:16px"><button class="b big" style="width:100%" onclick="saveConfigToDb()">${ic("check")}Save all settings to Supabase</button></div>
 <div class="c2"><h3>Razorpay payments</h3><p class="mu">UPI, cards, net banking and wallets all come through Razorpay Checkout.</p><div class="seg wide ${c.rzm=="live"?"r":""}" style="margin:10px 0"><button class="${c.rzm!="live"?"on":""}" onclick="setRz('test')">Test mode</button><button class="${c.rzm=="live"?"on":""}" onclick="setRz('live')">Live mode</button></div>${f("rz","Key ID")}<label class="l2" for="crs">Key Secret</label><input id="crs" class="in" type="password" autocomplete="off" placeholder="Saved on the server only"><label class="l2" for="crw">Webhook secret</label><input id="crw" class="in" type="password" autocomplete="off" placeholder="Saved on the server only"><p class="hint">The secrets are never kept in the browser. In the live app they are sent once to a secure server function. Use Test mode until you have tried a full payment.</p></div>`)}
 function upLogo(i){let f=i.files[0];if(!f)return;if(f.size>2e5){toast("Logo must be under 200 KB");return}let r=new FileReader();r.onload=()=>{D.cfg.logo=r.result;sv();render()};r.readAsDataURL(f)}
-function setLb(v){E.label=v;sv();render()}
+function setLb(v){E.label=v;sv();updateTestInDb(E);render()}
 function setNg(v){if(v=="c")E.neg.cu=true;else{E.neg.cu=false;E.neg.v=+v}sv();render()}
 function setRes(v){E.res=v;sv();render()}
 function setAS(v){AS=v;go("dash");render()}
@@ -1010,7 +1013,23 @@ function applyR(){let k=RX,s=RS[k],f=fq(k);if(!f)return;let q=f.q,txt="Answer ke
 function reports(){let L=D.reports.filter(r=>RT=="open"?r.st=="open":r.st!="open"),g={};L.forEach(r=>(g[r.qid]=g[r.qid]||[]).push(r));let ks=Object.keys(g).sort((a,b)=>g[b].length-g[a].length);
 lay("reports","Question reports",`<p class="mu" style="margin-top:-8px">Students tap “Report an issue” while reviewing a result. Check each one and decide what to do.</p><div class="tabs"><button class="${RT=="open"?"on":""}" onclick="RT='open';RX='';render()">Open (${D.reports.filter(r=>r.st=="open").length})</button><button class="${RT!="open"?"on":""}" onclick="RT='done';RX='';render()">Resolved</button></div>${ks.map(k=>{let f=fq(k),rs=g[k];if(!f)return"";let cn={};rs.forEach(r=>cn[r.reason]=(cn[r.reason]||0)+1);return `<div class="c2"><div class="rowx"><div>${idb(f.t.id)} <b>${esc(f.t.title)}</b></div><span class="st2 pending">${rs.length} report${rs.length>1?"s":""}</span></div><p style="margin:12px 0 6px"><b>Q${f.i+1}.</b> ${esc(f.q.t)}</p><small class="mu">Answer key: <b>${LT[f.q.a]}</b>. ${esc(f.q.o[f.q.a])}</small><div class="tabs wrap" style="margin:10px 0 4px">${Object.entries(cn).map(c=>`<span class="chip">${esc(c[0])} × ${c[1]}</span>`).join("")}</div>${rs.filter(r=>r.note).slice(0,3).map(r=>`<div class="hint">“${esc(r.note)}” · ${esc(r.stu)}</div>`).join("")}${RT=="open"?(RX==k?rpan(k,f):`<button class="b" style="margin-top:12px" onclick="RX='${k}';RS['${k}']={act:'dismiss',ans:${f.q.a},notify:true};render()">Review</button>`):`<div class="hint okc">Resolved: ${esc(rs[0].res||"")}</div>`}</div>`}).join("")||'<div class="em">Nothing here. Student reports will appear in this list.</div>'}`)}
 function seedRep(){return [];}
-function migrate(){D.cfg.legal=Object.assign({priv:"",terms:"",about:"",refund:"",help:""},D.cfg.legal||{});["priv","terms","about","refund","help"].forEach(k=>{if(!D.cfg.legal[k])D.cfg.legal[k]=LEG[k]});let od=s=>(s||"").startsWith("This test is for practice.");if(!D.cfg.dis||od(D.cfg.dis))D.cfg.dis=LEG.dis;delete D.cfg.fb;D.cfg.rzm=D.cfg.rzm||"test";D.cfg.rzs=D.cfg.rzs||"";D.cfg.rzw=D.cfg.rzw||"";D.tests.forEach(t=>{t.q.forEach((q,i)=>{if(!q.id)q.id="q"+rid()+i;delete q.rv});if(t.dis&&od(t.dis.txt))t.dis.txt=LEG.dis});if(!Array.isArray(D.reports))D.reports=seedRep()}
+function migrate(){
+  D.cfg.legal=Object.assign({priv:"",terms:"",about:"",refund:"",help:""},D.cfg.legal||{});
+  ["priv","terms","about","refund","help"].forEach(k=>{if(!D.cfg.legal[k])D.cfg.legal[k]=LEG[k]});
+  let od=s=>(s||"").startsWith("This test is for practice.");
+  if(!D.cfg.dis||od(D.cfg.dis))D.cfg.dis=LEG.dis;
+  delete D.cfg.fb;
+  D.cfg.rzm=D.cfg.rzm||"test";
+  D.cfg.rzs=D.cfg.rzs||"";
+  D.cfg.rzw=D.cfg.rzw||"";
+  D.tests.forEach(t=>{t.q.forEach((q,i)=>{if(!q.id)q.id="q"+rid()+i;delete q.rv});if(t.dis&&od(t.dis.txt))t.dis.txt=LEG.dis});
+  D.orders=(D.orders||[]).filter(o=>!['O1001','O1002','O1003'].includes(o.id)&&!['Aarav K.','Priya S.','Rohit M.','Sneha P.','Vikash R.','Anjali D.','Md. Faiz','Kiran T.'].includes(o.stu));
+  D.students=(D.students||[]).filter(s=>!s.e.endsWith('@example.com'));
+  D.coupons=(D.coupons||[]).filter(c=>!['STAR10','FLAT50'].includes(c.code));
+  D.staff=(D.staff||[]).filter(s=>!['rajesh@','priya@','amit@'].some(x=>s.e.startsWith(x)));
+  D.exams=(D.exams||[]).filter(x=>!['BSEB Class 10','BPSC AEDO','CTET Paper 1'].includes(x));
+  if(!Array.isArray(D.reports))D.reports=[];
+}
 function render(){let y=scrollY;render0();if(Math.abs(scrollY-y)>1)scrollTo(0,y)}
 function render0(){let p=(location.hash.slice(1)||"dash").split("-"),k=({edit:"tests",reports:"tests"})[p[0]]||p[0];if(!can(k)){let f=NAV.find(n=>can(n[3]));if(f&&location.hash!="#"+f[0])return go(f[0]);if(!f)return lay("","No access",'<div class="em">This role has no access yet.</div>')}
 ({dash,tests,reports,pricing,students,banners,staff,settings,edit:()=>edit(p[1])}[p[0]]||dash)();if(p[0]=="dash")document.querySelectorAll(".kp b").forEach(e=>{let m=e.textContent.match(/^(₹?)([\d,]+)$/);if(!m)return;let n=+m[2].replace(/,/g,""),t0=performance.now();(function f(t){let k=Math.min(1,(t-t0)/700);e.textContent=m[1]+Math.round(n*k).toLocaleString("en-IN");if(k<1)requestAnimationFrame(f)})(t0)})}
